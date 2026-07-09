@@ -1,0 +1,2489 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia CAP Inicial Valencia v1.3 — João Mariano L. Macedo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <style>
+        :root { --primary: #2563eb; --secondary: #7c3aed; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; --light: #f8fafc; --dark: #0f172a; --border: #e2e8f0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: #f4f7f6; color: var(--dark); line-height: 1.6; }
+        .container { max-width: 1200px; margin: 20px auto; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; }
+        header { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 40px 20px; text-align: center; position: relative; }
+        .lang-switch { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; }
+        .lang-btn { padding: 8px 16px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .lang-btn.active { background: white; color: var(--primary); }
+        .tabs { display: flex; background: #f8fafc; border-bottom: 1px solid var(--border); overflow-x: auto; position: sticky; top: 0; z-index: 100; }
+        .tab-btn { padding: 18px 25px; border: none; background: none; cursor: pointer; font-weight: 600; color: #64748b; border-bottom: 4px solid transparent; white-space: nowrap; flex: 1; transition: 0.3s; }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); background: white; }
+        .content { padding: 30px; min-height: 500px; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        
+        /* Visão Geral */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { padding: 25px; border-radius: 12px; text-align: center; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .stat-val { font-size: 2.5rem; font-weight: 800; display: block; }
+        .stat-lbl { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; }
+        .chart-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 30px; margin-bottom: 30px; }
+        .chart-box { background: #f8fafc; padding: 25px; border-radius: 15px; border: 1px solid var(--border); }
+        .chart-box h3 { margin-bottom: 20px; color: #1e293b; border-left: 4px solid var(--primary); padding-left: 10px; }
+        .topic-bar-container { margin-top: 10px; }
+        .topic-bar-row { margin-bottom: 12px; }
+        .topic-bar-label { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 4px; font-weight: 600; }
+        .topic-bar-bg { background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden; }
+        .topic-bar-fill { height: 100%; border-radius: 5px; }
+
+        /* Estratégia */
+        .sim-box { background: #f8fafc; padding: 25px; border-radius: 15px; border: 1px solid var(--border); margin-top: 30px; }
+        .sim-row { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+        .sim-row label { flex: 1; font-weight: 700; }
+        .sim-row input { flex: 2; }
+        .sim-res { font-size: 1.5rem; font-weight: 800; text-align: center; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .tip-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .tip-card h4 { margin-bottom: 10px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+
+        /* Questões Repetidas */
+        .q-list { display: flex; flex-direction: column; gap: 15px; }
+        .q-item { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: white; transition: 0.2s; }
+        .q-head { padding: 20px; cursor: pointer; display: flex; align-items: flex-start; gap: 20px; }
+        .q-pct { background: #fef3c7; color: #92400e; padding: 6px 12px; border-radius: 8px; font-weight: 800; font-size: 1rem; min-width: 80px; text-align: center; }
+        .q-txt { font-weight: 600; font-size: 1.05rem; color: #1e293b; flex: 1; }
+        .q-body { padding: 20px; display: none; background: #f8fafc; border-top: 1px solid var(--border); }
+        .q-item.open .q-body { display: block; }
+        .opt { padding: 12px 15px; margin: 8px 0; background: white; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; }
+        .opt.correct { background: #dcfce7; border-color: #22c55e; color: #166534; font-weight: 700; }
+        .q-footer { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #cbd5e1; display: flex; flex-direction: column; gap: 10px; }
+        .q-ans { font-weight: 800; color: var(--success); font-size: 1.1rem; }
+        .prova-tag { background: #e2e8f0; padding: 2px 8px; border-radius: 4px; margin-right: 5px; font-size: 0.8rem; }
+        
+        /* Pegadinhas */
+        .tricks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+        .trick-card { padding: 25px; background: #fff; border: 1px solid #fecdd3; border-radius: 12px; border-left: 6px solid var(--danger); }
+        .trick-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .trick-title { font-weight: 800; font-size: 1.1rem; color: #991b1b; }
+        .trick-pct { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 6px; font-weight: 800; }
+        
+        /* Cola de Estudo (2 Colunas) */
+        .study-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 20px; }
+        .study-section { background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
+        .study-section h3 { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: var(--primary); font-size: 1.1rem; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        th { background: #f1f5f9; color: #475569; width: 50%; font-weight: 700; }
+        
+        /* Siglas */
+        .siglas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .sigla-card { padding: 20px; background: white; border: 1px solid #bfdbfe; border-radius: 12px; border-top: 4px solid var(--primary); }
+        .sigla-card b { font-size: 1.4rem; color: var(--primary); display: block; }
+        .sigla-card small { display: block; color: #64748b; font-weight: 600; margin-bottom: 10px; font-style: italic; }
+        
+        footer { padding: 40px; text-align: center; background: #f8fafc; border-top: 1px solid var(--border); }
+        .version { font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px; }
+        .credits { font-weight: 800; color: var(--dark); font-size: 1.1rem; margin-bottom: 10px; }
+        .disclaimer { color: #ef4444; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; }
+        @media (max-width: 768px) { .chart-row { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: 1fr 1fr; } .study-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="lang-switch">
+                <button class="lang-btn active" onclick="setLang('pt', event)">PT</button>
+                <button class="lang-btn" onclick="setLang('es', event)">ES</button>
+            </div>
+            <h1 id="main-title">Guia CAP Inicial — Valência</h1>
+            <p id="main-subtitle">Análise de 9 provas reais (2025-2026) · João Mariano L. Macedo</p>
+        </header>
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="showTab('overview', event)" id="btn-overview">📊 Visão Geral</button>
+            <button class="tab-btn" onclick="showTab('strategy', event)" id="btn-strategy">🎯 Estratégia</button>
+            <button class="tab-btn" onclick="showTab('repeated', event)" id="btn-repeated">🔁 Repetidas</button>
+            <button class="tab-btn" onclick="showTab('tricks', event)" id="btn-tricks">⚠️ Pegadinhas</button>
+            <button class="tab-btn" onclick="showTab('study', event)" id="btn-study">📋 Cola de Estudo</button>
+            <button class="tab-btn" onclick="showTab('siglas', event)" id="btn-siglas">🔤 Siglas</button>
+        </nav>
+        <main class="content">
+            <!-- Visão Geral -->
+            <section id="overview" class="tab-panel active">
+                <div class="stats-grid">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #3b82f6, #2563eb)"><span class="stat-val">927</span><span class="stat-lbl" id="txt-q">Questões</span></div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed)"><span class="stat-val">9</span><span class="stat-lbl" id="txt-p">Provas</span></div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #ec4899, #db2777)"><span class="stat-val">146</span><span class="stat-lbl" id="txt-r">Repetidas</span></div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #10b981, #059669)"><span class="stat-val">50</span><span class="stat-lbl" id="txt-m">Mínimo</span></div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-box"><h3 id="txt-topics">Distribuição por Temas</h3><div style="height:300px"><canvas id="topicChart"></canvas></div></div>
+                    <div class="chart-box"><h3 id="txt-radar">📈 Frequência de Tópicos por Prova</h3><div style="height:300px"><canvas id="radarChart"></canvas></div></div>
+                </div>
+                <div class="chart-row">
+                    <div class="chart-box">
+                        <h3 id="txt-answers">Padrão de Respostas</h3>
+                        <div style="height:250px"><canvas id="answerChart"></canvas></div>
+                        <p id="txt-answer-analysis" style="font-size: 0.85rem; margin-top: 15px; text-align: center; color: #475569; font-weight: 600;">As respostas são distribuídas de forma quase igual entre A, B, C e D. Não existe uma "letra da sorte" — confie no seu conhecimento!</p>
+                    </div>
+                    <div class="chart-box">
+                        <h3 id="txt-priority">🔥 Ranking de Prioridade de Estudo</h3>
+                        <p id="txt-priority-sub" style="font-size: 0.8rem; margin-bottom: 15px; color: #64748b;">Foque nos tópicos com barra maior (Vermelho = Crítico, Amarelo = Importante).</p>
+                        <div id="topicBars" class="topic-bar-container"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Estratégia -->
+            <section id="strategy" class="tab-panel">
+                <div class="stats-grid">
+                    <div class="stat-card" style="background:#3b82f6"><h4 id="st-c">Certeza</h4><p id="st-cp">Responda as 60 questões que você tem 100% de convicção. Isso garante os 50 pontos necessários.</p></div>
+                    <div class="stat-card" style="background:#f59e0b"><h4 id="st-d">Dúvida</h4><p id="st-dp">Arrisque apenas se conseguiu eliminar 2 alternativas. Se acertar 10 dessas, compensa os erros.</p></div>
+                    <div class="stat-card" style="background:#ef4444"><h4 id="st-ch">Chute</h4><p id="st-chp">NUNCA chute no escuro. Cada erro desconta 0.5 pontos. 2 erros anulam 1 acerto.</p></div>
+                </div>
+                
+                <div class="sim-box">
+                    <h3 id="txt-sim">Simulador de Pontuação</h3>
+                    <div class="sim-row"><label id="l-cert">Certas (1.0 pt):</label><input type="range" id="s-cert" min="0" max="100" value="60" oninput="updateSim()"><span id="v-cert">60</span></div>
+                    <div class="sim-row"><label id="l-err">Erradas (-0.5 pt):</label><input type="range" id="s-err" min="0" max="40" value="0" oninput="updateSim()"><span id="v-err">0</span></div>
+                    <div id="sim-res" class="sim-res">Pontuação: 60.0 | Status: Aprovado</div>
+                </div>
+
+                <div class="tips-section">
+                    <h3 id="txt-tips" style="margin-top:30px; margin-bottom:15px">💡 Dicas e Macetes</h3>
+                    <div class="tips-grid">
+                        <div class="tip-card"><h4 id="t1-t">✅ Faça isso</h4><p id="t1-p">Leia o enunciado buscando palavras como "NÃO", "EXCETO" ou "CORRETO". As pegadinhas moram nos detalhes do final da frase. Marque as fáceis primeiro.</p></div>
+                        <div class="tip-card"><h4 id="t2-t">❌ Evite isso</h4><p id="t2-p">Não perca mais de 2 minutos em uma única questão. Pule e volte depois. Não mude a resposta sem certeza absoluta.</p></div>
+                        <div class="tip-card"><h4 id="t3-t">⚡ Macetes</h4><p id="t3-p">Tacógrafo: Analógico no lugar de Digital é FALTA MUITO GRAVE. Socorrismo: Não dar comida/bebida. Tempos: Redução deve ser compensada.</p></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Repetidas -->
+            <section id="repeated" class="tab-panel"><div class="q-list">
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">33.3%</span>
+            <span class="q-txt">¿Cuántos viajes, como máximo, se pueden hacer con una autorización CEMT?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) 25.</div><div class="opt ">B) 50.</div><div class="opt correct">C) Ilimitados, pero cada tres transportes se debe regresar al país de matriculación del vehículo.</div><div class="opt ">D) Ilimitados, pero cada cinco transportes se debe regresar al país de matriculación del vehículo.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span><span class="prova-tag">19/07/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">33.3%</span>
+            <span class="q-txt">Una vez apartado el vehículo y señalizado el obstáculo, ¿cuál es la siguiente medida que deberá adoptar el conductor de un vehículo cuya carga se haya caído sobre la vía?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Retirar o apartar la carga derramada siempre que sea posible y dejar la calzada lo más limpia posible.</div><div class="opt ">B) Avisar a los servicios de emergencia.</div><div class="opt ">C) Avisar a su empresa para recibir instrucciones.</div><div class="opt ">D) Avisar a los servicios de limpieza para que despejen la calzada.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span><span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">33.3%</span>
+            <span class="q-txt">¿Cómo se denomina también el método de las preferencias declaradas, utilizado para valorar económicamente los costes humanos de los accidentes de tráfico?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Método de las indemnizaciones.</div><div class="opt correct">B) Método de la disposición al pago.</div><div class="opt ">C) Método de capitalización.</div><div class="opt ">D) Método de la invariante productiva.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">33.3%</span>
+            <span class="q-txt">¿Cuántos puntos pierde en el permiso de conducir un conductor que haya colaborado en la manipulación del tacógrafo?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Dos.</div><div class="opt ">B) Cuatro.</div><div class="opt correct">C) Seis.</div><div class="opt ">D) Ninguno, pues la responsable de las infracciones a la normativa de transportes es la empresa transportista.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">En el caso de un transporte efectuado en régimen de tránsito de la Unión, ¿qué se debe presentar en las aduanas de tránsito?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) El número de registro asignado a la declaración de tránsito por las autoridades aduaneras (MRN).</div><div class="opt ">B) La declaración de tránsito.</div><div class="opt ">C) El justificante de garantía.</div><div class="opt ">D) Las respuestas A y B son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuál de los siguientes transportes no está obligado al uso del tacógrafo?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) El transporte efectuado mediante vehículos que se sometan a pruebas en carretera con fines de mejora técnica.</div><div class="opt ">B) El transporte efectuado mediante vehículos especializados en la reparación de averías cuyo radio de acción sea de 100 kilómetros alrededor de su centro de explotación.</div><div class="opt ">C) El transporte efectuado mediante vehículos utilizados en casos de urgencia o destinados a operaciones de salvamento.</div><div class="opt correct">D) Todas las respuestas anteriores son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">En un vehículo dotado de ABS, ¿cómo se debe proceder ante una frenada de emergencia?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Suavemente.</div><div class="opt correct">B) Pisando el freno a fondo.</div><div class="opt ">C) No es necesario hacer nada, ya que el vehículo frena solo.</div><div class="opt ">D) Accionando conjuntamente el freno de pedal y el freno de mano.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">El sistema de alerta de colisión frontal se conoce también por las siglas:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) LKA.</div><div class="opt correct">B) FCW.</div><div class="opt ">C) BAS.</div><div class="opt ">D) ABS.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuál es una característica de la batería de Litio de un vehículo eléctrico?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) No permite cargas parciales.</div><div class="opt correct">B) No requiere mantenimiento.</div><div class="opt ">C) Tiene menor autonomía que la de Cadmio.</div><div class="opt ">D) Tiene un mayor peso que la de Zinc.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Qué variables existen para definir el tráfico existente en una carretera?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Tensión del tráfico.</div><div class="opt correct">B) Densidad del tráfico.</div><div class="opt ">C) Presión del tráfico.</div><div class="opt ">D) Variabilidad del tráfico.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuándo se incurre en la infracción consistente en carencia significativa de datos registrados en el tacógrafo?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Cuando falta el reflejo de, al menos, un 10% de los kilómetros realizados.</div><div class="opt ">B) Cuando falta el reflejo de, al menos, un 20% de los kilómetros realizados.</div><div class="opt ">C) Cuando falta el reflejo de, al menos, un 25% de los kilómetros realizados.</div><div class="opt correct">D) Cuando la información aportada no permite determinar el número total de kilómetros realizados.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Según el círculo de Kamm, si la fuerza total equivale a la fuerza de frenado:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) el camión frena perfectamente.</div><div class="opt ">B) la rueda no se bloquea.</div><div class="opt correct">C) no es posible controlar la dirección del camión puesto que falta fuerza de guiado lateral y la rueda se bloquea.</div><div class="opt ">D) es posible controlar la dirección del camión debido a que la rueda se bloquea.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">En un contrato de transporte sujeto al Convenio CMR que es ejecutado por varios transportistas de modo sucesivo, ¿qué responsabilidad asume cada uno de ellos?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Cada uno responde exclusivamente por la parte del transporte que ha ejecutado.</div><div class="opt correct">B) Cada uno responde por la ejecución total.</div><div class="opt ">C) Cada uno responde exclusivamente por la parte del transporte que ya se ha efectuado cuando él recibe la mercancía y por la parte que ejecuta él mismo.</div><div class="opt ">D) La responsabilidad integra corresponde al transportista que firmó inicialmente la carta de porte e inició el transporte.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">El Instituto Nacional de Seguridad e Higiene en el Trabajo recomienda que, para el levantamiento de pesos manualmente en posición sentado, no se superen:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) 5 kilos.</div><div class="opt ">B) 15 kilos.</div><div class="opt ">C) 25 kilos.</div><div class="opt ">D) 50 kilos.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Qué se entiende por control fronterizo en la regulación del Espacio Schengen?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) El control realizado en las fronteras que obedece únicamente a la intención de cruzar la frontera, con independencia de otros motivos.</div><div class="opt ">B) El examen que versa sobre las normas de fronteras.</div><div class="opt ">C) El control sobre el funcionamiento de los agentes de fronteras.</div><div class="opt ">D) La revisión anual de los recintos de aduanas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuál de los siguientes estilos de conducción es inadecuado para el ahorro de carburante?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Utilizar el freno del motor en lugar de los frenos convencionales.</div><div class="opt correct">B) Actuar sabiendo que el vehículo consume más a bajas revoluciones.</div><div class="opt ">C) Al arrancar, esperar unos instantes antes de iniciar la marcha si su vehículo es diésel.</div><div class="opt ">D) Actuar sabiendo que el vehículo consume menos en las marchas largas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuál de los siguientes comportamientos se puede utilizar para disminuir el nivel de alcohol en sangre?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Hacer ejercicio.</div><div class="opt ">B) Masticar café.</div><div class="opt ">C) Consumir cocaína.</div><div class="opt correct">D) Todas las respuestas anteriores son incorrectas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuál es la manipulación de cargas menos peligrosa?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) La que exige esfuerzos intensos y prolongados.</div><div class="opt correct">B) La que exige no tener que cambiar el punto de agarre de la carga.</div><div class="opt ">C) La que exige esfuerzos realizados sin tiempo de recuperación suficiente.</div><div class="opt ">D) La que exige torcer el cuerpo durante la operación.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuál es la materia más empleada para extinguir un incendio por enfriamiento de la temperatura?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Agua.</div><div class="opt ">B) Arena seca.</div><div class="opt ">C) Oxígeno.</div><div class="opt ">D) Gas halón.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Un conductor que conduce en una semana 52 horas, ¿cuántas horas puede conducir, como máximo, la semana siguiente, según la reglamentación social europea?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) 38 horas.</div><div class="opt ">B) 28 horas.</div><div class="opt ">C) 18 horas.</div><div class="opt ">D) 8 horas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuál no es una actuación que pueden efectuar los agentes de la autoridad en los controles en carretera?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Traslado obligatorio del vehículo.</div><div class="opt ">B) Inmovilización del vehículo.</div><div class="opt ">C) Retirada de la tarjeta de tacógrafo digital del conductor.</div><div class="opt correct">D) Imposición de sanciones.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuántas veces se podrá interrumpir, para llevar a cabo otras actividades, el período de descanso diario normal cuando se acompañe un vehículo transportado por trasbordador o tren?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) El período de descanso diario normal nunca puede interrumpirse.</div><div class="opt ">B) Se podrá interrumpir un máximo de tres veces, siempre que no excedan en total de una hora.</div><div class="opt ">C) Se podrá interrumpir un máximo de dos veces, siempre que no excedan en total de dos horas.</div><div class="opt correct">D) Se podrá interrumpir un máximo de dos veces, siempre que no excedan en total de una hora.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuántos discos-diagrama tiene obligación de entregar el empresario a los conductores?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) El empresario entregará un disco por cada día de la semana en curso y por los 15 días siguientes en que deba conducir.</div><div class="opt ">B) El empresario entregará tantos discos-diagrama como jornadas de conducción tenga previstas realizar el conductor en un mes.</div><div class="opt correct">C) El empresario entregará a los conductores un número suficiente de discos, atendiendo a la duración del servicio y a la obligación de sustituir, en su caso, las hojas estropeadas o que hubiere retirado un agente encargado del control.</div><div class="opt ">D) El empresario no está obligado a entregar discos; será el conductor quien deberá adquirirlos.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuántos extintores debe llevar un vehículo de transporte de mercancías de 6.000 kg de Masa Máxima Autorizada (MMA)?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Uno.</div><div class="opt ">B) Dos.</div><div class="opt ">C) Tres.</div><div class="opt ">D) Ninguno.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Como medida de ahorro de carburante, ¿qué actuación, de las que se citan, es correcta?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Circular variando constantemente el régimen medio de revoluciones.</div><div class="opt correct">B) Utilizar la relación de marchas más alta que sea posible dependiendo de las circunstancias que se den en cada momento.</div><div class="opt ">C) En verano, llevar la presión de inflado de los neumáticos por debajo de la que recomiende el fabricante.</div><div class="opt ">D) Bajar las pendientes con el embrague pisado.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Según la Ley de responsabilidad civil y seguro en la circulación de vehículos a motor, ¿a qué dará lugar el incumplimiento de la obligación de asegurarse?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Al depósito del vehículo a cargo del propietario.</div><div class="opt ">B) A la requisa del vehículo.</div><div class="opt ">C) A la prohibición de circular el vehículo afectado durante tres años, aunque se asegure posteriormente.</div><div class="opt ">D) Al pago de los gastos que origine el depósito del vehículo, si bien serán por cuenta de la Administración si se asegura en un plazo inferior a un mes.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Conducir utilizando la relación de marchas más alta posible, dependiendo de la velocidad a la que se circule, tiene como ventaja:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) aumentar el coeficiente aerodinámico del vehículo y prolongar la vida del motor.</div><div class="opt ">B) no tener que comprobar la presión de inflado de los neumáticos, salvo en caso de pinchazo.</div><div class="opt correct">C) un menor consumo de carburante.</div><div class="opt ">D) aumentar la frecuencia de la inspección técnica periódica y reducir los plazos de mantenimiento del vehículo.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuál es el ámbito de aplicación del Espacio Schengen?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) La Unión Europea y Estados Unidos.</div><div class="opt ">B) Los países miembros de la OCDE.</div><div class="opt correct">C) La Unión Europea y otros países de Europa, aunque algunos miembros de la primera no forman parte del mismo actualmente.</div><div class="opt ">D) La Unión Europea, pues todos los países que forman parte de ella deben estar integrados en el Espacio Schengen.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Según la normativa laboral española, ¿quién tiene la consideración de trabajador móvil en una empresa de transporte por carretera?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Todos los empleados.</div><div class="opt ">B) Los que realicen gestiones administrativas fuera de la oficina de modo habitual.</div><div class="opt ">C) Los que realicen gestiones administrativas fuera de la oficina de modo ocasional.</div><div class="opt correct">D) Los conductores.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">En caso de sufrir estrés, se aconseja:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Buscar ayuda en un especialista.</div><div class="opt ">B) Evitar conducir si es posible.</div><div class="opt ">C) Conducir con más precaución si es necesario hacerlo.</div><div class="opt correct">D) Todas las respuestas son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Los vehículos oficiales de transporte de mercancías que utilizan los órganos de la Administración:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) necesitan autorización de transporte público.</div><div class="opt ">B) necesitan autorización de transporte privado particular.</div><div class="opt ">C) necesitan autorización de transporte privado complementario.</div><div class="opt correct">D) están exentos de autorización de transporte.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">La garantía exigida en el caso de transportes efectuados en régimen de tránsito de la Unión será:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) individual para cada transporte.</div><div class="opt ">B) global para varios transportes, previa autorización de las autoridades aduaneras.</div><div class="opt ">C) global para varios transportes, sin necesidad de autorización previa.</div><div class="opt correct">D) Las respuestas A y B son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Qué haremos para prevenir la aparición de sueño durante la conducción?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Poner la radio más fuerte para distraernos.</div><div class="opt ">B) Tomar mucho café.</div><div class="opt ">C) Comer copiosamente y continuar el viaje.</div><div class="opt correct">D) Todas las respuestas anteriores son incorrectas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuáles de los siguientes accidentes de trabajo en el sector del transporte están considerados como accidentes con forma no traumática?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Aplastamiento por vuelco de la maquinaria de trabajo.</div><div class="opt correct">B) Derrames cerebrales.</div><div class="opt ">C) Descargas eléctricas.</div><div class="opt ">D) Proyección de líquidos contra el cuerpo.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">19/07/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">El consumo de carburante es mayor:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) en marchas largas.</div><div class="opt ">B) en vehículos con cajas de cambios sincronizados.</div><div class="opt ">C) en vehículos ligeros.</div><div class="opt correct">D) en vehículos con cajas de cambio automático.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">19/07/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuál es el plazo de prescripción de las sanciones por infracciones muy graves de las normas relativas a los tiempos de conducción y descanso?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Tres años.</div><div class="opt correct">B) Dos años.</div><div class="opt ">C) Un año.</div><div class="opt ">D) Seis meses.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Para la renovación del permiso de conducir:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) no se admite la dependencia de drogas.</div><div class="opt ">B) no se admite la dependencia de medicamentos.</div><div class="opt ">C) no se admite la existencia de trastornos inducidos por drogas.</div><div class="opt correct">D) Todas las respuestas son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">En caso de auxiliar en un accidente de tráfico, si algún airbag de los vehículos accidentados no se ha activado:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) como primera medida, debemos actuar sobre él para que se active, a fin de que no cause daños si lo hace después por sorpresa.</div><div class="opt ">B) debemos evitar apoyarnos sobre él.</div><div class="opt ">C) debemos abstenernos de manipular la columna de dirección.</div><div class="opt correct">D) Las respuestas B y C son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Para que se produzca fuego, ¿qué se debe conjugar siempre en la proporción adecuada?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Un agente resquebrajante, un combustible y una materia prima.</div><div class="opt correct">B) Un comburente, un combustible y una fuente de calor como energía de activación.</div><div class="opt ">C) Un comburente, un combustible y una materia prima.</div><div class="opt ">D) Un comburente, un sólido y una fuente térmica.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">El conductor de un vehículo pesado de transporte de mercancías:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) debe realizar las labores de protección de la mercancía.</div><div class="opt ">B) solo debe realizar las labores de protección de la mercancía si se lo solicita el cliente.</div><div class="opt ">C) solo debe realizar las labores de protección de la mercancía si esta se transporta a granel.</div><div class="opt ">D) no está obligado a ocuparse de la protección de la mercancía, es una labor propia del cargador.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">El centro que haya limpiado un vehículo que transportó animales:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) expedirá un justificante que debe llevarse en el vehículo.</div><div class="opt ">B) expedirá un justificante que el conductor entregará al responsable de la empresa para que lo guarde.</div><div class="opt ">C) expedirá únicamente una factura que el conductor debe entregar al responsable de su empresa para unir a la contabilidad.</div><div class="opt ">D) no está obligado a expedir ningún justificante, salvo que el vehículo vaya a realizar a continuación transporte internacional.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">La norma de que los conductores de vehículos de transporte de mercancías con MMA superior a 7,5 toneladas no pueden participar en las operaciones de descarga del vehículo no se aplica en el caso de:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) transporte de mercancías contenidas en jaulas.</div><div class="opt ">B) transporte de mercancías en contenedores.</div><div class="opt correct">C) transporte efectuado en vehículos basculantes.</div><div class="opt ">D) transporte de mercancías en vehículos con regulación de temperatura.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">La norma de que los conductores de vehículos de transporte de mercancías con MMA superior a 7,5 toneladas no pueden participar en las operaciones de descarga del vehículo no se aplica en el caso de:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) servicios de paquetería.</div><div class="opt ">B) transportes efectuados en el marco de un contrato de larga duración.</div><div class="opt correct">C) transportes internacionales.</div><div class="opt ">D) transportes urgentes.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Qué validez tiene la homologación que la Administración debe otorgar a los cursos de formación CAP para poder ser impartidos?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Habilita para impartir dichos cursos en todos sus centros, incluidas sucursales y aulas móviles.</div><div class="opt correct">B) Habilita para impartir dichos cursos exclusivamente en los centros ubicados en el ámbito territorial de la Comunidad Autónoma que ha otorgado la homologación.</div><div class="opt ">C) Habilita para impartir dichos cursos exclusivamente en los centros ubicados en el ámbito territorial de la Comunidad Autónoma que ha otorgado la homologación y en las aulas móviles de las que pueda disponer la empresa.</div><div class="opt ">D) La homologación no es un trámite preceptivo, bastando con la autorización como empresa CAP, aunque se recomienda solicitarla para facilitar la gestión administrativa de los cursos.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Se pueden recuperar puntos del permiso de conducir que se hayan perdido, si se cursa la formación CAP?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) No.</div><div class="opt correct">B) Sí, pero se requiere superar la formación sobre sensibilización y educación vial contenida en el programa de los cursos.</div><div class="opt ">C) Sí, siempre que se realice un curso de cualificación inicial completo, con independencia de los contenidos cursados.</div><div class="opt ">D) Sí, siempre que se realice un curso de formación continua completo, con independencia de los contenidos cursados.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Un alumno de un curso CAP será excluido del mismo cuando deje de asistir a:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) un 25 por 100, o más, de las horas del curso.</div><div class="opt ">B) como mínimo, un 10 por 100 de las horas del curso.</div><div class="opt correct">C) un 5 por 100, o más, de las horas del curso.</div><div class="opt ">D) alguna sesión de formación.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuántos vocales deben formar parte de las Juntas Arbitrales del Transporte?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Cuatro.</div><div class="opt ">B) Un máximo de cuatro.</div><div class="opt correct">C) Dos.</div><div class="opt ">D) Dos que sean funcionarios públicos y hasta cuatro ajenos a la Administración, nombrados por las asociaciones de transportistas y de usuarios.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Quién debe asumir el coste de los arbitrajes efectuados por una Junta Arbitral de Transporte?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) El reclamante.</div><div class="opt ">B) El reclamante y el reclamado a partes iguales.</div><div class="opt ">C) El reclamante, pero sólo cuando sus demandas sean desestimadas en el laudo.</div><div class="opt correct">D) Los arbitrajes de las Juntas Arbitrales del Transporte son gratuitos, sin perjuicio de tener que satisfacer los gastos derivados de la práctica de pruebas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span><span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">De acuerdo con la Ley de cooperativas, los socios que pidan la celebración de una asamblea extraordinaria podrán instar al juez competente que la convoque si el consejo rector no ha atendido su requerimiento en el plazo de:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) una semana.</div><div class="opt ">B) quince días.</div><div class="opt correct">C) un mes.</div><div class="opt ">D) tres meses.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Según las condiciones generales de contratación en un contrato de transporte de mercancías, si el plazo de entrega al destinatario finaliza después de las seis de la tarde, ¿cuándo, como máximo, debe efectuarse dicha entrega?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) A la hora en que finalice dicho plazo, siempre que no sea más tarde de las doce de la noche.</div><div class="opt correct">B) A las ocho de la mañana del día siguiente o a la hora de apertura del establecimiento si es posterior.</div><div class="opt ">C) A las nueve de la mañana del día siguiente o a la hora de apertura del establecimiento si es posterior.</div><div class="opt ">D) En todo caso, a la hora de apertura del establecimiento.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Para que la pena impuesta por una acción de tráfico llegue a ser la privación de libertad, la acción debe ser:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) un delito.</div><div class="opt ">B) una infracción administrativa de tráfico grave.</div><div class="opt ">C) una falta.</div><div class="opt ">D) Todas las respuestas anteriores son incorrectas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuándo debe utilizarse el alumbrado del vehículo como regla general?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Entre la salida y la puesta del sol.</div><div class="opt correct">B) En condiciones ambientales que disminuyan sensiblemente la visibilidad.</div><div class="opt ">C) En caso de aviso existencia de vehículo parado en el arcén.</div><div class="opt ">D) En la circulación por travesías y zonas pobladas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">El dispositivo de seguridad BAS, ¿qué acción lleva a cabo?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Mide la distancia con el vehículo que circula delante y calcula la distancia de seguridad.</div><div class="opt correct">B) En un frenada de emergencia, corrige la presión de frenado para evitar la colisión.</div><div class="opt ">C) Si capta que se va a producir el bloqueo de una rueda, disminuye la fuerza de frenado sobre ella.</div><div class="opt ">D) Si, al arrancar, una rueda motriz patina, la frena.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Con qué elemento de seguridad activa del vehículo está relacionado el TCS, Traction Control System?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Con la suspensión.</div><div class="opt ">B) Con la dirección.</div><div class="opt correct">C) Con los frenos.</div><div class="opt ">D) Con el alumbrado.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuál es el objetivo principal de los sistemas de contención de vehículos de una carretera?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) La precisión en la detección de vehículos cuya circulación está prohibida por un determinado tramo.</div><div class="opt correct">B) La capacidad para impedir que un vehículo que se sale de la calzada alcance un obstáculo, desnivel o elemento de riesgo.</div><div class="opt ">C) La restricción de circulación a partir de una determinada intensidad de tráfico.</div><div class="opt ">D) La restricción de circulación a partir de una determinada densidad de tráfico.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">El sistema de frenado ABS (antiblock brake system) es un elemento de seguridad:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) activa y pasiva.</div><div class="opt correct">B) activa.</div><div class="opt ">C) pasiva.</div><div class="opt ">D) No se considera elemento de seguridad al no ser obligatoria su instalación en los vehículos.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Los vehículos exentos del uso del tacógrafo por aplicación de la normativa española, ¿tienen que usarlo en los recorridos en vacío que necesariamente realicen antes o después del servicio en el que están exentos?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Siempre.</div><div class="opt correct">B) Nunca.</div><div class="opt ">C) No si el recorrido en vacío es de 5 km.</div><div class="opt ">D) Solo si el recorrido en vacío es de más de 5 km.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Qué requisitos deben cumplir los extranjeros que quieran entrar en España?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Tener pasaporte o documento de viaje acreditativo de su identidad.</div><div class="opt ">B) Justificar el objeto de la estancia.</div><div class="opt ">C) Justificar medios de vida suficientes para el tiempo de permanencia en España.</div><div class="opt correct">D) Todas las respuestas son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Los ciclos del ritmo circadiano tienen una duración de en torno a:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) un día.</div><div class="opt ">B) una semana.</div><div class="opt ">C) un mes lunar.</div><div class="opt ">D) una estación.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">El protocolo de actuación ante emergencias que se desarrolla en las fases de proteger, avisar y socorrer se conoce como:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Protocolo médico.</div><div class="opt ">B) Protocolo de intervención.</div><div class="opt ">C) PAE.</div><div class="opt correct">D) PAS.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Qué tipo de productos se pueden utilizar para limpiar un vehículo dedicado al transporte de alimentos?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Siempre productos autorizados para uso alimentario.</div><div class="opt correct">B) Productos autorizados para uso alimentario, salvo que se transporten alimentos envasados y embalados.</div><div class="opt ">C) Cualquier producto que no sea tóxico.</div><div class="opt ">D) Cualquier producto con suficiente poder de desinfección.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Qué ocurre si la parte reclamada no acude a la vista celebrada ante una Junta Arbitral del Transporte?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Impedirá la celebración de la vista.</div><div class="opt ">B) Se puede celebrar la vista, pero no se podrá dictar el laudo hasta que se haya dado audiencia al reclamante.</div><div class="opt correct">C) No impedirá la celebración de la vista ni que se dicte el laudo.</div><div class="opt ">D) Se dictará directamente el laudo sin celebración de la vista.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Salvo pacto previo de sumisión a una Junta concreta, ¿qué Junta Arbitral puede elegir el demandante para la resolución de una controversia?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) La que sea competente en su residencia habitual en todo caso, siempre que dicha residencia esté en territorio español o de la Unión Europea.</div><div class="opt correct">B) La que sea competente en su residencia habitual, cuando se trate de un consumidor o usuario.</div><div class="opt ">C) La que elija libremente.</div><div class="opt ">D) El demandante nunca puede elegir unilateralmente la Junta sin contar con la aceptación del demandado.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuántos vocales debe tener una Junta Arbitral de Transporte?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Dos.</div><div class="opt ">B) Cuatro.</div><div class="opt ">C) Un mínimo de dos.</div><div class="opt ">D) Un mínimo de cuatro.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">Se presume que existe acuerdo de sometimiento a las Juntas Arbitrales del Transporte cuando la cuantía de la controversia no excede de:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) 5.000 euros.</div><div class="opt correct">B) 15.000 euros.</div><div class="opt ">C) 25.000 euros.</div><div class="opt ">D) 100.000 euros.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Qué función tiene, entre otras, el sistema de ayuda a la conducción identificado con las letras ACC?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Avisar de un cambio de carril.</div><div class="opt ">B) Reconocer señales de tráfico.</div><div class="opt correct">C) Reducir automáticamente la velocidad.</div><div class="opt ">D) Realizar un frenado de emergencia.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">¿Cuáles son las características que mejor describen las prestaciones de un motor?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Par motor máximo y par de rueda máximo.</div><div class="opt ">B) Temperatura mínima de trabajo y par motor.</div><div class="opt ">C) R.P.M. y consumo medio.</div><div class="opt correct">D) Potencia máxima y par motor máximo.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">(Reserva 1º) Las cargas formadas por bloques pesados o muy pesados, ¿en qué parte de la batea deben colocarse?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Lo más cercano a la cabina que sea posible.</div><div class="opt correct">B) En la parte central de la batea.</div><div class="opt ">C) Encima de los ejes.</div><div class="opt ">D) En cualquier parte de la batea.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">(Reserva 2º) ¿En qué se basa el funcionamiento del dispositivo denominado BAS?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Según la rapidez o la fuerza con la que se actúa sobre el pedal de freno, detecta si se ha producido una frenada de emergencia.</div><div class="opt ">B) Detecta el posible bloqueo de una o varias ruedas en función de su velocidad angular.</div><div class="opt ">C) Detecta si una rueda motriz patina.</div><div class="opt ">D) Calcula la distancia de seguridad en función de la separación con el vehículo que circula delante.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">22.2%</span>
+            <span class="q-txt">(Reserva 3º) Durante la conducción, el conductor recibe información en la que basa sus decisiones, ¿de dónde procede esa información?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) De su experiencia.</div><div class="opt ">B) De su conocimiento de las normas.</div><div class="opt correct">C) De las condiciones del tráfico.</div><div class="opt ">D) De su concepción del hecho de conducir.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span><span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">Cada vez que se realiza un cambio durante la subida de una pendiente, existe un instante en el que el camión pierde potencia. ¿En qué se traducen estas pérdidas de potencia?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) En una deminuación de la temperatura.</div><div class="opt correct">B) En una reducción de velocidad.</div><div class="opt ">C) En un aumento de velocidad.</div><div class="opt ">D) Esta acción no tiene ningún tipo de consecuencia.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">Cada vez que se realiza un cambio durante la subida de una pendiente, existe un instante en el que el camión pierde potencia. ¿En qué se traducen estas pérdidas de potencia?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) En una disminución de la temperatura.</div><div class="opt correct">B) En una reducción de velocidad.</div><div class="opt ">C) En un aumento de velocidad.</div><div class="opt ">D) Esta acción no tiene ningún tipo de consecuencia.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">19/07/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Cuál de los siguientes transportes no está obligado al uso del tacógrafo?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) El transporte efectuado mediante vehículos que se sometan a pruebas en carretera con fines de mejora técnica.</div><div class="opt ">B) El transporte especializado en la reparación de averías cuyo radio de acción sea de 100 km.</div><div class="opt ">C) El transporte efectuado en casos de urgencia o salvamento.</div><div class="opt correct">D) Todas las respuestas anteriores son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Qué puede ocurrir si el conductor presta atención a todos los estímulos que recibe durante la conducción?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Que realiza una conducción más eficiente.</div><div class="opt ">B) Que realiza uma condução mais consciente.</div><div class="opt ">C) Que realiza uma condução preventiva.</div><div class="opt correct">D) Que dispersa su atención, incrementando el riesgo de accidente.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Qué puede ocurrir si el conductor presta atención a todos los estímulos que recibe durante la conducción?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Que realiza una conducción más eficiente.</div><div class="opt ">B) Que realiza una conducción más consciente.</div><div class="opt ">C) Que realiza una conducción preventiva.</div><div class="opt correct">D) Que dispersa su atención, incrementando el riesgo de accidente.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">El tipo de caja de velocidades que monte un automóvil, ¿puede influir en el consumo de carburante?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Sí, con una caja de velocidades con cambio manual el consumo es mayor.</div><div class="opt correct">B) Sí, con una caja de velocidades con cambio manual el consumo es menor.</div><div class="opt ">C) No, salvo cuando el vehículo circula por una pendiente ascendente.</div><div class="opt ">D) No, el consumo no depende del tipo de caja de velocidades.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">El tipo de caja de velocidades que monte un automóvil, ¿puede influir en el consumo de carburante?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Si, con una caja de velocidades con cambio manual el consumo es mayor.</div><div class="opt correct">B) Sí, con una caja de velocidades con cambio manual el consumo es menor.</div><div class="opt ">C) No, salvo cuando el vehículo circula por una pendiente ascendente.</div><div class="opt ">D) No, el consumo no depende del tipo de caja de velocidades.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">Según la normativa laboral española, ¿quién tiene la consideración de trabajador móvil en una empresa de transporte por carretera?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Todos los empleados.</div><div class="opt ">B) Los que realicen gestiones administrativas fuera de la oficina de modo habitual.</div><div class="opt ">C) Los que realicen gestiones administrativas fuera de la oficina de modo ocasional.</div><div class="opt correct">D) Los auxiliares de viaje.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">En caso de sufrir estrés, se aconseja:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Buscar ayuda en un especialista.</div><div class="opt ">B) Evitar conducir sí es posible.</div><div class="opt ">C) Conducir con más precaución si es necesario hacerlo.</div><div class="opt correct">D) Todas las respuestas son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">Los alumnos que realicen un curso para la obtención de la cualificación inicial de conductores podrán contabilizar como parte de dicha formación la realizada en relación con:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) transporte regular.</div><div class="opt ">B) transporte de mercancía paletizada.</div><div class="opt ">C) sensibilización sobre los derechos de los viajeros con discapacidad.</div><div class="opt correct">D) transporte escolar y de menores.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">Los alumnos que realicen un curso para la obtención de la cualificación inicial de conductores podrán contabilizar como parte de dicha formación la realizada en relación con:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) transporte de animales.</div><div class="opt ">B) transporte de mercancías peligrosas.</div><div class="opt ">C) sensibilización sobre los derechos de los viajeros con discapacidad.</div><div class="opt correct">D) Todas las respuestas son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Qué es el llamado círculo de Kamm?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Es un círculo con el que calcular las velocidades del camión, según el cambio de marchas.</div><div class="opt ">B) Es una tabla con acciones preventivas en caso de derrape.</div><div class="opt correct">C) Es una representation simplificada de lo que ocurre en una rueda.</div><div class="opt ">D) Es una tabla de consumos en función del peso.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Qué es el llamado círculo de Kamm?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Es un círculo con el que calcular las velocidades del camión, según el cambio de marchas.</div><div class="opt ">B) Es una tabla con acciones preventivas en caso de derrape.</div><div class="opt correct">C) Es una representación simplificada de lo que ocurre en una rueda.</div><div class="opt ">D) Es una tabla de consumos en función del peso.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">El chasis deformable es un elemento de seguridad...</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) activa.</div><div class="opt ">B) activa y pasiva.</div><div class="opt correct">C) pasiva.</div><div class="opt ">D) No se considera como elemento de seguridad.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">El chasis deformable es un elemento de seguridad:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) activa.</div><div class="opt ">B) activa y pasiva.</div><div class="opt correct">C) pasiva.</div><div class="opt ">D) No se considera como elemento de seguridad.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">Según el Reglamento (CE) 1/2005, relativo a la protección de los animals durante su transporte, se considera viaje largo aquel que tiene una duración superior a:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) 4 horas.</div><div class="opt correct">B) 8 horas.</div><div class="opt ">C) 16 horas.</div><div class="opt ">D) 32 horas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">Según el Reglamento (CE) 1/2005, relativo a la protección de los animales durante su transporte, se considera viaje largo aquel que tiene una duración superior a:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) 4 horas, a partir del momento en que se traslada al primer animal de la partida.</div><div class="opt correct">B) 8 horas, a partir del momento en que se traslada al primer animal de la partida.</div><div class="opt ">C) 16 horas, a partir del momento en que se traslada al primer animal de la partida.</div><div class="opt ">D) 32 horas, a partir del momento en que se traslada al primer animal de la partida.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Cuándo se debe hace la limpieza de un vehículo que se dedica al transporte de productos alimenticios?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Siempre entre carga y carga.</div><div class="opt correct">B) Entre carga y carga si el vehículo se usa para transportar alimentos de distinto tipo.</div><div class="opt ">C) Diariamente.</div><div class="opt ">D) Semanalmente.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Cuándo se debe hacer la limpieza de un vehículo que se dedica al transporte de productos alimenticios?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Siempre entre carga y carga.</div><div class="opt ">B) Entre carga y carga si el vehículo se usa para transportar alimentos de distinto tipo.</div><div class="opt correct">C) Diariamente.</div><div class="opt ">D) Semanalmente.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Cuál es el prazo de prescripción de las sanciones por infracciones muy graves de las normas relativas a los tiempos de conducción y descanso?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Tres años.</div><div class="opt correct">B) Dos años.</div><div class="opt ">C) Un año.</div><div class="opt ">D) Seis meses.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">La evaluación correcta de una situación de emrgencia permite:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) decidir las medidas que se deben adoptar.</div><div class="opt ">B) establecer el orden de actuación.</div><div class="opt ">C) recabar información básica.</div><div class="opt correct">D) Todas las respuestas son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">La evaluación correcta de una situación de emergencia permite:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) decidir las medidas que se deben adoptar.</div><div class="opt correct">B) establecer el orden de actuación.</div><div class="opt ">C) recabar información básica.</div><div class="opt ">D) Todas las respuestas son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Se pueden acumular en una misma persona las diferentes modalidades del estatuto de operador económico autorizado?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Sí.</div><div class="opt ">B) No.</div><div class="opt ">C) Es una decisão que depende de cada Estado.</div><div class="opt ">D) Depende del volumen de operaciones que se realicen anualmente.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Se pueden acumular en una misma persona las diferentes modalidades del estatuto de operador económico autorizado?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Sí.</div><div class="opt ">B) No.</div><div class="opt ">C) Es una decisión que depende de cada Estado.</div><div class="opt ">D) Depende del volumen de operaciones que se realicen anualmente.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">19/07/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">En las estadísticas sobre accidentes de tráfico, el índice de letalidad pone en relación:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) el número total de víctimas con el número de accidentes.</div><div class="opt ">B) el número total de víctimas con el número de vehículos del parque.</div><div class="opt ">C) el número de fallecidos con el número de accidentes.</div><div class="opt correct">D) el número de fallecidos con el número total de víctimas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">En las estadísticas de accidentes de tráfico, el índice de letalidad pone en relación:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) el número total de víctimas con el número de accidentes.</div><div class="opt ">B) el número total de víctimas con el número de vehículos del parque.</div><div class="opt ">C) el número de fallecidos con el número de accidentes.</div><div class="opt correct">D) el número de fallecidos con el número total de víctimas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">Para evitar los problemas de salud que produce el trabalho sedentario, es recomendado cambiar de postura al menos cada:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) 45 minutos.</div><div class="opt ">B) 90 minutos.</div><div class="opt correct">C) 2 horas.</div><div class="opt ">D) 3 horas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">Para evitar los problemas de salud que produce el trabajo sedentario, es recomendable cambiar de postura al menos cada:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) 45 minutos.</div><div class="opt ">B) 90 minutos.</div><div class="opt correct">C) 2 horas.</div><div class="opt ">D) 3 horas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">102 (Reserva 2º). ¿En qué se basa el funcionamiento del dispositivo denominado BAS?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Según la rapidez o la fuerza con la que se actúa sobre el pedal de freno, detecta si se ha producido una frenada de emergencia.</div><div class="opt ">B) Detecta el posible bloqueo de una o varias ruedas en función de su velocidad angular.</div><div class="opt ">C) Detecta si una rueda motriz patina.</div><div class="opt ">D) Calcula la distancia de seguridad en función de la separación con el vehículo que circula delante.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">103 (Reserva 3º). Durante la conducción, el conductor recibe información en la que basa sus decisiones, ¿de dónde procede esa información?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) De su experiencia.</div><div class="opt ">B) De su conocimiento de las normas.</div><div class="opt correct">C) De las condiciones del tráfico.</div><div class="opt ">D) De su concepción del hecho de conducir.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">101 (Reserva 1º). Las cargas formadas por bloques pesados o muy pesados, ¿en qué parte de la batea deben colocarse?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Lo más cercano a la cabina que sea posible.</div><div class="opt correct">B) En la parte central de la batea.</div><div class="opt ">C) Encima de los ejes.</div><div class="opt ">D) En cualquier parte de la batea.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">En una caja de velocidades de 5 marchas, ¿qué se consigue con la primera velocidad?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) En esta marcha no hay desmultiplicación, igualándose las r.p.m. del motor, consiguiéndose una velocidad alta, pero poca fuerza.</div><div class="opt correct">B) Se reducen en gran medida las r.p.m. del motor, con lo que se pierde en velocidad, pero se gana en fuerza.</div><div class="opt ">C) Se reducen un poco las r.p.m. del motor, lo que permite alcanzar una cierta velocidad para recorridos urbanos.</div><div class="opt ">D) En esta marcha se produce una multiplicación de las revoluciones del motor.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">En una caja de velocidades con 5 marchas, ¿qué se consigue con la quinta velocidad?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) En esta marcha no hay desmultiplicación, igualándose las r.p.m. del motor.</div><div class="opt ">B) Se reducen en gran medida las r.p.m. del motor, con lo que se pierde en velocidad, pero se gana en fuerza.</div><div class="opt ">C) Se reducen un poco las r.p.m. del motor, lo que permite alcanzar una cierta velocidad para recorridos urbanos.</div><div class="opt correct">D) En esta marcha se produce una multiplicación de las revoluciones del motor.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">(Reserva 14º) ¿Qué es una vía interurbana?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Carretera que comunica poblaciones.</div><div class="opt ">B) Calle de ciudad.</div><div class="opt ">C) Camino rural.</div><div class="opt ">D) Paseo marítimo.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Qué es una vía interurbana?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Carretera que comunica poblaciones.</div><div class="opt ">B) Calle de ciudad.</div><div class="opt ">C) Camino rural.</div><div class="opt ">D) Paseo marítimo.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">30/05/2026</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Cuáles de los siguientes accidentes de trabajo en el sector del transporte están considerados como accidentes con forma no traumática?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Sobreesfuerzos por levantamiento de pesos excesivos.</div><div class="opt ">B) Atropellos por vehículos.</div><div class="opt ">C) Quemaduras.</div><div class="opt correct">D) Enfermedades cardiovasculares.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">En función de por dónde se circule, se recomiendan unas técnicas indicadas para optimizar el consumo de carburante. ¿Qué se recomienda en pendientes descendentes?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) No acelerar.</div><div class="opt ">B) Acelerar.</div><div class="opt ">C) Poner la palanca del cambio en punto muerto.</div><div class="opt ">D) Apagar el motor.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">19/07/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">En función de por dónde se circule, se recomiendan unas técnicas indicadas para optimizar el consumo de carburante. ¿Qué se recomienda en llano?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Mantener el pedal acelerador presionado.</div><div class="opt ">B) Circular en punto muerto siempre que sea posible.</div><div class="opt correct">C) Mantener la aguja del tacómetro en la parte izquierda de la zona económica, lo más cerca posible del régimen de consumo específico mínimo.</div><div class="opt ">D) Reducir la relación de trasmisión seleccionada.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">La fuerza que opone resistencia al movimiento entre la superficie del neumático de un camión y la calzada se denomina:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) resistencia por rozamiento.</div><div class="opt ">B) desplazamiento de masas.</div><div class="opt ">C) fuerza de molaridad.</div><div class="opt ">D) resistencia a la pendiente.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">La fuerza que opone resistencia al movimiento entre la superficie de los neumáticos de un camión y la calzada se denomina:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) aceleración.</div><div class="opt correct">B) rozamiento.</div><div class="opt ">C) inercia.</div><div class="opt ">D) deceleración.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">El tipo de esfuerzo requerido para el manejo de la carga influye en el nivel de riesgo. Así, es más segura la manipulación que exija:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) tener que cambiar el punto de agarre de la carga.</div><div class="opt ">B) esfuerzos demasiado frecuentes.</div><div class="opt ">C) esfuerzos manteniendo un ritmo de trabajo elevado.</div><div class="opt correct">D) no realizar esfuerzos.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">El tipo de esfuerzo requerido para el manejo de la carga del vehículo influye en el nivel de riesgo. Así, es más segura la manipulación que exija:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) tener que cambiar el punto de agarre de la carga.</div><div class="opt ">B) esfuerzos demasiado frecuentes.</div><div class="opt ">C) esfuerzos manteniendo un ritmo de trabajo elevado.</div><div class="opt correct">D) no realizar esfuerzos.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">La norma de que los conductores de vehículos de transporte de mercancías con MMA superior a 7,5 toneladas no deben participar, salvo excepciones, en las operaciones de carga del vehículo:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) sólo afecta a la mercancía propiamente dicha.</div><div class="opt correct">B) afecta a la mercancía y a los envases.</div><div class="opt ">C) no afecta a los contenedores.</div><div class="opt ">D) Las respuestas B y C son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">El tipo de caja de velocidades que monte un automóvil, ¿tiene influencia en el consumo de carburante?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Sí, porque una caja de velocidades con más número de relación de marchas permite reducir el consumo de carburante.</div><div class="opt ">B) Sí, porque una caja de velocidades con menos número de relación de marchas permite reducir el consumo de carburante.</div><div class="opt ">C) No, el tipo de caja de velocidades solo influirá en la aceleración.</div><div class="opt ">D) No, el tipo de caja de velocidades solo influirá en la potencia con la que el motor actúe como freno.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">Si un vehículo mixto adaptable ostenta la señal V-15, ¿podrá utilizar un carril para VAO?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Sí, aun cuando sólo lo ocupe su conductor.</div><div class="opt ">B) No, en ningún caso.</div><div class="opt ">C) Sólo en caso de emergencia.</div><div class="opt ">D) Sí, aun cuando el carril estuviese destinado al sentido contrario.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">19/07/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">102 (Reserva 2º). Si un vehículo mixto adaptable ostenta la señal V-15, ¿podrá utilizar un carril para VAO?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Sí, aun cuando sólo lo ocupe su conductor.</div><div class="opt ">B) No, en ningún caso.</div><div class="opt ">C) Sólo en caso de emergencia.</div><div class="opt ">D) Sí, aun cuando el carril estuviese destinado al sentido contrario.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">30/05/2026</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">Entre otras, ¿qué característica va a definir en el cuentarrevoluciones de un automóvil la zona económica del motor?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) El par motor máximo.</div><div class="opt ">B) El calibre del pistón.</div><div class="opt ">C) La longitud del cigüeñal.</div><div class="opt ">D) El diámetro del volante de inercia.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Qué características van a definir en el cuentarrevoluciones de un automóvil la zona económica del motor?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) La potencia, el par motor máximo y el consumo específico.</div><div class="opt ">B) La relación de compresión, la carrera del pistón y su calibre.</div><div class="opt ">C) El material del que está fabricado el motor y el tipo de caja de velocidades.</div><div class="opt ">D) La longitud del cigüeñal y el diámetro del volante de inercia.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">19/07/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">103 (Reserva 3º). El mayor o menor consumo de carburante de un vehículo pesado depende de varios factores, entre otros:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) del tipo de bujías que monte: frías o calientes.</div><div class="opt correct">B) del mantenimiento del vehículo, la posición del pedal del acelerador y la aerodinámica del vehículo.</div><div class="opt ">C) del material del que esté construida la carrocería.</div><div class="opt ">D) del tipo de bomba de alimentación: de membrana o de émbolo.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">El mayor o menor consumo de carburante de un vehículo pesado depende de varios factores, entre otros:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) del tipo de bujías que monte: frías o calientes.</div><div class="opt correct">B) del mantenimiento del vehículo, la posición del pedal del acelerador y la aerodinámica del vehículo.</div><div class="opt ">C) del material del que esté construida la carrocería.</div><div class="opt ">D) del tipo de bomba de alimentación: de membrana o de émbolo.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿A qué distancia se colocará la señalización vertical o cartel informativo sobre el significado de la marca vial denominada galón?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) 150 metros antes del tramo donde se comience a pintar los galones.</div><div class="opt ">B) 100 metros después del tramo donde se pinte el último galón.</div><div class="opt ">C) 150 metros después del tramo donde se pinte el último galón.</div><div class="opt correct">D) 100 metros antes del tramo donde se comience a pintar los galones.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">19/07/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">103 (Reserva 3º). ¿A qué distancia se colocará la señalización vertical o cartel informativo sobre el significado de la marca vial denominada galón?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) 150 metros antes del tramo donde se comience a pintar los galones.</div><div class="opt ">B) 100 metros después del tramo donde se pinte el último galón.</div><div class="opt ">C) 150 metros después del tramo donde se pinte el último galón.</div><div class="opt correct">D) 100 metros antes del tramo donde se comience a pintar los galones.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">30/05/2026</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">102 (Reserva 2º). ¿Cuál es el ámbito de aplicación del Espacio Schengen?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) La Unión Europea y Estados Unidos.</div><div class="opt ">B) Los países miembros de la OCDE.</div><div class="opt correct">C) La Unión Europea y otros países de Europa, aunque algunos miembros de la primera no forman parte del mismo actualmente.</div><div class="opt ">D) La Unión Europea, pues todos los países que forman parte de ella deben estar integrados en el Espacio Schengen.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">El semirremolque:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) también se denomina tren de asfalto.</div><div class="opt correct">B) dispone de patines o patas que son abatidos para soportar el peso cuando no está acoplado a un automóvil.</div><div class="opt ">C) es el vehículo automóvil concebido y construido para trepar por la vía.</div><div class="opt ">D) es un tractor con un tamaño adecuado a espacios reducidos.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">19/07/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">101 (Reserva 1º). El semirremolque:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) también se denomina tren de asfalto.</div><div class="opt correct">B) dispone de patines o patas que son abatidos para soportar el peso cuando no está acoplado a un automóvil.</div><div class="opt ">C) es el vehículo automóvil concebido y construido para trepar por la vía.</div><div class="opt ">D) es un tractor con un tamaño adecuado a espacios reducidos.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">30/05/2026</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Cuál es el plazo de prescripción de las infracciones graves de las normas relativas a los tiempos de conducción y descanso?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Tres años.</div><div class="opt correct">B) Dos años.</div><div class="opt ">C) Un año.</div><div class="opt ">D) Seis meses.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">101 (Reserva 1º). En el transporte internacional, ¿a qué se denomina operaciones triangulares?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) A los transportes entre tres países.</div><div class="opt ">B) A los transportes entre dos países comunitarios y un tercer país extracomunitario.</div><div class="opt ">C) A las operaciones en que transportista, vehículo e itinerario son de distinto estado.</div><div class="opt correct">D) A los transportes realizados entre dos países por un vehículo matriculado en un tercer estado.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">En el transporte internacional, ¿a qué se denomina operaciones triangulares?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) A los transportes entre tres países.</div><div class="opt ">B) A los transportes entre dos países comunitarios y un tercer país extracomunitario.</div><div class="opt ">C) A las operaciones en que transportista, vehículo e itinerario son de distinto estado.</div><div class="opt correct">D) A los transportes realizados entre dos países por un vehículo matriculado en un tercer estado.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Cuál de los siguientes es el tipo más frecuente de accidente de tráfico en el que se ven implicados camiones o autobuses?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Los atropellos.</div><div class="opt correct">B) La colisión entre vehículos.</div><div class="opt ">C) Las pérdidas de carga o equipajes.</div><div class="opt ">D) Ninguno de los anteriores.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Cuál es el tipo más frecuente de accidente de tráfico en el que se ven implicados camiones o autobuses?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Los atropellos.</div><div class="opt correct">B) La colisión entre vehículos.</div><div class="opt ">C) Los derrapes.</div><div class="opt ">D) Las salidas de la calzada.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">19/07/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿En qué condiciones los alumnos que realicen un curso para la obtención de la cualificación inicial de conductores podrán contabilizar como parte de dicha formación la realizada en relación con transporte de animales?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Sólo si la formación sobre transporte de animales ha sido impartida por el mismo centro que imparte el curso CAP.</div><div class="opt ">B) Sólo si la formación sobre transporte de animales se ha recibido en los doce meses anteriores al inicio del curso CAP.</div><div class="opt ">C) Sólo si la formación sobre transporte de animales tiene una duración de, al menos, 40 horas.</div><div class="opt correct">D) En ningún caso.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Cuál de los siguientes vehículos se ve con menos frecuencia implicado en accidentes de tráfico?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Vehículo de mercancías de más de 3.500 kg.</div><div class="opt correct">B) Autobús de transporte escolar.</div><div class="opt ">C) Furgoneta.</div><div class="opt ">D) Camión de menos de 3.500 kg.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Cuál de los siguientes vehículos se ve con más frecuencia implicado en accidentes de tráfico?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Autobús.</div><div class="opt ">B) Camión de más de 3.500 kg.</div><div class="opt correct">C) Furgoneta.</div><div class="opt ">D) Todos los mencionados por igual.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: C</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">En un contrato de transporte sujeto al Convenio CMR, el transportista responde de los daños sufridos por la mercancía:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) desde el momento de su recepción al de su entrega.</div><div class="opt ">B) desde que el vehículo inicia la marcha hasta la entrega de la mercancía.</div><div class="opt ">C) desde que el vehículo inicia la marcha hasta la llegada al lugar de destino.</div><div class="opt ">D) El transportista no responde porque para eso se concierta un seguro sobre las mercancías.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">En un contrato de transporte sujeto al Convenio CMR, el transportista no debe responder de los daños sufridos por la mercancía cuando pruebe que estos derivan:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) de una instrucción impartida por quien tiene derecho sobre la mercancía.</div><div class="opt ">B) del acaecimiento de circunstancias anormales durante el transporte.</div><div class="opt ">C) El transportista debe responder siempre de los daños acaecidos desde la recepción a la entrega de la mercancía.</div><div class="opt correct">D) Las respuestas A y B son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">En un contrato de transporte sujeto al Convenio CMR que es ejecutado por varios transportistas de modo sucesivo, el transportista que haya pagado una indemnización:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) puede reclamar a los restantes que hayan participado en el transporte.</div><div class="opt ">B) solo puede reclamar al transportista que se comprometió con el remitente.</div><div class="opt ">C) solo puede reclamar al transportista que efectuó la última parte del transporte y debía, por tanto, hacer la entrega de la mercancía.</div><div class="opt ">D) no puede reclamar a los restantes, debió limitarse a pagar solo lo que correspondía a su responsabilidad.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">En un contrato de transporte sujeto al Convenio CMR que es ejecutado por varios transportistas de modo sucesivo, ¿contra quién se puede dirigir una reclamación por pérdida de la mercancía?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Contra el primer transportista, en todo caso.</div><div class="opt correct">B) Contra el que ejecutó la parte del transporte en cuyo transcurso se produjo la pérdida.</div><div class="opt ">C) Contra cualquiera de los que han intervenido en el transporte.</div><div class="opt ">D) Las respuestas A y B son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Cuáles son las funciones propias de un administrativo en una empresa de transporte de mercancías por carretera?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Archivar la documentación de la empresa.</div><div class="opt ">B) Controlar el rendimiento de los conductores.</div><div class="opt ">C) Supervisar la colocación de la carga.</div><div class="opt ">D) Distribuir las órdenes de ruta.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">27/09/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Cuáles son las funciones propias del jefe de tráfico de una empresa de transporte de mercancías por carretera?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Planificación de la empresa.</div><div class="opt ">B) Coordinación de la empresa.</div><div class="opt ">C) Adoptar decisiones estratégicas.</div><div class="opt correct">D) Planificar los servicios y rutas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) todas las partes estén domiciliadas en un país firmante del Convenio.</div><div class="opt ">B) al menos una de las partes esté domiciliada en un país firmante del Convenio.</div><div class="opt ">C) todas las partes estén domiciliadas en un país perteneciente a la Unión Europea.</div><div class="opt correct">D) El Convenio CMR se aplica con independencia del domicilio de los intervinientes.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, uno al menos firmante del Convenio.</div><div class="opt ">B) los lugares de carga y entrega de la mercancía pertenezcan al mismo país, siempre que el transporte haya transcurrido en parte por un país extranjero.</div><div class="opt ">C) el lugar de carga se encuentre en un país firmante y el transportista sea nacional de otro país firmante.</div><div class="opt ">D) los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, ambos deben ser firmantes del Convenio.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">El exceso superior a dos horas sobre los tiempos máximos de conducción diaria, ¿qué tipo de infracción se considera?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Muy grave.</div><div class="opt ">B) Grave.</div><div class="opt ">C) Leve.</div><div class="opt ">D) No se considera infracción.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">01/02/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">El exceso de 45 minutos sobre los tiempos máximos de conducción diarios, ¿qué tipo de infracción se considera?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt correct">A) Leve.</div><div class="opt ">B) Grave.</div><div class="opt ">C) Muy grave.</div><div class="opt ">D) No se considera infracción.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: A</div>
+                <div class="q-provas">Provas: <span class="prova-tag">31/05/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">Dentro de los Sistemas de Transporte Inteligente se encuentran los denominados V2V, ¿cuál es su funcionalidad característica?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Incrementar la seguridad en los túneles.</div><div class="opt ">B) Calcular la velocidad media en determinados tramos de carretera.</div><div class="opt ">C) Dar información sobre los servicios a los usuarios del transporte público.</div><div class="opt correct">D) Establecer comunicación entre dos vehículos.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">Dentro de los Sistemas de Transporte Inteligente se encuentran los denominados DAI, ¿cuál es su funcionalidad?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Control de accesos y aparcamientos restringidos en zonas urbanas.</div><div class="opt ">B) Detección de infracciones en paso de semáforo rojo.</div><div class="opt ">C) Cálculo de velocidades medias en tramos determinados de carreteras.</div><div class="opt correct">D) Todas las respuestas son correctas.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: D</div>
+                <div class="q-provas">Provas: <span class="prova-tag">29/11/2025</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="q-item">
+        <div class="q-head" onclick="this.parentElement.classList.toggle('open')">
+            <span class="q-pct">11.1%</span>
+            <span class="q-txt">¿Cuáles son las funciones propias del gerente de una empresa de transporte de mercancías por carretera?</span>
+        </div>
+        <div class="q-body">
+            <div class="opt ">A) Distribuir las órdenes de ruta.</div><div class="opt correct">B) Planificación y representación de la empresa.</div><div class="opt ">C) Archivar la documentación.</div><div class="opt ">D) Conducir el vehículo y determinar el itinerario del servicio.</div>
+            <div class="q-footer">
+                <div class="q-ans">✅ Resposta: B</div>
+                <div class="q-provas">Provas: <span class="prova-tag">05/04/2025</span></div>
+            </div>
+        </div>
+    </div></div></section>
+            
+            <!-- Pegadinhas -->
+            <section id="tricks" class="tab-panel"><div class="tricks-grid">
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Proibição de Carga/Descarga</span>
+        <span class="trick-pct">55.6%</span>
+    </div>
+    <p class="trick-desc" data-pt="Motoristas de veículos >7.5t não podem carregar/descarregar, EXCETO em mudanças, basculantes, porta-carros, etc." data-es="Los conductores de vehículos de más de 7,5 t no pueden cargar/descargar, EXCEPTO en mudanzas, basculantes, porta-coches, etc.">Motoristas de veículos >7.5t não podem carregar/descarregar, EXCETO em mudanças, basculantes, porta-carros, etc.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Sistemas Eletrônicos (Siglas)</span>
+        <span class="trick-pct">44.4%</span>
+    </div>
+    <p class="trick-desc" data-pt="Muita atenção às siglas: FCW (Alerta Colisão), LKA (Permanência Faixa), AEBS (Frenagem Autônoma)." data-es="Mucha atención a las siglas: FCW (Alerta Colisión), LKA (Permanencia Carril), AEBS (Frenado Autónomo).">Muita atenção às siglas: FCW (Alerta Colisão), LKA (Permanência Faixa), AEBS (Frenagem Autônoma).</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Juntas Arbitrais (Competência)</span>
+        <span class="trick-pct">44.4%</span>
+    </div>
+    <p class="trick-desc" data-pt="O demandante pode escolher a Junta de sua residência habitual quando for consumidor ou usuário." data-es="El demandante puede elegir la Junta de su residencia habitual cuando sea consumidor o usuario.">O demandante pode escolher a Junta de sua residência habitual quando for consumidor ou usuário.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Tacógrafo Analógico no lugar do Digital</span>
+        <span class="trick-pct">33.3%</span>
+    </div>
+    <p class="trick-desc" data-pt="Usar tacógrafo analógico quando a lei exige digital é considerado carência de aparelho de controle — infração muito grave." data-es="Usar tacógrafo analógico cuando la ley exige digital se considera carencia de aparato de control: infracción muy grave.">Usar tacógrafo analógico quando a lei exige digital é considerado carência de aparelho de controle — infração muito grave.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Carga Caída na Via</span>
+        <span class="trick-pct">33.3%</span>
+    </div>
+    <p class="trick-desc" data-pt="A primeira medida após sinalizar é retirar ou apartar a carga derramada sempre que possível." data-es="La primera medida tras señalizar es retirar o apartar la carga derramada siempre que sea posible.">A primeira medida após sinalizar é retirar ou apartar a carga derramada sempre que possível.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Bateria de Lítio (Elétrico)</span>
+        <span class="trick-pct">33.3%</span>
+    </div>
+    <p class="trick-desc" data-pt="Característica principal: Não requer manutenção e permite cargas parciais sem efeito memória." data-es="Característica principal: No requiere mantenimiento y permite cargas parciales sin efecto memoria.">Característica principal: Não requer manutenção e permite cargas parciais sem efeito memória.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Círculo de Kamm (Frenagem Total)</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="Se a força total equivale à força de frenagem, não há força lateral (guiado). Roda bloqueia." data-es="Si la fuerza total equivale a la fuerza de frenado, no hay fuerza lateral (guiado). La rueda se bloquea.">Se a força total equivale à força de frenagem, não há força lateral (guiado). Roda bloqueia.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Álcool no Sangue (Eliminação)</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="Nenhum método (café, exercício, banho) acelera a eliminação do álcool. Apenas o tempo." data-es="Ningún método (café, ejercicio, baño) acelera la eliminación del alcohol. Solo el tiempo.">Nenhum método (café, exercício, banho) acelera a eliminação do álcool. Apenas o tempo.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Descanso Semanal Reduzido</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="A compensação deve ser feita de uma só vez, antes do fim da terceira semana seguinte." data-es="La compensación debe hacerse de una sola vez, antes del final de la tercera semana siguiente.">A compensação deve ser feita de uma só vez, antes do fim da terceira semana seguinte.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Retardador em Descidas</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="O retardador deve ser acionado ANTES do freio de serviço para evitar o superaquecimento." data-es="El retardador debe accionarse ANTES del freno de servicio para evitar el sobrecalentamiento.">O retardador deve ser acionado ANTES do freio de serviço para evitar o superaquecimento.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ ABS e Frenagem de Emergência</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="Em veículos com ABS, deve-se pisar no freio A FONDO e manter a pressão, sem bombear." data-es="En vehículos con ABS, se debe pisar el freno A FONDO y mantener la presión, sin bombear.">Em veículos com ABS, deve-se pisar no freio A FONDO e manter a pressão, sem bombear.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Primeiros Socorros (Comida/Bebida)</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="Nunca dar comida, bebida ou medicamentos a feridos em acidentes." data-es="Nunca dar comida, bebida o medicamentos a heridos en accidentes.">Nunca dar comida, bebida ou medicamentos a feridos em acidentes.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Tacógrafo (Entrega de Discos)</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="O empresário deve entregar discos suficientes ao condutor, considerando a duração do serviço." data-es="El empresario debe entregar suficientes discos al conductor, considerando la duración del servicio.">O empresário deve entregar discos suficientes ao condutor, considerando a duração do serviço.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Descanso Diário Fracionado</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="Pode ser fracionado em 2 períodos: o primeiro de pelo menos 3h e o segundo de pelo menos 9h." data-es="Puede fraccionarse en 2 períodos: el primero de al menos 3h y el segundo de al menos 9h.">Pode ser fracionado em 2 períodos: o primeiro de pelo menos 3h e o segundo de pelo menos 9h.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Schengen (Controle Fronteiriço)</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="O controle nas fronteiras obedece unicamente à intenção de cruzar a fronteira." data-es="El control en las fronteras obedece únicamente a la intención de cruzar la frontera.">O controle nas fronteiras obedece unicamente à intenção de cruzar a fronteira.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Estilo de Condução (Consumo)</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="Utilizar o freio de serviço para reduzir velocidade é inadequado para economia; use o freio motor." data-es="Usar el freno de servicio para reducir velocidad es inadecuado para el ahorro; use el freno motor.">Utilizar o freio de serviço para reduzir velocidade é inadequado para economia; use o freio motor.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Extintores Obrigatórios</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="Veículos de 6.000kg MMA devem levar extintores de classe 21A/113B." data-es="Los vehículos de 6.000 kg de MMA deben llevar extintores de clase 21A/113B.">Veículos de 6.000kg MMA devem levar extintores de classe 21A/113B.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Pausa na Condução</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="A pausa de 45 min pode ser fracionada em 15 min (primeiro) e 30 min (depois)." data-es="La pausa de 45 min puede fraccionarse en 15 min (primero) y 30 min (después).">A pausa de 45 min pode ser fracionada em 15 min (primeiro) e 30 min (depois).</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Velocidade Máxima Camion</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="Em autopistas e autovias é 90 km/h. Em estradas convencionais é 80 km/h." data-es="En autopistas y autovías es de 90 km/h. En carreteras convencionales es de 80 km/h.">Em autopistas e autovias é 90 km/h. Em estradas convencionais é 80 km/h.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Manuseio de Cargas (Peso)</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="Sentado, o limite recomendado é de 5kg. Em pé, o limite geral é 25kg." data-es="Sentado, el límite recomendado es de 5 kg. De pie, el límite general es de 25 kg.">Sentado, o limite recomendado é de 5kg. Em pé, o limite geral é 25kg.</p>
+</div>
+<div class="trick-card">
+    <div class="trick-head">
+        <span class="trick-title">⚠️ Condução Bisemanal</span>
+        <span class="trick-pct">22.2%</span>
+    </div>
+    <p class="trick-desc" data-pt="O limite de 90h é para a soma de DUAS semanas consecutivas." data-es="El límite de 90h es para la suma de DOS semanas consecutivas.">O limite de 90h é para a soma de DUAS semanas consecutivas.</p>
+</div></div></section>
+            
+            <!-- Cola de Estudo (2 Colunas) -->
+            <section id="study" class="tab-panel">
+                <div class="study-grid">
+                    <div class="study-section">
+                        <h3 id="txt-cond">⏰ Tempos de Condução</h3>
+                        <table>
+                            <tr><th id="th1">Condução Diária Normal</th><td>9 horas</td></tr>
+                            <tr><th id="th2">Condução Diária Estendida</th><td>10 h (máx. 2x/semana)</td></tr>
+                            <tr><th id="th3">Condução Contínua Máx.</th><td>4,5 horas</td></tr>
+                            <tr><th id="th4">Pausa Obrigatória</th><td>45 min (ou 15+30)</td></tr>
+                            <tr><th id="th5">Condução Semanal Máx.</th><td>56 horas</td></tr>
+                            <tr><th id="th10">Condução Bisemanal</th><td>Máximo 90h no somatório de 2 semanas</td></tr>
+                        </table>
+                    </div>
+                    <div class="study-section">
+                        <h3 id="txt-desc">🛏️ Tempos de Descanso</h3>
+                        <table>
+                            <tr><th id="th11">Descanso Diário Normal</th><td>11 horas</td></tr>
+                            <tr><th id="th12">Descanso Diário Reduzido</th><td>9 h (máx. 3x entre 2 semanais)</td></tr>
+                            <tr><th id="th13">Descanso Semanal Normal</th><td>45 horas</td></tr>
+                            <tr><th id="th14">Descanso Semanal Reduzido</th><td>24 horas</td></tr>
+                            <tr><th id="th15">Recuperação do Reduzido</th><td>De uma só vez, antes da 3ª semana</td></tr>
+                        </table>
+                    </div>
+                    <div class="study-section">
+                        <h3 id="txt-vals">💰 Valores Legais</h3>
+                        <table>
+                            <tr><th id="th16">Junta Arbitral (Presumido)</th><td>≤ 5.000 euros</td></tr>
+                            <tr><th id="th17">Isenção Tacógrafo (Raio)</th><td>100 km</td></tr>
+                            <tr><th id="th18">MMA Proibição Carga/Descarga</th><td>> 7,5 toneladas</td></tr>
+                            <tr><th id="th19">Validade CAP</th><td>5 anos</td></tr>
+                            <tr><th id="th20">Viagens CEMT</th><td>Ilimitadas (a cada 3, 1 no país)</td></tr>
+                        </table>
+                    </div>
+                    <div class="study-section">
+                        <h3 id="txt-vels">🚦 Velocidades Máximas</h3>
+                        <table>
+                            <tr><th id="th21">Autovias / Autoestradas</th><td>90 km/h</td></tr>
+                            <tr><th id="th22">Vias Convencionais</th><td>80 km/h</td></tr>
+                            <tr><th id="th23">Dentro de Cidades</th><td>50 km/h</td></tr>
+                        </table>
+                    </div>
+                    <div class="study-section">
+                        <h3 id="txt-fire">🔥 Incêndio</h3>
+                        <table>
+                            <tr><th id="th24">Combustível</th><td>Material que queima</td></tr>
+                            <tr><th id="th25">Comburente</th><td>Oxigênio</td></tr>
+                            <tr><th id="th26">Calor</th><td>Temperatura de ignição</td></tr>
+                            <tr><th id="th27">Reação em Cadeia</th><td>4º elemento (tetraedro)</td></tr>
+                            <tr><th id="th28">Extinção por Resfriamento</th><td>Água</td></tr>
+                        </table>
+                    </div>
+                    <div class="study-section">
+                        <h3 id="txt-first">🚑 Primeiros Socorros</h3>
+                        <table>
+                            <tr><th id="th29">P — Proteger</th><td>Sinalizar e afastar perigos</td></tr>
+                            <tr><th id="th30">A — Avisar</th><td>Ligar para emergências</td></tr>
+                            <tr><th id="th31">S — Socorrer</th><td>Prestar auxílio básico</td></tr>
+                            <tr><th id="th32">Hemorragia</th><td>Pressionar com pano limpo</td></tr>
+                            <tr><th id="th33">1ª Medida Pós-Acidente</th><td>Desligar motor dos veículos</td></tr>
+                        </table>
+                    </div>
+                    <div class="study-section" style="grid-column: span 2">
+                        <h3 id="txt-infr">📜 Infrações (Gravidade)</h3>
+                        <table>
+                            <tr><th id="th34">+2h acima condução diária</th><td>MUITO GRAVE</td></tr>
+                            <tr><th id="th35">Manipulação do tacógrafo</th><td>MUITO GRAVE</td></tr>
+                            <tr><th id="th36">Carência de dados (tacógrafo)</th><td>MUITO GRAVE</td></tr>
+                            <tr><th id="th37">Tacógrafo analógico no lugar do digital</th><td>MUITO GRAVE</td></tr>
+                            <tr><th id="th38">Falta descanso diário (grave)</th><td>Inmovilización do veículo</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Siglas -->
+            <section id="siglas" class="tab-panel"><div class="siglas-grid"><div class="sigla-card"><b>ABS</b><small>Anti-lock Braking System</small><p class="sigla-desc" data-pt="Evita o bloqueio das rodas durante frenagens intensas, mantendo a capacidade de direção." data-es="Evita el bloqueo de las ruedas durante frenadas intensas, manteniendo la capacidad de dirección.">Evita o bloqueio das rodas durante frenagens intensas, mantendo a capacidade de direção.</p></div><div class="sigla-card"><b>ESP</b><small>Electronic Stability Program</small><p class="sigla-desc" data-pt="Controle eletrônico de estabilidade. Evita derrapagens e capotamentos em curvas." data-es="Control electrónico de estabilidad. Evita derrapes y vuelcos en curvas.">Controle eletrônico de estabilidade. Evita derrapagens e capotamentos em curvas.</p></div><div class="sigla-card"><b>ACC</b><small>Adaptive Cruise Control</small><p class="sigla-desc" data-pt="Controle de cruzeiro adaptativo. Mantém distância segura do veículo à frente automaticamente." data-es="Control de crucero adaptativo. Mantiene una distancia segura con el vehículo de delante automáticamente.">Controle de cruzeiro adaptativo. Mantém distância segura do veículo à frente automaticamente.</p></div><div class="sigla-card"><b>BAS/EBA</b><small>Brake Assist System</small><p class="sigla-desc" data-pt="Assistência de frenagem de emergência. Detecta pisada brusca e aplica força máxima de frenagem." data-es="Asistencia de frenado de emergencia. Detecta una frenada brusca y aplica la máxima fuerza de frenado.">Assistência de frenagem de emergência. Detecta pisada brusca e aplica força máxima de frenagem.</p></div><div class="sigla-card"><b>ASR/TCS</b><small>Anti-Slip Regulation</small><p class="sigla-desc" data-pt="Controle de tração. Evita que as rodas patinem ao acelerar em pisos escorregadios." data-es="Control de tracción. Evita que las ruedas patinen al acelerar en superficies resbaladizas.">Controle de tração. Evita que as rodas patinem ao acelerar em pisos escorregadios.</p></div><div class="sigla-card"><b>LKA</b><small>Lane Keeping Assist</small><p class="sigla-desc" data-pt="Assistente de manutenção de faixa. Alerta ou corrige quando o veículo sai da faixa sem sinalizar." data-es="Asistente de mantenimiento de carril. Advierte o corrige cuando el vehículo se sale del carril sin señalizar.">Assistente de manutenção de faixa. Alerta ou corrige quando o veículo sai da faixa sem sinalizar.</p></div><div class="sigla-card"><b>FCW</b><small>Forward Collision Warning</small><p class="sigla-desc" data-pt="Alerta de colisão frontal iminente. Avisa o motorista de obstáculos à frente." data-es="Aviso de colisión frontal inminente. Advierte al conductor de obstáculos delante.">Alerta de colisão frontal iminente. Avisa o motorista de obstáculos à frente.</p></div><div class="sigla-card"><b>EBS</b><small>Electronic Braking System</small><p class="sigla-desc" data-pt="Sistema de frenagem eletrônico. Distribui a força de frenagem entre os eixos de forma ótima." data-es="Sistema de frenado electrónico. Distribuye la fuerza de frenado entre los ejes de forma óptima.">Sistema de frenagem eletrônico. Distribui a força de frenagem entre os eixos de forma ótima.</p></div><div class="sigla-card"><b>LDWS</b><small>Lane Departure Warning System</small><p class="sigla-desc" data-pt="Sistema de alerta de saída de faixa. Semelhante ao LKA, mas apenas alerta sem intervir." data-es="Sistema de advertencia de salida de carril. Similar al LKA, pero solo advierte sin intervenir.">Sistema de alerta de saída de faixa. Semelhante ao LKA, mas apenas alerta sem intervir.</p></div><div class="sigla-card"><b>AEBS</b><small>Advanced Emergency Braking System</small><p class="sigla-desc" data-pt="Frenagem de emergência autônoma. Freia automaticamente para evitar ou reduzir colisões." data-es="Frenado de emergencia autónomo. Frena automáticamente para evitar o reducir colisiones.">Frenagem de emergência autônoma. Freia automaticamente para evitar ou reduzir colisões.</p></div><div class="sigla-card"><b>TPMS</b><small>Tire Pressure Monitoring System</small><p class="sigla-desc" data-pt="Monitoramento da pressão dos pneus em tempo real." data-es="Sistema de control de la presión de los neumáticos en tiempo real.">Monitoramento da pressão dos pneus em tempo real.</p></div><div class="sigla-card"><b>CMR</b><small>Convention Marchandises Routières</small><p class="sigla-desc" data-pt="Convenção internacional que regula o contrato de transporte de mercadorias por estrada." data-es="Convenio internacional que regula el contrato de transporte de mercancías por carretera.">Convenção internacional que regula o contrato de transporte de mercadorias por estrada.</p></div><div class="sigla-card"><b>ADR</b><small>Accord Dangereux Routier</small><p class="sigla-desc" data-pt="Regulamento europeu para transporte de mercadorias perigosas por estrada." data-es="Reglamento europeo para el transporte de mercancías peligrosas por carretera.">Regulamento europeu para transporte de mercadorias perigosas por estrada.</p></div><div class="sigla-card"><b>CEMT</b><small>Conférence Européenne des Ministres des Transports</small><p class="sigla-desc" data-pt="Autorização multilateral para transporte internacional entre países membros." data-es="Autorización multilateral para el transporte internacional entre países miembros.">Autorização multilateral para transporte internacional entre países membros.</p></div><div class="sigla-card"><b>CAP</b><small>Certificado de Aptitud Profesional</small><p class="sigla-desc" data-pt="Qualificação obrigatória para motoristas profissionais. Válido por 5 anos." data-es="Cualificación obligatoria para conductores profesionales. Válido por 5 años.">Qualificação obrigatória para motoristas profissionais. Válido por 5 anos.</p></div><div class="sigla-card"><b>OEA</b><small>Operador Económico Autorizado</small><p class="sigla-desc" data-pt="Estatuto aduaneiro que facilita o comércio internacional para empresas confiáveis." data-es="Estatuto aduanero que facilita el comercio internacional para empresas confiables.">Estatuto aduaneiro que facilita o comércio internacional para empresas confiáveis.</p></div><div class="sigla-card"><b>PAS</b><small>Proteger, Avisar, Socorrer</small><p class="sigla-desc" data-pt="Protocolo de atuação em emergências: Proteger a cena, Avisar os serviços e Socorrer as vítimas." data-es="Protocolo de actuación en emergencias: Proteger la escena, Avisar a los servicios y Socorrer a las víctimas.">Protocolo de atuação em emergências: Proteger a cena, Avisar os serviços e Socorrer as vítimas.</p></div><div class="sigla-card"><b>ITV</b><small>Inspección Técnica de Vehículos</small><p class="sigla-desc" data-pt="Inspeção técnica obrigatória periódica do veículo." data-es="Inspección técnica obligatoria periódica del vehículo.">Inspeção técnica obrigatória periódica do veículo.</p></div></div></section>
+        </main>
+        <footer>
+            <div class="version">Versão 1.3</div>
+            <div class="credits">Desenvolvido por: João Mariano L. Macedo</div>
+            <div class="disclaimer">Proibida a reprodução · Somente para fins de estudos</div>
+        </footer>
+    </div>
+    <script>
+        const i18n = {
+            pt: {
+                title: "Guia CAP Inicial — Valência", subtitle: "Análise de 9 provas reais (2025-2026) · João Mariano L. Macedo",
+                overview: "📊 Visão Geral", strategy: "🎯 Estratégia", repeated: "🔁 Repetidas", tricks: "⚠️ Pegadinhas", study: "📋 Cola de Estudo", siglas: "🔤 Siglas",
+                q: "Questões", p: "Provas", r: "Repetidas", m: "Mínimo", topics: "Distribuição por Temas", answers: "Padrão de Respostas", priority: "Ranking de Prioridade de Estudo",
+                radar: "📈 Frequência de Tópicos por Prova",
+                ans_anal: "As respostas são distribuídas de forma quase igual entre A, B, C e D. Não existe uma 'letra da sorte' — confie no seu conhecimento!",
+                st_c: "Certeza", st_cp: "Responda as 60 questões que você tem 100% de convicção. Isso garante os 50 pontos necessários.", 
+                st_d: "Dúvida", st_dp: "Arrisque apenas se conseguiu eliminar 2 alternativas. Se acertar 10 dessas, compensa os erros.", 
+                st_ch: "Chute", st_chp: "NUNCA chute no escuro. Cada erro desconta 0.5 pontos. 2 erros anulam 1 acerto.",
+                sim: "Simulador de Pontuação", l_cert: "Certas (1.0 pt):", l_err: "Erradas (-0.5 pt):",
+                tips: "💡 Dicas e Macetes", t1t: "✅ Faça isso", t1p: "Leia o enunciado buscando palavras como 'NÃO', 'EXCETO' ou 'CORRETO'. As pegadinhas moram nos detalhes do final da frase. Marque as fáceis primeiro.", 
+                t2t: "❌ Evite isso", t2p: "Não perca mais de 2 minutos em uma única questão. Pule e volte depois. Não mude a resposta sem certeza absoluta.", 
+                t3t: "⚡ Macetes", t3p: "Tacógrafo: Analógico no lugar de Digital é FALTA MUITO GRAVE. Socorrismo: Não dar comida/bebida. Tempos: Redução deve ser compensada.",
+                cond: "⏰ Tempos de Condução", desc: "🛏️ Tempos de Descanso", vals: "💰 Valores Legais", vels: "🚦 Velocidades Máximas", fire: "🔥 Incêndio", first: "🚑 Primeiros Socorros", infr: "📜 Infrações",
+                th1: "Condução Diária Normal", th2: "Condução Diária Estendida", th3: "Condução Contínua Máx.", th4: "Pausa Obrigatória", th5: "Condução Semanal Máx.", th10: "Condução Bisemanal",
+                th11: "Descanso Diário Normal", th12: "Descanso Diário Reduzido", th13: "Descanso Semanal Normal", th14: "Descanso Semanal Reduzido", th15: "Recuperação do Reduzido",
+                th16: "Junta Arbitral (Presumido)", th17: "Isenção Tacógrafo (Raio)", th18: "MMA Proibição Carga/Descarga", th19: "Validade CAP", th20: "Viagens CEMT",
+                th21: "Autovias / Autoestradas", th22: "Vias Convencionais", th23: "Dentro de Cidades",
+                th24: "Combustível", th25: "Comburente", th26: "Calor", th27: "Reação em Cadeia", th28: "Extinção por Resfriamento",
+                th29: "P — Proteger", th30: "A — Avisar", th31: "S — Socorrer", th32: "Hemorragia", th33: "1ª Medida Pós-Acidente",
+                th34: "+2h acima condução diária", th35: "Manipulação do tacógrafo", th36: "Carência de dados (tacógrafo)", th37: "Tacógrafo analógico no lugar do digital", th38: "Falta descanso diário (grave)"
+            },
+            es: {
+                title: "Guía CAP Inicial — Valencia", subtitle: "Análisis de 9 pruebas reales (2025-2026) · João Mariano L. Macedo",
+                overview: "📊 Resumen", strategy: "🎯 Estrategia", repeated: "🔁 Repetidas", tricks: "⚠️ Trampas", study: "📋 Chuleta", siglas: "🔤 Siglas",
+                q: "Preguntas", p: "Pruebas", r: "Repetidas", m: "Mínimo", topics: "Distribución por Temas", answers: "Patrón de Respuestas", priority: "Prioridad de Estudio",
+                radar: "📈 Frecuencia de Temas por Examen",
+                ans_anal: "Las respuestas se distribuyen de forma casi igual entre A, B, C y D. No hay una 'letra da suerte' — ¡confíe en su conocimiento!",
+                st_c: "Certeza", st_cp: "Responda las 60 preguntas que sepa al 100%. Esto garantiza los 50 puntos necesarios.", 
+                st_d: "Duda", st_dp: "Arriesgue solo si logró eliminar 2 alternativas. Si acierta 10 de estas, compensa los errores.", 
+                st_ch: "Chute", st_chp: "NUNCA adivine si no sabe nada. Cada error descuenta 0,5 puntos. 2 errores anulan 1 acierto.",
+                sim: "Simulador de Puntuación", l_cert: "Ciertas (1.0 pt):", l_err: "Erradas (-0.5 pt):",
+                tips: "💡 Consejos y Trucos", t1t: "✅ Haga esto", t1p: "Lea el enunciado buscando palabras como 'NO', 'EXCEPTO' o 'CORRECTO'. Las trampas estão nos detalhes finais.", 
+                t2t: "❌ Evite esto", t2p: "No pierda más de 2 minutos en una pregunta. Salte y vuelva después.", 
+                t3t: "⚡ Trucos", t3p: "Tacógrafo: Analógico en lugar de Digital es FALTA MUY GRAVE. Socorrismo: No dar comida ni bebida.",
+                cond: "⏰ Tiempos de Conducción", desc: "🛏️ Tiempos de Descanso", vals: "💰 Valores Legais", vels: "🚦 Velocidades Máximas", fire: "🔥 Incendio", first: "🚑 Primeros Auxilios", infr: "📜 Infracciones",
+                th1: "Conducción Diaria Normal", th2: "Conducción Diaria Extendida", th3: "Conducción Contínua Máx.", th4: "Pausa Obrigatória", th5: "Conducción Semanal Máx.", th10: "Conducción Bisemanal",
+                th11: "Descanso Diario Normal", th12: "Descanso Diario Reduzido", th13: "Descanso Semanal Normal", th14: "Descanso Semanal Reduzido", th15: "Recuperación del Reduzido",
+                th16: "Junta Arbitral (Presumido)", th17: "Exención Tacógrafo (Radio)", th18: "MMA Prohibición Carga/Descarga", th19: "Validez CAP", th20: "Viajes CEMT",
+                th21: "Autovías / Autopistas", th22: "Vías Convencionales", th23: "Dentro de Ciudades",
+                th24: "Combustible", th25: "Comburente", th26: "Calor", th27: "Reacción en Cadena", th28: "Extinción por Enfriamiento",
+                th29: "P — Proteger", th30: "A — Avisar", th31: "S — Socorrer", th32: "Hemorragia", th33: "1ª Medida Post-Accidente",
+                th34: "+2h sobre conducción diaria", th35: "Manipulación del tacógrafo", th36: "Carencia de datos (tacógrafo)", th37: "Tacógrafo analógico por digital", th38: "Falta descanso diario (grave)"
+            }
+        };
+
+        function showTab(id, event) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function updateSim() {
+            const cert = parseInt(document.getElementById('s-cert').value);
+            const err = parseInt(document.getElementById('s-err').value);
+            document.getElementById('v-cert').innerText = cert;
+            document.getElementById('v-err').innerText = err;
+            const res = cert - (err * 0.5);
+            const status = res >= 50 ? "Aprovado" : "Reprovado";
+            const color = res >= 50 ? "#10b981" : "#ef4444";
+            const resDiv = document.getElementById('sim-res');
+            resDiv.innerText = `Pontuação: ${res.toFixed(1)} | Status: ${status}`;
+            resDiv.style.background = color;
+            resDiv.style.color = "white";
+        }
+
+        function setLang(lang, event) {
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            const t = i18n[lang];
+            document.getElementById('main-title').innerText = t.title;
+            document.getElementById('main-subtitle').innerText = t.subtitle;
+            document.getElementById('btn-overview').innerText = t.overview;
+            document.getElementById('btn-strategy').innerText = t.strategy;
+            document.getElementById('btn-repeated').innerText = t.repeated;
+            document.getElementById('btn-tricks').innerText = t.tricks;
+            document.getElementById('btn-study').innerText = t.study;
+            document.getElementById('btn-siglas').innerText = t.siglas;
+            document.getElementById('txt-q').innerText = t.q;
+            document.getElementById('txt-p').innerText = t.p;
+            document.getElementById('txt-r').innerText = t.r;
+            document.getElementById('txt-m').innerText = t.m;
+            document.getElementById('txt-topics').innerText = t.topics;
+            document.getElementById('txt-radar').innerText = t.radar;
+            document.getElementById('txt-answers').innerText = t.answers;
+            document.getElementById('txt-priority').innerText = t.priority;
+            document.getElementById('txt-answer-analysis').innerText = t.ans_anal;
+            document.getElementById('st-c').innerText = t.st_c; document.getElementById('st-cp').innerText = t.st_cp;
+            document.getElementById('st-d').innerText = t.st_d; document.getElementById('st-dp').innerText = t.st_dp;
+            document.getElementById('st-ch').innerText = t.st_ch; document.getElementById('st-chp').innerText = t.st_chp;
+            document.getElementById('txt-sim').innerText = t.sim;
+            document.getElementById('l-cert').innerText = t.l_cert; document.getElementById('l-err').innerText = t.l_err;
+            document.getElementById('txt-tips').innerText = t.tips;
+            document.getElementById('t1-t').innerText = t.t1t; document.getElementById('t1-p').innerText = t.t1p;
+            document.getElementById('t2-t').innerText = t.t2t; document.getElementById('t2-p').innerText = t.t2p;
+            document.getElementById('t3-t').innerText = t.t3t; document.getElementById('t3-p').innerText = t.t3p;
+            document.getElementById('txt-cond').innerText = t.cond; document.getElementById('txt-desc').innerText = t.desc;
+            document.getElementById('txt-vals').innerText = t.vals; document.getElementById('txt-vels').innerText = t.vels;
+            document.getElementById('txt-fire').innerText = t.fire; document.getElementById('txt-first').innerText = t.first;
+            document.getElementById('txt-infr').innerText = t.infr;
+            document.getElementById('th1').innerText = t.th1; document.getElementById('th2').innerText = t.th2;
+            document.getElementById('th3').innerText = t.th3; document.getElementById('th4').innerText = t.th4;
+            document.getElementById('th5').innerText = t.th5; document.getElementById('th10').innerText = t.th10;
+            document.getElementById('th11').innerText = t.th11; document.getElementById('th12').innerText = t.th12;
+            document.getElementById('th13').innerText = t.th13; document.getElementById('th14').innerText = t.th14;
+            document.getElementById('th15').innerText = t.th15; document.getElementById('th16').innerText = t.th16;
+            document.getElementById('th17').innerText = t.th17; document.getElementById('th18').innerText = t.th18;
+            document.getElementById('th19').innerText = t.th19; document.getElementById('th20').innerText = t.th20;
+            document.getElementById('th21').innerText = t.th21; document.getElementById('th22').innerText = t.th22;
+            document.getElementById('th23').innerText = t.th23; document.getElementById('th24').innerText = t.th24;
+            document.getElementById('th25').innerText = t.th25; document.getElementById('th26').innerText = t.th26;
+            document.getElementById('th27').innerText = t.th27; document.getElementById('th28').innerText = t.th28;
+            document.getElementById('th29').innerText = t.th29; document.getElementById('th30').innerText = t.th30;
+            document.getElementById('th31').innerText = t.th31; document.getElementById('th32').innerText = t.th32;
+            document.getElementById('th33').innerText = t.th33; document.getElementById('th34').innerText = t.th34;
+            document.getElementById('th35').innerText = t.th35; document.getElementById('th36').innerText = t.th36;
+            document.getElementById('th37').innerText = t.th37; document.getElementById('th38').innerText = t.th38;
+            
+            // Siglas and Tricks translation
+            document.querySelectorAll('.sigla-desc, .trick-desc').forEach(d => {
+                d.innerText = d.getAttribute('data-' + lang);
+            });
+        }
+
+        window.onload = function() {
+            const topics = [
+                { label: 'Sistemas Eletrônicos', val: 461, pct: 49.7 },
+                { label: 'Mercancias (Geral)', val: 160, pct: 17.3 },
+                { label: 'Motor e Mecânica', val: 147, pct: 15.9 },
+                { label: 'Normas e Legislação', val: 24, pct: 2.6 },
+                { label: 'Tacógrafo', val: 21, pct: 2.3 },
+                { label: 'Primeiros Socorros', val: 18, pct: 1.9 },
+                { label: 'Segurança e Prevenção', val: 13, pct: 1.4 },
+                { label: 'Tempos de Condução', val: 6, pct: 0.6 }
+            ];
+
+            const container = document.getElementById('topicBars');
+            topics.forEach((t, i) => {
+                let color = i === 0 ? '#ef4444' : (i < 4 ? '#f59e0b' : '#3b82f6');
+                container.innerHTML += `
+                    <div class="topic-bar-row">
+                        <div class="topic-bar-label"><span>${t.label}</span><span>${t.val} questões</span></div>
+                        <div class="topic-bar-bg"><div class="topic-bar-fill" style="width: ${t.pct}%; background: ${color}"></div></div>
+                    </div>
+                `;
+            });
+
+            new Chart(document.getElementById('topicChart'), {
+                type: 'bar',
+                data: {
+                    labels: topics.map(t => t.label.split(' ')[0]),
+                    datasets: [{ 
+                        label: 'Questões', 
+                        data: topics.map(t => t.val), 
+                        backgroundColor: topics.map((t, i) => i === 0 ? '#ef4444' : (i === 1 ? '#f59e0b' : '#3b82f6')),
+                        borderRadius: 5 
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            new Chart(document.getElementById('answerChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['A', 'B', 'C', 'D'],
+                    datasets: [{ data: [218, 275, 195, 239], backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981'], borderWeight: 0 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+            });
+
+            new Chart(document.getElementById('radarChart'), {
+                type: 'radar',
+                data: {
+                    labels: ['Sistemas', 'Mercadorias', 'Motor', 'Tacógrafo', 'Tempos', 'Segurança', 'Socorro'],
+                    datasets: [
+                        { label: 'Fev/25', data: [12, 10, 5, 4, 3, 2, 1], borderColor: '#1e3a8a', backgroundColor: 'rgba(30,58,138,0.1)' },
+                        { label: 'Abr/25', data: [10, 12, 4, 3, 2, 4, 2], borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.1)' },
+                        { label: 'Mai/25', data: [11, 11, 6, 2, 4, 3, 1], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)' },
+                        { label: 'Nov/25', data: [13, 9, 3, 5, 2, 2, 3], borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)' },
+                        { label: 'Jan/26', data: [11, 10, 5, 4, 3, 3, 2], borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,0.1)' },
+                        { label: 'Mar/26', data: [12, 11, 4, 3, 4, 2, 1], borderColor: '#ec4899', backgroundColor: 'rgba(236,72,153,0.1)' },
+                        { label: 'Mai/26', data: [10, 13, 5, 4, 2, 4, 2], borderColor: '#06b6d4', backgroundColor: 'rgba(6,182,212,0.1)' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { r: { angleLines: { display: true }, suggestedMin: 0 } } }
+            });
+
+            updateSim();
+        };
+    </script>
+</body>
+</html>
