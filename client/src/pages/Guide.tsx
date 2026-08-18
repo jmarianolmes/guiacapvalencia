@@ -1,0 +1,220 @@
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/_core/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { trpc } from '@/lib/trpc';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Spinner } from '@/components/ui/spinner';
+import OverviewTab from './guide/OverviewTab';
+import StrategyTab from './guide/StrategyTab';
+import RepeatedQuestionsTab from './guide/RepeatedQuestionsTab';
+import TricksTab from './guide/TricksTab';
+import StudyTab from './guide/StudyTab';
+import SiglasTab from './guide/SiglasTab';
+import SimulatorTab from './guide/SimulatorTab';
+import TemariosTab from './guide/TemariosTab';
+
+export default function Guide() {
+  const { user } = useAuth();
+  const { language, setLanguage } = useLanguage();
+  const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get('tab') === 'temarios' ? 'temarios' : 'overview');
+
+  const statsQuery = trpc.guide.getStats.useQuery();
+  const officialExamDatesQuery = trpc.guide.getOfficialExamDates.useQuery();
+
+  const t = {
+    pt: {
+      title: 'Guia CAP Inicial — Valência',
+      subtitle: (count?: number) => count ? `Acervo de ${count} provas oficiais (2020–2026) · João Mariano L. Macedo` : 'Acervo de provas oficiais (2020–2026) · João Mariano L. Macedo',
+      overview: '📊 Visão Geral',
+      strategy: '🎯 Estratégia',
+      repeated: '🔁 Repetidas',
+      tricks: '⚠️ Pegadinhas',
+      study: '📋 Cola de Estudo',
+      siglas: '🔤 Siglas',
+      temarios: '📚 Temarios',
+      simulator: '📝 Simulado',
+      questions: 'Questões disponíveis',
+      officialExams: 'Provas oficiais',
+      officialQuestions: 'Questões oficiais',
+      statisticalModels: 'Modelos estatísticos',
+      repeatedQuestions: 'Grupos repetidos',
+      login_required: 'Faça login para acessar o simulado',
+    },
+    es: {
+      title: 'Guía CAP Inicial — Valencia',
+      subtitle: (count?: number) => count ? `Colección de ${count} exámenes oficiales (2020–2026) · João Mariano L. Macedo` : 'Colección de exámenes oficiales (2020–2026) · João Mariano L. Macedo',
+      overview: '📊 Visión General',
+      strategy: '🎯 Estrategia',
+      repeated: '🔁 Repetidas',
+      tricks: '⚠️ Trampas',
+      study: '📋 Hoja de Trucos',
+      siglas: '🔤 Siglas',
+      temarios: '📚 Temarios',
+      simulator: '📝 Simulacro',
+      questions: 'Preguntas disponibles',
+      officialExams: 'Exámenes oficiales',
+      officialQuestions: 'Preguntas oficiales',
+      statisticalModels: 'Modelos estadísticos',
+      repeatedQuestions: 'Grupos repetidos',
+      login_required: 'Inicia sesión para acceder al simulacro',
+    },
+  };
+
+  const texts = t[language];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Header */}
+      <header className="overflow-x-hidden bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-8 text-white sm:py-12">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-4 flex flex-col items-start gap-4 sm:flex-row sm:justify-between">
+            <div className="min-w-0">
+              <h1 className="mb-2 break-words text-3xl font-bold sm:text-4xl">{texts.title}</h1>
+              <p className="text-blue-100">{texts.subtitle(officialExamDatesQuery.data?.length)}</p>
+            </div>
+            <div className="flex shrink-0 self-end gap-2 sm:self-auto">
+              <button
+                onClick={() => setLanguage('pt')}
+                className={`px-3 py-1 rounded font-semibold transition-colors ${
+                  language === 'pt'
+                    ? 'bg-white text-blue-600'
+                    : 'bg-blue-500 text-white hover:bg-blue-400'
+                }`}
+              >
+                PT
+              </button>
+              <button
+                onClick={() => setLanguage('es')}
+                className={`px-3 py-1 rounded font-semibold transition-colors ${
+                  language === 'es'
+                    ? 'bg-white text-blue-600'
+                    : 'bg-blue-500 text-white hover:bg-blue-400'
+                }`}
+              >
+                ES
+              </button>
+            </div>
+          </div>
+
+          {/* Stats */}
+          {statsQuery.data && (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+              <div className="bg-blue-500 bg-opacity-20 rounded-lg p-4">
+                <div className="text-3xl font-bold text-white">
+                  {statsQuery.data.totalQuestions}
+                </div>
+                <div className="text-sm text-blue-100">{texts.questions}</div>
+              </div>
+              <div className="bg-purple-500 bg-opacity-20 rounded-lg p-4">
+                <div className="text-3xl font-bold text-white">
+                  {statsQuery.data.totalOfficialExams}
+                </div>
+                <div className="text-sm text-blue-100">{texts.officialExams}</div>
+              </div>
+              <div className="bg-pink-500 bg-opacity-20 rounded-lg p-4">
+                <div className="text-3xl font-bold text-white">{statsQuery.data.totalOfficialQuestions}</div>
+                <div className="text-sm text-blue-100">{texts.officialQuestions}</div>
+              </div>
+              <div className="bg-green-500 bg-opacity-20 rounded-lg p-4">
+                <div className="text-3xl font-bold text-white">{statsQuery.data.totalModels}</div>
+                <div className="text-sm text-blue-100">{texts.statisticalModels}</div>
+              </div>
+              <div className="col-span-2 rounded-lg bg-amber-500 bg-opacity-20 p-4 sm:col-span-1">
+                <div className="text-3xl font-bold text-white">{statsQuery.data.totalRepeatedQuestions}</div>
+                <div className="text-sm text-blue-100">{texts.repeatedQuestions}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Tabs */}
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="mb-8 overflow-x-auto pb-2 [scrollbar-width:thin]">
+            <TabsList className="inline-flex h-auto min-w-max w-max gap-1 bg-transparent p-0">
+              <TabsTrigger value="overview" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+                {texts.overview}
+              </TabsTrigger>
+              <TabsTrigger value="strategy" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+                {texts.strategy}
+              </TabsTrigger>
+              <TabsTrigger value="repeated" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+                {texts.repeated}
+              </TabsTrigger>
+              <TabsTrigger value="tricks" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+                {texts.tricks}
+              </TabsTrigger>
+              <TabsTrigger value="study" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+                {texts.study}
+              </TabsTrigger>
+              <TabsTrigger value="siglas" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+                {texts.siglas}
+              </TabsTrigger>
+              <TabsTrigger value="temarios" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+                {texts.temarios}
+              </TabsTrigger>
+              <TabsTrigger value="simulator" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+                {texts.simulator}
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="overview">
+            <OverviewTab language={language} />
+          </TabsContent>
+
+          <TabsContent value="strategy">
+            <StrategyTab language={language} />
+          </TabsContent>
+
+          <TabsContent value="repeated">
+            <RepeatedQuestionsTab language={language} />
+          </TabsContent>
+
+          <TabsContent value="tricks">
+            <TricksTab language={language} />
+          </TabsContent>
+
+          <TabsContent value="study">
+            <StudyTab language={language} />
+          </TabsContent>
+
+          <TabsContent value="siglas">
+            <SiglasTab language={language} />
+          </TabsContent>
+
+          <TabsContent value="temarios">
+            <TemariosTab language={language} />
+          </TabsContent>
+
+          <TabsContent value="simulator">
+            {user ? (
+              <SimulatorTab language={language} />
+            ) : (
+              <Card className="border-yellow-200 bg-yellow-50">
+                <CardHeader>
+                  <CardTitle className="text-yellow-800">{texts.login_required}</CardTitle>
+                </CardHeader>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-slate-800 text-white py-8 px-4 mt-12">
+        <div className="max-w-6xl mx-auto text-center">
+          <p className="text-sm text-slate-400 mb-2">
+            © 2026 Guia CAP Valência — João Mariano L. Macedo
+          </p>
+          <p className="text-xs text-slate-500 font-semibold">
+            ⚠️ PROIBIDA A REPRODUÇÃO SEM AUTORIZAÇÃO
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}
