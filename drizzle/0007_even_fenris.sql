@@ -1,0 +1,1 @@
+ALTER TABLE `user_simulator_results` MODIFY COLUMN `model` varchar(50) NOT NULL;
