@@ -14,6 +14,12 @@ import StudyTab from './guide/StudyTab';
 import SiglasTab from './guide/SiglasTab';
 import SimulatorTab from './guide/SimulatorTab';
 import TemariosTab from './guide/TemariosTab';
+import StudyPlanTab from './guide/StudyPlanTab';
+import ProfileDialog from '@/components/ProfileDialog';
+
+function LoginRequiredCard({ message }: { message: string }) {
+  return <Card className="border-yellow-200 bg-yellow-50"><CardHeader><CardTitle className="text-yellow-800">{message}</CardTitle></CardHeader></Card>;
+}
 
 export default function Guide() {
   const { user } = useAuth();
@@ -40,7 +46,8 @@ export default function Guide() {
       officialQuestions: 'Questões oficiais',
       statisticalModels: 'Modelos estatísticos',
       repeatedQuestions: 'Grupos repetidos',
-      login_required: 'Faça login para acessar o simulado',
+      login_required: 'Faça login para acessar o conteúdo de estudo',
+      plan: '🗓️ Plano de Estudos',
     },
     es: {
       title: 'Guía CAP Inicial — Valencia',
@@ -58,7 +65,8 @@ export default function Guide() {
       officialQuestions: 'Preguntas oficiales',
       statisticalModels: 'Modelos estadísticos',
       repeatedQuestions: 'Grupos repetidos',
-      login_required: 'Inicia sesión para acceder al simulacro',
+      login_required: 'Inicia sesión para acceder al contenido de estudio',
+      plan: '🗓️ Plan de Estudio',
     },
   };
 
@@ -75,6 +83,7 @@ export default function Guide() {
               <p className="text-blue-100">{texts.subtitle(officialExamDatesQuery.data?.length)}</p>
             </div>
             <div className="flex shrink-0 self-end gap-2 sm:self-auto">
+              {user && <ProfileDialog language={language} />}
               <button
                 onClick={() => setLanguage('pt')}
                 className={`px-3 py-1 rounded font-semibold transition-colors ${
@@ -159,48 +168,45 @@ export default function Guide() {
               <TabsTrigger value="simulator" className="shrink-0 bg-white px-3 py-2 shadow-sm">
                 {texts.simulator}
               </TabsTrigger>
+              {user && <TabsTrigger value="study-plan" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+                {texts.plan}
+              </TabsTrigger>}
             </TabsList>
           </div>
 
           <TabsContent value="overview">
-            <OverviewTab language={language} />
+            {user ? <OverviewTab language={language} /> : <LoginRequiredCard message={texts.login_required} />}
           </TabsContent>
 
           <TabsContent value="strategy">
-            <StrategyTab language={language} />
+            {user ? <StrategyTab language={language} /> : <LoginRequiredCard message={texts.login_required} />}
           </TabsContent>
 
           <TabsContent value="repeated">
-            <RepeatedQuestionsTab language={language} />
+            {user ? <RepeatedQuestionsTab language={language} /> : <LoginRequiredCard message={texts.login_required} />}
           </TabsContent>
 
           <TabsContent value="tricks">
-            <TricksTab language={language} />
+            {user ? <TricksTab language={language} /> : <LoginRequiredCard message={texts.login_required} />}
           </TabsContent>
 
           <TabsContent value="study">
-            <StudyTab language={language} />
+            {user ? <StudyTab language={language} /> : <LoginRequiredCard message={texts.login_required} />}
           </TabsContent>
 
           <TabsContent value="siglas">
-            <SiglasTab language={language} />
+            {user ? <SiglasTab language={language} /> : <LoginRequiredCard message={texts.login_required} />}
           </TabsContent>
 
           <TabsContent value="temarios">
-            <TemariosTab language={language} />
+            {user ? <TemariosTab language={language} /> : <LoginRequiredCard message={texts.login_required} />}
           </TabsContent>
 
           <TabsContent value="simulator">
-            {user ? (
-              <SimulatorTab language={language} />
-            ) : (
-              <Card className="border-yellow-200 bg-yellow-50">
-                <CardHeader>
-                  <CardTitle className="text-yellow-800">{texts.login_required}</CardTitle>
-                </CardHeader>
-              </Card>
-            )}
+            {user ? <SimulatorTab language={language} /> : <LoginRequiredCard message={texts.login_required} />}
           </TabsContent>
+
+          {user && <TabsContent value="study-plan"><StudyPlanTab language={language} /></TabsContent>}
         </Tabs>
       </main>
 

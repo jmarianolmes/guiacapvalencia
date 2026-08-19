@@ -2,11 +2,12 @@ import { and, asc, count, eq, ne, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool, type Pool } from "mysql2";
 import { desc } from 'drizzle-orm';
-import { InsertUser, users, passwordResets, userAccessLogs, simulatorQuestions, repeatedQuestions, tricks, siglas, userSimulatorResults } from "../drizzle/schema";
+import { InsertUser, users, passwordResets, userAccessLogs, simulatorQuestions, repeatedQuestions, tricks, siglas, userSimulatorResults, userStudyProfiles } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { simulatorChapters } from '../shared/simulatorChapters';
 import { classifySimulatorQuestion } from './chapterClassifier';
 import { buildOfficialExamAnalysis } from './officialExamAnalysis';
+import { buildStudyPlan } from './studyPlan';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _pool: Pool | null = null;
@@ -473,6 +474,51 @@ export async function getUserSimulatorResults(userId: number) {
 }
 
 
+// Study profile and plan
+export async function getUserStudyProfile(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(userStudyProfiles).where(eq(userStudyProfiles.userId, userId)).limit(1);
+  return result[0] ?? null;
+}
+
+export async function saveUserStudyProfile(userId: number, input: {
+  track: 'goods' | 'passengers';
+  targetExamDate: string | null;
+  dailyStudyMinutes: number;
+  planEnabled: boolean;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error('Database connection unavailable');
+  await db.insert(userStudyProfiles).values({ userId, ...input }).onDuplicateKeyUpdate({
+    set: {
+      track: input.track,
+      targetExamDate: input.targetExamDate,
+      dailyStudyMinutes: input.dailyStudyMinutes,
+      planEnabled: input.planEnabled,
+      updatedAt: new Date(),
+    },
+  });
+  return getUserStudyProfile(userId);
+}
+
+export async function getUserStudyPlan(userId: number) {
+  const [savedProfile, analysis, results] = await Promise.all([
+    getUserStudyProfile(userId),
+    getOfficialExamAnalysis(),
+    getUserSimulatorResults(userId),
+  ]);
+  const profile = savedProfile ?? {
+    track: 'goods' as const,
+    targetExamDate: null,
+    dailyStudyMinutes: 60,
+    planEnabled: true,
+  };
+  const chapterPriorities = analysis?.chapterPriorities ?? [];
+  const plan = buildStudyPlan(profile, chapterPriorities, results);
+  return { profile, plan, chapterPriorities };
+}
+
 // Admin queries
 export async function getAllUsers() {
   const db = await getDb();
@@ -535,6 +581,7 @@ export async function deleteUser(userId: number) {
       await tx.delete(passwordResets).where(eq(passwordResets.userId, userId));
       await tx.delete(userAccessLogs).where(eq(userAccessLogs.userId, userId));
       await tx.delete(userSimulatorResults).where(eq(userSimulatorResults.userId, userId));
+      await tx.delete(userStudyProfiles).where(eq(userStudyProfiles.userId, userId));
       await tx.delete(users).where(eq(users.id, userId));
     });
     return true;

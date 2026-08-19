@@ -167,35 +167,35 @@ export const appRouter = router({
       return await db.getOfficialExamDates();
     }),
 
-    getOfficialExamAnalysis: publicProcedure.query(async () => {
+    getOfficialExamAnalysis: protectedProcedure.query(async () => {
       return await db.getOfficialExamAnalysis();
     }),
     
-    getSimulatorQuestions: publicProcedure
+    getSimulatorQuestions: protectedProcedure
       .input(z.object({ model: z.string() }))
       .query(async ({ input }) => {
         return await db.getSimulatorQuestionsByModel(input.model);
       }),
 
-    getSimulatorChapters: publicProcedure.query(async () => {
+    getSimulatorChapters: protectedProcedure.query(async () => {
       return await db.getSimulatorChapters();
     }),
 
-    getSimulatorQuestionsByChapter: publicProcedure
+    getSimulatorQuestionsByChapter: protectedProcedure
       .input(z.object({ chapterId: z.string(), attemptNumber: z.number().int().min(1).default(1) }))
       .query(async ({ input }) => {
         return await db.getSimulatorQuestionsByChapter(input.chapterId, input.attemptNumber);
       }),
     
-    getRepeatedQuestions: publicProcedure.query(async () => {
+    getRepeatedQuestions: protectedProcedure.query(async () => {
       return await db.getRepeatedQuestions();
     }),
     
-    getTricks: publicProcedure.query(async () => {
+    getTricks: protectedProcedure.query(async () => {
       return await db.getTricks();
     }),
     
-    getSiglas: publicProcedure.query(async () => {
+    getSiglas: protectedProcedure.query(async () => {
       return await db.getSiglas();
     }),
     
@@ -228,6 +228,29 @@ export const appRouter = router({
       }
       return await db.getUserSimulatorResults(ctx.user.id);
     }),
+
+    getStudyPlan: protectedProcedure.query(async ({ ctx }) => {
+      if (!ctx.user?.id) throw new TRPCError({ code: "UNAUTHORIZED" });
+      return await db.getUserStudyPlan(ctx.user.id);
+    }),
+  }),
+
+  profile: router({
+    get: protectedProcedure.query(async ({ ctx }) => {
+      if (!ctx.user?.id) throw new TRPCError({ code: "UNAUTHORIZED" });
+      return await db.getUserStudyProfile(ctx.user.id);
+    }),
+    save: protectedProcedure
+      .input(z.object({
+        track: z.enum(['goods', 'passengers']),
+        targetExamDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida').nullable(),
+        dailyStudyMinutes: z.union([z.literal(40), z.literal(60), z.literal(90)]),
+        planEnabled: z.boolean(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user?.id) throw new TRPCError({ code: "UNAUTHORIZED" });
+        return await db.saveUserStudyProfile(ctx.user.id, input);
+      }),
   }),
 
   admin: router({

@@ -145,3 +145,20 @@ export const userSimulatorResults = mysqlTable("user_simulator_results", {
 
 export type UserSimulatorResult = typeof userSimulatorResults.$inferSelect;
 export type InsertUserSimulatorResult = typeof userSimulatorResults.$inferInsert;
+
+// Study preferences used to generate a personalized plan on demand.
+export const userStudyProfiles = mysqlTable("user_study_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  track: mysqlEnum("track", ["goods", "passengers"]).default("goods").notNull(),
+  targetExamDate: varchar("targetExamDate", { length: 10 }), // ISO date: YYYY-MM-DD
+  dailyStudyMinutes: int("dailyStudyMinutes").default(60).notNull(),
+  planEnabled: boolean("planEnabled").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("user_study_profiles_user_unique").on(table.userId),
+]);
+
+export type UserStudyProfile = typeof userStudyProfiles.$inferSelect;
+export type InsertUserStudyProfile = typeof userStudyProfiles.$inferInsert;
