@@ -98,7 +98,7 @@ export default function Home() {
             Acervo de {stats?.totalOfficialExams ?? '—'} provas oficiais (2020-2026)
           </p>
           <p className="text-sm text-slate-500">
-            Por João Mariano L. Macedo
+            Por J.M.L.M.
           </p>
         </div>
 
@@ -226,7 +226,7 @@ export default function Home() {
       <footer className="bg-slate-900 text-white py-8 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-sm text-slate-400 mb-2">
-            © 2026 Guia CAP Valência — João Mariano L. Macedo
+            © 2026 Guia CAP Valência — J.M.L.M.
           </p>
           <p className="text-xs text-slate-500 font-semibold">
             ⚠️ PROIBIDA A REPRODUÇÃO SEM AUTORIZAÇÃO
