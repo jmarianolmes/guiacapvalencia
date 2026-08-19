@@ -18,7 +18,7 @@ export default function AdminDashboard() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [temporaryPassword, setTemporaryPassword] = useState('');
-  const [accessDurationDays, setAccessDurationDays] = useState(90);
+  const [accessDurationDays, setAccessDurationDays] = useState('90');
   const [showTemporaryPassword, setShowTemporaryPassword] = useState(false);
   const [editingPasswordUserId, setEditingPasswordUserId] = useState<number | null>(null);
   const [replacementPassword, setReplacementPassword] = useState('');
@@ -70,22 +70,33 @@ export default function AdminDashboard() {
     await Promise.all([usersQuery.refetch(), statsQuery.refetch()]);
   };
 
+  const parseAccessDurationDays = () => {
+    const days = Number(accessDurationDays);
+    if (!Number.isInteger(days) || days < 1 || days > 3650) {
+      setFormError('Informe um período inteiro entre 1 e 3650 dias.');
+      return null;
+    }
+    return days;
+  };
+
   const handleCreateUser = async (event: React.FormEvent) => {
     event.preventDefault();
     setFormError('');
     setSuccessMessage('');
+    const days = parseAccessDurationDays();
+    if (days === null) return;
     try {
       await createUserMutation.mutateAsync({
         name: name || undefined,
         email,
         temporaryPassword,
-        accessDurationDays,
+        accessDurationDays: days,
       });
       setName('');
       setEmail('');
       setTemporaryPassword('');
-      setAccessDurationDays(90);
-      setSuccessMessage(`${text.created} Acesso liberado por ${accessDurationDays} dias.`);
+      setAccessDurationDays('90');
+      setSuccessMessage(`${text.created} Acesso liberado por ${days} dias.`);
       await refreshUsers();
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Não foi possível criar a conta.');
@@ -129,9 +140,11 @@ export default function AdminDashboard() {
 
   const handleRenewAccess = async (userId: number) => {
     setFormError('');
+    const days = parseAccessDurationDays();
+    if (days === null) return;
     try {
-      await renewAccessMutation.mutateAsync({ userId, accessDurationDays });
-      setSuccessMessage(`Acesso renovado por ${accessDurationDays} dias.`);
+      await renewAccessMutation.mutateAsync({ userId, accessDurationDays: days });
+      setSuccessMessage(`Acesso renovado por ${days} dias.`);
       await refreshUsers();
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Não foi possível renovar o acesso.');
@@ -189,7 +202,7 @@ export default function AdminDashboard() {
               <div className="space-y-2"><Label htmlFor="new-name">{text.name}</Label><Input id="new-name" name="student-name" autoComplete="off" value={name} onChange={event => setName(event.target.value)} disabled={createUserMutation.isPending} /></div>
               <div className="space-y-2"><Label htmlFor="new-email">{text.email}</Label><Input id="new-email" name="student-email" type="email" autoComplete="off" value={email} onChange={event => setEmail(event.target.value)} disabled={createUserMutation.isPending} required /></div>
               <div className="space-y-2"><Label htmlFor="temporary-password">{text.temporaryPassword}</Label><div className="flex gap-2"><Input id="temporary-password" name="student-temporary-password" autoComplete="new-password" type={showTemporaryPassword ? 'text' : 'password'} minLength={8} value={temporaryPassword} onChange={event => setTemporaryPassword(event.target.value)} disabled={createUserMutation.isPending} required /><Button type="button" variant="outline" size="sm" onClick={() => setShowTemporaryPassword(value => !value)}>{showTemporaryPassword ? text.hidePassword : text.showPassword}</Button></div></div>
-              <div className="space-y-2"><Label htmlFor="access-days">Período de acesso</Label><Input id="access-days" type="number" min={1} max={3650} value={accessDurationDays} onChange={event => setAccessDurationDays(Math.max(1, Number(event.target.value) || 1))} disabled={createUserMutation.isPending} required /><div className="flex gap-2"><Button type="button" size="sm" variant={accessDurationDays === 90 ? 'default' : 'outline'} onClick={() => setAccessDurationDays(90)}>3 meses</Button><Button type="button" size="sm" variant={accessDurationDays === 365 ? 'default' : 'outline'} onClick={() => setAccessDurationDays(365)}>1 ano</Button></div><p className="text-xs text-slate-500">Use 90 dias para acesso intensivo ou 365 para acesso estendido; o campo aceita exceções.</p></div>
+              <div className="space-y-2"><Label htmlFor="access-days">Período de acesso</Label><Input id="access-days" type="number" min={1} max={3650} value={accessDurationDays} onChange={event => setAccessDurationDays(event.target.value)} disabled={createUserMutation.isPending} required /><div className="flex gap-2"><Button type="button" size="sm" variant={accessDurationDays === '90' ? 'default' : 'outline'} onClick={() => setAccessDurationDays('90')}>3 meses</Button><Button type="button" size="sm" variant={accessDurationDays === '365' ? 'default' : 'outline'} onClick={() => setAccessDurationDays('365')}>1 ano</Button></div><p className="text-xs text-slate-500">Apague o valor se quiser digitar outro período; use 90 dias para acesso intensivo ou 365 para acesso estendido.</p></div>
               <div className="md:col-span-4"><Button type="submit" disabled={createUserMutation.isPending}>{createUserMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}{createUserMutation.isPending ? text.creating : text.create}</Button></div>
             </form>
           </CardContent>
@@ -221,7 +234,7 @@ export default function AdminDashboard() {
                         {!account.isApproved && <Button onClick={() => handleApprove(account.id)} size="sm" variant="outline" disabled={approveMutation.isPending}>{text.approve}</Button>}
                         {!account.isMaster && !account.isBlocked && <Button onClick={() => handleBlock(account.id, true)} size="sm" variant="outline" className="text-rose-600 hover:text-rose-700" disabled={blockMutation.isPending}>{text.block}</Button>}
                         {!account.isMaster && account.isBlocked && <Button onClick={() => handleBlock(account.id, false)} size="sm" variant="outline" className="text-emerald-600 hover:text-emerald-700" disabled={blockMutation.isPending}>{text.unblock}</Button>}
-                        {!account.isMaster && <Button onClick={() => handleRenewAccess(account.id)} size="sm" variant="outline" className="text-emerald-700 hover:text-emerald-800" disabled={renewAccessMutation.isPending}>Renovar {accessDurationDays} dias</Button>}
+                        {!account.isMaster && <Button onClick={() => handleRenewAccess(account.id)} size="sm" variant="outline" className="text-emerald-700 hover:text-emerald-800" disabled={renewAccessMutation.isPending}>Renovar {accessDurationDays || '…'} dias</Button>}
                         {!account.isMaster && <Button onClick={() => { setEditingPasswordUserId(editingPasswordUserId === account.id ? null : account.id); setReplacementPassword(''); }} size="sm" variant="outline" disabled={resetPasswordMutation.isPending}>{text.resetPassword}</Button>}
                         {!account.isMaster && confirmDeleteUserId !== account.id && <Button onClick={() => setConfirmDeleteUserId(account.id)} size="sm" variant="outline" className="text-rose-700 hover:text-rose-800" disabled={deleteUserMutation.isPending}>{text.delete}</Button>}
                         {!account.isMaster && confirmDeleteUserId === account.id && <><Button onClick={() => handleDeleteUser(account.id)} size="sm" variant="destructive" disabled={deleteUserMutation.isPending}>{text.confirmDelete}</Button><Button onClick={() => setConfirmDeleteUserId(null)} size="sm" variant="outline">{text.cancel}</Button></>}
