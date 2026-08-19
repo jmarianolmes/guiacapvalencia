@@ -105,30 +105,35 @@ export default function Guide() {
               {user?.role === 'admin' && <button onClick={() => { window.location.href = '/admin'; }} className="rounded bg-amber-400 px-3 py-1 font-semibold text-amber-950 transition-colors hover:bg-amber-300">Admin</button>}
               <button
                 onClick={() => setLanguage('pt')}
-                className={`px-3 py-1 rounded font-semibold transition-colors ${
+                aria-label="Português do Brasil"
+                title="Português (Brasil)"
+                className={`rounded px-3 py-1 text-lg font-semibold leading-none transition-colors ${
                   language === 'pt'
                     ? 'bg-white text-blue-600'
                     : 'bg-blue-500 text-white hover:bg-blue-400'
                 }`}
               >
-                PT
+                <span aria-hidden="true">🇧🇷</span><span className="sr-only">Português</span>
               </button>
               <button
                 onClick={() => setLanguage('es')}
-                className={`px-3 py-1 rounded font-semibold transition-colors ${
+                aria-label="Español de España"
+                title="Español (España)"
+                className={`rounded px-3 py-1 text-lg font-semibold leading-none transition-colors ${
                   language === 'es'
                     ? 'bg-white text-blue-600'
                     : 'bg-blue-500 text-white hover:bg-blue-400'
                 }`}
               >
-                ES
+                <span aria-hidden="true">🇪🇸</span><span className="sr-only">Español</span>
               </button>
             </div>
           </div>
 
           {/* Stats */}
           {statsQuery.data && (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
+            <div className="mx-auto w-full max-w-5xl rounded-2xl bg-white/10 p-3 shadow-lg shadow-blue-950/10 sm:p-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
               <div className="bg-blue-500 bg-opacity-20 rounded-lg p-4">
                 <div className="text-3xl font-bold text-white">
                   {statsQuery.data.totalQuestions}
@@ -153,6 +158,7 @@ export default function Guide() {
                 <div className="text-3xl font-bold text-white">{statsQuery.data.totalRepeatedQuestions}</div>
                 <div className="text-sm text-blue-100">{texts.repeatedQuestions}</div>
               </div>
+            </div>
             </div>
           )}
         </div>
