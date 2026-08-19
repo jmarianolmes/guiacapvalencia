@@ -11,6 +11,33 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const statsQuery = trpc.guide.getStats.useQuery(undefined, { staleTime: 5 * 60 * 1000, retry: 1 });
   const stats = statsQuery.data;
+  const copy = language === 'es'
+    ? {
+        welcome: 'Bienvenido,', logout: 'Salir', login: 'Iniciar sesión', register: 'Registro',
+        examsArchive: 'Archivo de', officialExams: 'exámenes oficiales', author: 'Por',
+        questionsAvailable: 'Preguntas disponibles', officialQuestions: 'Preguntas oficiales', statisticalModels: 'Modelos estadísticos', repeatedGroups: 'Grupos repetidos',
+        accessGuide: 'Acceder a la guía completa →', featuresTitle: 'Lo que encontrarás',
+        overview: '📊 Visión general', overviewDescription: 'Análisis completo de la distribución de temas, patrones de respuesta y prioridades de estudio.',
+        strategy: '🎯 Estrategia', strategyDescription: 'Consejos prácticos y simulador de puntuación para optimizar tu rendimiento en el examen.',
+        repeated: '🔁 Preguntas repetidas', repeatedDescription: 'grupos de preguntas recurrentes en los exámenes oficiales: una prioridad para el repaso.',
+        pitfalls: '⚠️ Trampas frecuentes', pitfallsDescription: 'Patrones de atención extraídos de los 34 exámenes oficiales para repasar condiciones, límites y excepciones.',
+        quickGuide: '📋 Guía rápida de estudio', quickGuideDescription: 'Tablas y resúmenes sobre tiempos de conducción, legislación y primeros auxilios.',
+        simulator: '📝 Simulacro', simulatorDescription: 'modelos interactivos con cronómetro, corrección automática y prácticas por capítulo.',
+        reproductionNotice: '⚠️ REPRODUCCIÓN PROHIBIDA SIN AUTORIZACIÓN',
+      }
+    : {
+        welcome: 'Bem-vindo,', logout: 'Sair', login: 'Login', register: 'Cadastro',
+        examsArchive: 'Acervo de', officialExams: 'provas oficiais', author: 'Por',
+        questionsAvailable: 'Questões disponíveis', officialQuestions: 'Questões oficiais', statisticalModels: 'Modelos estatísticos', repeatedGroups: 'Grupos repetidos',
+        accessGuide: 'Acessar o Guia Completo →', featuresTitle: 'O que você vai encontrar',
+        overview: '📊 Visão geral', overviewDescription: 'Análise completa de distribuição de temas, padrões de respostas e ranking de prioridade de estudo.',
+        strategy: '🎯 Estratégia', strategyDescription: 'Dicas práticas e simulador de pontuação para otimizar sua performance no exame.',
+        repeated: '🔁 Questões repetidas', repeatedDescription: 'grupos de questões recorrentes nas provas oficiais — prioridade para a revisão.',
+        pitfalls: '⚠️ Pegadinhas', pitfallsDescription: 'Padrões de atenção extraídos das 34 provas oficiais para revisar condições, limites e exceções.',
+        quickGuide: '📋 Cola de estudo', quickGuideDescription: 'Tabelas e resumos de tempos de condução, legislação e primeiros socorros.',
+        simulator: '📝 Simulado', simulatorDescription: 'modelos interativos com cronômetro, correção automática e práticas por capítulo.',
+        reproductionNotice: '⚠️ PROIBIDA A REPRODUÇÃO SEM AUTORIZAÇÃO',
+      };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
@@ -47,7 +74,7 @@ export default function Home() {
             {isAuthenticated ? (
               <>
                 <span className="text-sm text-slate-600">
-                  Bem-vindo, <strong>{user?.name || user?.email}</strong>
+                  {copy.welcome} <strong>{user?.name || user?.email}</strong>
                 </span>
                 {user?.role === 'admin' && (
                   <Button
@@ -63,7 +90,7 @@ export default function Home() {
                   variant="outline"
                   size="sm"
                 >
-                  Sair
+                  {copy.logout}
                 </Button>
               </>
             ) : (
@@ -73,13 +100,13 @@ export default function Home() {
                   variant="outline"
                   size="sm"
                 >
-                  Login
+                  {copy.login}
                 </Button>
                 <Button
                   onClick={() => setLocation("/register")}
                   size="sm"
                 >
-                  Cadastro
+                  {copy.register}
                 </Button>
               </>
             )}
@@ -95,10 +122,10 @@ export default function Home() {
             Guia CAP Inicial — Valência
           </h1>
           <p className="text-xl text-slate-600 mb-2">
-            Acervo de {stats?.totalOfficialExams ?? '—'} provas oficiais (2020-2026)
+            {copy.examsArchive} {stats?.totalOfficialExams ?? '—'} {copy.officialExams} (2020-2026)
           </p>
           <p className="text-sm text-slate-500">
-            Por J.M.L.M.
+            {copy.author} J.M.L.M.
           </p>
         </div>
 
@@ -107,31 +134,31 @@ export default function Home() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="text-4xl font-bold text-blue-600 mb-2">{stats?.totalQuestions ?? '—'}</div>
-              <div className="text-sm text-slate-600">Questões Disponíveis</div>
+              <div className="text-sm text-slate-600">{copy.questionsAvailable}</div>
             </CardContent>
           </Card>
           <Card className="hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="text-4xl font-bold text-purple-600 mb-2">{stats?.totalOfficialExams ?? '—'}</div>
-              <div className="text-sm text-slate-600">Provas Oficiais</div>
+              <div className="text-sm text-slate-600">{copy.officialExams}</div>
             </CardContent>
           </Card>
           <Card className="hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="text-4xl font-bold text-pink-600 mb-2">{stats?.totalOfficialQuestions ?? '—'}</div>
-              <div className="text-sm text-slate-600">Questões Oficiais</div>
+              <div className="text-sm text-slate-600">{copy.officialQuestions}</div>
             </CardContent>
           </Card>
           <Card className="hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="text-4xl font-bold text-green-600 mb-2">{stats?.totalModels ?? '—'}</div>
-              <div className="text-sm text-slate-600">Modelos Estatísticos</div>
+              <div className="text-sm text-slate-600">{copy.statisticalModels}</div>
             </CardContent>
           </Card>
           <Card className="hover:shadow-lg transition-shadow">
             <CardContent className="pt-6">
               <div className="text-4xl font-bold text-pink-600 mb-2">{stats?.totalRepeatedQuestions ?? '—'}</div>
-              <div className="text-sm text-slate-600">Grupos Repetidos</div>
+              <div className="text-sm text-slate-600">{copy.repeatedGroups}</div>
             </CardContent>
           </Card>
         </div>
@@ -143,7 +170,7 @@ export default function Home() {
             size="lg"
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8"
           >
-            Acessar o Guia Completo →
+            {copy.accessGuide}
           </Button>
         </div>
       </section>
@@ -151,70 +178,70 @@ export default function Home() {
       {/* Features */}
       <section className="bg-white py-16">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">O que você vai encontrar</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">{copy.featuresTitle}</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <Card>
               <CardHeader>
-                <CardTitle className="text-blue-600">📊 Visão Geral</CardTitle>
+                <CardTitle className="text-blue-600">{copy.overview}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-slate-600">
-                  Análise completa de distribuição de temas, padrões de respostas e ranking de prioridade de estudo.
+                  {copy.overviewDescription}
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-purple-600">🎯 Estratégia</CardTitle>
+                <CardTitle className="text-purple-600">{copy.strategy}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-slate-600">
-                  Dicas práticas e simulador de pontuação para otimizar sua performance no exame.
+                  {copy.strategyDescription}
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-pink-600">🔁 Questões Repetidas</CardTitle>
+                <CardTitle className="text-pink-600">{copy.repeated}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-slate-600">
-                  {stats?.totalRepeatedQuestions ?? '—'} grupos de questões recorrentes nas provas oficiais — prioridade para a revisão.
+                  {stats?.totalRepeatedQuestions ?? '—'} {copy.repeatedDescription}
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-red-600">⚠️ Pegadinhas</CardTitle>
+                <CardTitle className="text-red-600">{copy.pitfalls}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-slate-600">
-                  Padrões de atenção extraídos das 34 provas oficiais para revisar condições, limites e exceções.
+                  {copy.pitfallsDescription}
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-green-600">📋 Cola de Estudo</CardTitle>
+                <CardTitle className="text-green-600">{copy.quickGuide}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-slate-600">
-                  Tabelas e resumos de tempos de condução, legislação e primeiros socorros.
+                  {copy.quickGuideDescription}
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-cyan-600">📝 Simulado</CardTitle>
+                <CardTitle className="text-cyan-600">{copy.simulator}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-slate-600">
-                  {stats?.totalModels ?? '—'} modelos interativos com cronômetro, correção automática e práticas por capítulo.
+                  {stats?.totalModels ?? '—'} {copy.simulatorDescription}
                 </p>
               </CardContent>
             </Card>
@@ -229,7 +256,7 @@ export default function Home() {
             © 2026 Guia CAP Valência — J.M.L.M.
           </p>
           <p className="text-xs text-slate-500 font-semibold">
-            ⚠️ PROIBIDA A REPRODUÇÃO SEM AUTORIZAÇÃO
+            {copy.reproductionNotice}
           </p>
         </div>
       </footer>
