@@ -48,7 +48,7 @@ export default function Guide() {
   const t = {
     pt: {
       title: 'Guia CAP Inicial — Valência',
-      subtitle: (count?: number) => count ? `Acervo de ${count} provas oficiais (2020–2026) · João Mariano L. Macedo` : 'Acervo de provas oficiais (2020–2026) · João Mariano L. Macedo',
+      subtitle: (count?: number) => count ? `Acervo de ${count} provas oficiais (2020–2026)` : 'Acervo de provas oficiais (2020–2026)',
       overview: '📊 Visão Geral',
       strategy: '🎯 Estratégia',
       repeated: '🔁 Repetidas',
@@ -68,7 +68,7 @@ export default function Guide() {
     },
     es: {
       title: 'Guía CAP Inicial — Valencia',
-      subtitle: (count?: number) => count ? `Colección de ${count} exámenes oficiales (2020–2026) · João Mariano L. Macedo` : 'Colección de exámenes oficiales (2020–2026) · João Mariano L. Macedo',
+      subtitle: (count?: number) => count ? `Colección de ${count} exámenes oficiales (2020–2026)` : 'Colección de exámenes oficiales (2020–2026)',
       overview: '📊 Visión General',
       strategy: '🎯 Estrategia',
       repeated: '🔁 Repetidas',
@@ -161,36 +161,36 @@ export default function Guide() {
       {/* Tabs */}
       <main className="max-w-6xl mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="mb-8 overflow-x-auto pb-2 [scrollbar-width:thin]">
-            <TabsList className="inline-flex h-auto min-w-max w-max gap-1 bg-transparent p-0">
-              <TabsTrigger value="overview" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+          <div className="mb-8 overflow-x-auto pb-2 [scrollbar-width:thin] lg:overflow-visible">
+            <TabsList className="inline-flex h-auto min-w-max w-max gap-1 bg-transparent p-0 lg:grid lg:min-w-0 lg:w-full lg:grid-cols-10">
+              <TabsTrigger value="overview" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.overview}
               </TabsTrigger>
-              <TabsTrigger value="strategy" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+              <TabsTrigger value="strategy" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.strategy}
               </TabsTrigger>
-              <TabsTrigger value="repeated" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+              <TabsTrigger value="repeated" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.repeated}
               </TabsTrigger>
-              <TabsTrigger value="tricks" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+              <TabsTrigger value="tricks" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.tricks}
               </TabsTrigger>
-              <TabsTrigger value="study" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+              <TabsTrigger value="study" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.study}
               </TabsTrigger>
-              <TabsTrigger value="siglas" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+              <TabsTrigger value="siglas" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.siglas}
               </TabsTrigger>
-              <TabsTrigger value="temarios" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+              <TabsTrigger value="temarios" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.temarios}
               </TabsTrigger>
-              <TabsTrigger value="simulator" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+              <TabsTrigger value="simulator" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.simulator}
               </TabsTrigger>
-              {user && <TabsTrigger value="study-plan" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+              {user && <TabsTrigger value="study-plan" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.plan}
               </TabsTrigger>}
-              {user && <TabsTrigger value="error-notebook" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+              {user && <TabsTrigger value="error-notebook" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.errorNotebook}
               </TabsTrigger>}
             </TabsList>
@@ -237,7 +237,7 @@ export default function Guide() {
       <footer className="bg-slate-800 text-white py-8 px-4 mt-12">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-sm text-slate-400 mb-2">
-            © 2026 Guia CAP Valência — João Mariano L. Macedo
+            Criador: J.M.L.M. · Versão 1.4.0
           </p>
           <p className="text-xs text-slate-500 font-semibold">
             ⚠️ PROIBIDA A REPRODUÇÃO SEM AUTORIZAÇÃO
