@@ -57,8 +57,8 @@ export default function Guide() {
     pt: {
       title: 'Guia CAP Inicial — Valência',
       subtitle: (count?: number) => count ? `Acervo de ${count} provas oficiais (2020–2026)` : 'Acervo de provas oficiais (2020–2026)',
-      overview: '📊 Visão Geral',
-      strategy: '🎯 Estratégia',
+      overview: '📊 Estratégia',
+      strategy: '🎯 Pontuação da Prova',
       repeated: '🔁 Repetidas',
       tricks: '⚠️ Pegadinhas',
       study: '📋 Cola de Estudo',
@@ -77,8 +77,8 @@ export default function Guide() {
     es: {
       title: 'Guía CAP Inicial — Valencia',
       subtitle: (count?: number) => count ? `Colección de ${count} exámenes oficiales (2020–2026)` : 'Colección de exámenes oficiales (2020–2026)',
-      overview: '📊 Visión General',
-      strategy: '🎯 Estrategia',
+      overview: '📊 Estrategia',
+      strategy: '🎯 Puntuación del Examen',
       repeated: '🔁 Repetidas',
       tricks: '⚠️ Trampas',
       study: '📋 Hoja de Trucos',
