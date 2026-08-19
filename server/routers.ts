@@ -215,6 +215,10 @@ export const appRouter = router({
         wrong: z.number(),
         blank: z.number(),
         timeTaken: z.number(),
+        wrongQuestions: z.array(z.object({
+          questionId: z.number().int().positive(),
+          selectedAnswer: z.enum(['A', 'B', 'C', 'D']),
+        })).max(100).optional(),
       }))
       .mutation(async ({ input, ctx }) => {
         if (!ctx.user?.id) {
@@ -229,6 +233,28 @@ export const appRouter = router({
       }
       return await db.getUserSimulatorResults(ctx.user.id);
     }),
+
+    getErrorNotebook: protectedProcedure.query(async ({ ctx }) => {
+      if (!ctx.user?.id) throw new TRPCError({ code: 'UNAUTHORIZED' });
+      return await db.getUserErrorNotebook(ctx.user.id);
+    }),
+
+    reviewErrorNotebookItem: protectedProcedure
+      .input(z.object({
+        itemId: z.number().int().positive(),
+        selectedAnswer: z.enum(['A', 'B', 'C', 'D']),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (!ctx.user?.id) throw new TRPCError({ code: 'UNAUTHORIZED' });
+        try {
+          return await db.reviewUserErrorNotebookItem(ctx.user.id, input.itemId, input.selectedAnswer);
+        } catch (error) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: error instanceof Error ? error.message : 'Item de revisão não encontrado',
+          });
+        }
+      }),
 
     getStudyPlan: protectedProcedure.query(async ({ ctx }) => {
       if (!ctx.user?.id) throw new TRPCError({ code: "UNAUTHORIZED" });

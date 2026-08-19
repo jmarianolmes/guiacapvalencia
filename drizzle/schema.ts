@@ -147,6 +147,29 @@ export const userSimulatorResults = mysqlTable("user_simulator_results", {
 export type UserSimulatorResult = typeof userSimulatorResults.$inferSelect;
 export type InsertUserSimulatorResult = typeof userSimulatorResults.$inferInsert;
 
+// Individual error notebook. Each record belongs to exactly one user and one source question.
+// The source question stays in simulator_questions; no pedagogical content is duplicated here.
+export const userErrorNotebookItems = mysqlTable("user_error_notebook_items", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  questionId: int("questionId").notNull(),
+  chapterId: varchar("chapterId", { length: 50 }),
+  wrongCount: int("wrongCount").default(1).notNull(),
+  reviewLevel: int("reviewLevel").default(0).notNull(),
+  lastAnswer: varchar("lastAnswer", { length: 1 }),
+  nextReviewAt: timestamp("nextReviewAt"),
+  lastReviewedAt: timestamp("lastReviewedAt"),
+  resolvedAt: timestamp("resolvedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (table) => [
+  uniqueIndex("user_error_notebook_user_question_unique").on(table.userId, table.questionId),
+  index("user_error_notebook_user_due_idx").on(table.userId, table.nextReviewAt),
+]);
+
+export type UserErrorNotebookItem = typeof userErrorNotebookItems.$inferSelect;
+export type InsertUserErrorNotebookItem = typeof userErrorNotebookItems.$inferInsert;
+
 // Study preferences used to generate a personalized plan on demand.
 export const userStudyProfiles = mysqlTable("user_study_profiles", {
   id: int("id").autoincrement().primaryKey(),

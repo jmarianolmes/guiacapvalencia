@@ -1,13 +1,14 @@
-import { and, asc, count, eq, ne, sql } from "drizzle-orm";
+import { and, asc, count, eq, inArray, ne, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool, type Pool } from "mysql2";
 import { desc } from 'drizzle-orm';
-import { InsertUser, users, passwordResets, userAccessLogs, simulatorQuestions, repeatedQuestions, tricks, siglas, userSimulatorResults, userStudyProfiles } from "../drizzle/schema";
+import { InsertUser, users, passwordResets, userAccessLogs, simulatorQuestions, repeatedQuestions, tricks, siglas, userSimulatorResults, userStudyProfiles, userErrorNotebookItems } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { simulatorChapters } from '../shared/simulatorChapters';
 import { classifySimulatorQuestion } from './chapterClassifier';
 import { buildOfficialExamAnalysis } from './officialExamAnalysis';
 import { buildStudyPlan } from './studyPlan';
+import { advanceReviewSchedule, isReviewDue, restartReviewSchedule, retryReviewSchedule } from './errorNotebook';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _pool: Pool | null = null;
@@ -431,6 +432,7 @@ export async function saveSimulatorResult(userId: number, input: {
   wrong: number;
   blank: number;
   timeTaken: number;
+  wrongQuestions?: Array<{ questionId: number; selectedAnswer: 'A' | 'B' | 'C' | 'D' }>;
 }) {
   const db = await getDb();
   if (!db) return null;
@@ -451,6 +453,9 @@ export async function saveSimulatorResult(userId: number, input: {
       score,
       timeTaken: input.timeTaken,
     });
+    if (input.wrongQuestions?.length) {
+      await recordUserNotebookErrors(userId, input.wrongQuestions);
+    }
     return result;
   } catch (error) {
     console.error("[Database] Failed to save simulator result:", error);
@@ -475,6 +480,113 @@ export async function getUserSimulatorResults(userId: number) {
   }
 }
 
+
+export async function recordUserNotebookErrors(userId: number, wrongQuestions: Array<{ questionId: number; selectedAnswer: 'A' | 'B' | 'C' | 'D' }>) {
+  const db = await getDb();
+  if (!db || wrongQuestions.length === 0) return;
+
+  const uniqueAnswers = new Map<number, 'A' | 'B' | 'C' | 'D'>();
+  for (const item of wrongQuestions) uniqueAnswers.set(item.questionId, item.selectedAnswer);
+  const questionIds = Array.from(uniqueAnswers.keys());
+  const sourceQuestions = await db.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, questionIds));
+  const now = new Date();
+  const reset = restartReviewSchedule(now);
+
+  await db.transaction(async (tx) => {
+    for (const question of sourceQuestions) {
+      const selectedAnswer = uniqueAnswers.get(question.id);
+      if (!selectedAnswer || selectedAnswer === question.correctAnswer) continue;
+      const chapterId = classifySimulatorQuestion(question).chapter?.id ?? null;
+      await tx.insert(userErrorNotebookItems).values({
+        userId,
+        questionId: question.id,
+        chapterId,
+        wrongCount: 1,
+        reviewLevel: reset.reviewLevel,
+        lastAnswer: selectedAnswer,
+        nextReviewAt: reset.nextReviewAt,
+        resolvedAt: null,
+      }).onDuplicateKeyUpdate({
+        set: {
+          chapterId,
+          wrongCount: sql`${userErrorNotebookItems.wrongCount} + 1`,
+          reviewLevel: reset.reviewLevel,
+          lastAnswer: selectedAnswer,
+          nextReviewAt: reset.nextReviewAt,
+          lastReviewedAt: null,
+          resolvedAt: null,
+          updatedAt: now,
+        },
+      });
+    }
+  });
+}
+
+export async function getUserErrorNotebook(userId: number) {
+  const db = await getDb();
+  if (!db) return { dueItems: [], summary: { totalItems: 0, dueCount: 0, scheduledCount: 0, resolvedCount: 0, chapterCounts: [] as Array<{ chapterId: string | null; count: number }> } };
+
+  const items = await db.select().from(userErrorNotebookItems).where(eq(userErrorNotebookItems.userId, userId));
+  if (!items.length) return { dueItems: [], summary: { totalItems: 0, dueCount: 0, scheduledCount: 0, resolvedCount: 0, chapterCounts: [] as Array<{ chapterId: string | null; count: number }> } };
+
+  const sourceQuestions = await db.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, items.map((item) => item.questionId)));
+  const questionsById = new Map(sourceQuestions.map((question) => [question.id, question]));
+  const now = new Date();
+  const dueItems = items
+    .filter((item) => isReviewDue(item, now) && questionsById.has(item.questionId))
+    .sort((left, right) => (left.nextReviewAt?.getTime() ?? 0) - (right.nextReviewAt?.getTime() ?? 0))
+    .slice(0, 30)
+    .map((item) => ({ ...item, question: questionsById.get(item.questionId)! }));
+  const chapterCounts = Array.from(items.reduce((counts, item) => {
+    if (!item.resolvedAt) counts.set(item.chapterId, (counts.get(item.chapterId) ?? 0) + 1);
+    return counts;
+  }, new Map<string | null, number>()).entries())
+    .map(([chapterId, count]) => ({ chapterId, count }))
+    .sort((left, right) => right.count - left.count);
+
+  return {
+    dueItems,
+    summary: {
+      totalItems: items.length,
+      dueCount: items.filter((item) => isReviewDue(item, now)).length,
+      scheduledCount: items.filter((item) => !item.resolvedAt && !isReviewDue(item, now)).length,
+      resolvedCount: items.filter((item) => Boolean(item.resolvedAt)).length,
+      chapterCounts,
+    },
+  };
+}
+
+export async function reviewUserErrorNotebookItem(userId: number, itemId: number, selectedAnswer: 'A' | 'B' | 'C' | 'D') {
+  const db = await getDb();
+  if (!db) throw new Error('Database connection unavailable');
+
+  const [item] = await db.select().from(userErrorNotebookItems)
+    .where(and(eq(userErrorNotebookItems.id, itemId), eq(userErrorNotebookItems.userId, userId)))
+    .limit(1);
+  if (!item) throw new Error('Item de revisão não encontrado');
+  const [question] = await db.select().from(simulatorQuestions).where(eq(simulatorQuestions.id, item.questionId)).limit(1);
+  if (!question) throw new Error('Questão de revisão não encontrada');
+
+  const now = new Date();
+  const correct = selectedAnswer === question.correctAnswer;
+  const schedule = correct ? advanceReviewSchedule(item.reviewLevel, now) : retryReviewSchedule(now);
+  await db.update(userErrorNotebookItems).set({
+    reviewLevel: schedule.reviewLevel,
+    lastAnswer: selectedAnswer,
+    nextReviewAt: schedule.nextReviewAt,
+    lastReviewedAt: now,
+    resolvedAt: schedule.resolvedAt,
+    wrongCount: correct ? item.wrongCount : item.wrongCount + 1,
+    updatedAt: now,
+  }).where(and(eq(userErrorNotebookItems.id, itemId), eq(userErrorNotebookItems.userId, userId)));
+
+  return {
+    correct,
+    nextReviewAt: schedule.nextReviewAt,
+    resolved: Boolean(schedule.resolvedAt),
+    correctAnswer: question.correctAnswer,
+  };
+}
 
 // Study profile and plan
 export async function getUserStudyProfile(userId: number) {
@@ -585,6 +697,7 @@ export async function deleteUser(userId: number) {
       await tx.delete(passwordResets).where(eq(passwordResets.userId, userId));
       await tx.delete(userAccessLogs).where(eq(userAccessLogs.userId, userId));
       await tx.delete(userSimulatorResults).where(eq(userSimulatorResults.userId, userId));
+      await tx.delete(userErrorNotebookItems).where(eq(userErrorNotebookItems.userId, userId));
       await tx.delete(userStudyProfiles).where(eq(userStudyProfiles.userId, userId));
       await tx.delete(users).where(eq(users.id, userId));
     });

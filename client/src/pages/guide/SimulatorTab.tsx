@@ -86,6 +86,11 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
     const stats = getResultStats();
     const mode = selectedChapter ? 'chapter' : selectedDate ? 'official' : 'statistical';
     const model = selectedChapter || selectedDate || selectedModel || '';
+    const wrongQuestions = Object.entries(answers).flatMap(([index, selectedAnswer]) => {
+      const question = questions[Number(index)];
+      if (!question || question.correctAnswer === selectedAnswer) return [];
+      return [{ questionId: question.id, selectedAnswer: selectedAnswer as 'A' | 'B' | 'C' | 'D' }];
+    });
     setShowResults(true);
     saveResultMutation.mutate({
       model,
@@ -95,9 +100,13 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       questionCount: questions.length,
       ...stats,
       studyMode,
+      wrongQuestions,
       timeTaken: studyMode === 'exam' ? Math.max(0, 7200 - timeLeft) : 0,
     }, {
-      onSuccess: () => simulatorUtils.guide.getUserResults.invalidate(),
+      onSuccess: () => {
+        simulatorUtils.guide.getUserResults.invalidate();
+        simulatorUtils.guide.getErrorNotebook.invalidate();
+      },
     });
   };
 

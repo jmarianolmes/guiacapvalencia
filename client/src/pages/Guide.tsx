@@ -15,6 +15,7 @@ import SiglasTab from './guide/SiglasTab';
 import SimulatorTab from './guide/SimulatorTab';
 import TemariosTab from './guide/TemariosTab';
 import StudyPlanTab from './guide/StudyPlanTab';
+import ErrorNotebookTab from './guide/ErrorNotebookTab';
 import ProfileDialog from '@/components/ProfileDialog';
 
 function LoginRequiredCard({ message }: { message: string }) {
@@ -63,6 +64,7 @@ export default function Guide() {
       repeatedQuestions: 'Grupos repetidos',
       login_required: 'Faça login para acessar o conteúdo de estudo',
       plan: '🗓️ Plano de Estudos',
+      errorNotebook: '📒 Caderno de erros',
     },
     es: {
       title: 'Guía CAP Inicial — Valencia',
@@ -82,6 +84,7 @@ export default function Guide() {
       repeatedQuestions: 'Grupos repetidos',
       login_required: 'Inicia sesión para acceder al contenido de estudio',
       plan: '🗓️ Plan de Estudio',
+      errorNotebook: '📒 Cuaderno de errores',
     },
   };
 
@@ -186,6 +189,9 @@ export default function Guide() {
               {user && <TabsTrigger value="study-plan" className="shrink-0 bg-white px-3 py-2 shadow-sm">
                 {texts.plan}
               </TabsTrigger>}
+              {user && <TabsTrigger value="error-notebook" className="shrink-0 bg-white px-3 py-2 shadow-sm">
+                {texts.errorNotebook}
+              </TabsTrigger>}
             </TabsList>
           </div>
 
@@ -222,6 +228,7 @@ export default function Guide() {
           </TabsContent>
 
           {user && <TabsContent value="study-plan"><StudyPlanTab language={language} /></TabsContent>}
+          {user && <TabsContent value="error-notebook"><ErrorNotebookTab language={language} /></TabsContent>}
         </Tabs>
       </main>
 
