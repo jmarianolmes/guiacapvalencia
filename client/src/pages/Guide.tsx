@@ -102,6 +102,7 @@ export default function Guide() {
             </div>
             <div className="flex shrink-0 self-end gap-2 sm:self-auto">
               {user && <ProfileDialog language={language} open={profileOpen} onOpenChange={handleProfileOpenChange} onboarding={!profileQuery.data} />}
+              {user?.role === 'admin' && <button onClick={() => { window.location.href = '/admin'; }} className="rounded bg-amber-400 px-3 py-1 font-semibold text-amber-950 transition-colors hover:bg-amber-300">Admin</button>}
               <button
                 onClick={() => setLanguage('pt')}
                 className={`px-3 py-1 rounded font-semibold transition-colors ${
