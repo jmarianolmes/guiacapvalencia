@@ -22,6 +22,14 @@ function LoginRequiredCard({ message }: { message: string }) {
   return <Card className="border-yellow-200 bg-yellow-50"><CardHeader><CardTitle className="text-yellow-800">{message}</CardTitle></CardHeader></Card>;
 }
 
+function BrazilFlag() {
+  return <svg viewBox="0 0 36 24" className="h-5 w-7 rounded-sm shadow-sm" aria-hidden="true"><rect width="36" height="24" fill="#009c3b"/><path d="M18 2.2 34 12 18 21.8 2 12Z" fill="#ffdf00"/><circle cx="18" cy="12" r="5.5" fill="#002776"/><path d="M13.2 10.6c3 2.2 6.4 3 10.4 2.2" fill="none" stroke="#fff" strokeWidth="1"/></svg>;
+}
+
+function SpainFlag() {
+  return <svg viewBox="0 0 36 24" className="h-5 w-7 rounded-sm shadow-sm" aria-hidden="true"><rect width="36" height="24" fill="#aa151b"/><rect y="6" width="36" height="12" fill="#f1bf00"/><rect x="7" y="8" width="2.8" height="8" rx="0.4" fill="#aa151b"/><rect x="9.8" y="9" width="1.4" height="6" fill="#a06a2c"/></svg>;
+}
+
 export default function Guide() {
   const { user } = useAuth();
   const { language, setLanguage } = useLanguage();
@@ -93,9 +101,9 @@ export default function Guide() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
-      <header className="overflow-x-hidden bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-8 text-white sm:py-12">
+      <header className="overflow-x-hidden bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-5 text-white sm:py-7">
         <div className="max-w-6xl mx-auto">
-          <div className="mb-4 flex flex-col items-start gap-4 sm:flex-row sm:justify-between">
+          <div className="mb-3 flex flex-col items-start gap-3 sm:flex-row sm:justify-between">
             <div className="min-w-0">
               <h1 className="mb-2 break-words text-3xl font-bold sm:text-4xl">{texts.title}</h1>
               <p className="text-blue-100">{texts.subtitle(officialExamDatesQuery.data?.length)}</p>
@@ -113,7 +121,7 @@ export default function Guide() {
                     : 'bg-blue-500 text-white hover:bg-blue-400'
                 }`}
               >
-                <span aria-hidden="true">🇧🇷</span><span className="sr-only">Português</span>
+                <BrazilFlag /><span className="sr-only">Português</span>
               </button>
               <button
                 onClick={() => setLanguage('es')}
@@ -125,7 +133,7 @@ export default function Guide() {
                     : 'bg-blue-500 text-white hover:bg-blue-400'
                 }`}
               >
-                <span aria-hidden="true">🇪🇸</span><span className="sr-only">Español</span>
+                <SpainFlag /><span className="sr-only">Español</span>
               </button>
             </div>
           </div>
