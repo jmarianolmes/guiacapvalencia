@@ -23,6 +23,8 @@ export const appRouter = router({
         isBlocked: user.isBlocked,
         isMaster: user.isMaster,
         mustChangePassword: user.mustChangePassword,
+        accessExpiresAt: user.accessExpiresAt,
+        accessExpired: authService.isAccessExpired(user),
       };
     }),
     logout: publicProcedure.mutation(({ ctx }) => {
@@ -82,6 +84,7 @@ export const appRouter = router({
               name: user.name || "",
               role: user.role,
               mustChangePassword: user.mustChangePassword,
+              accessExpiresAt: user.accessExpiresAt,
             },
           };
         } catch (error) {
@@ -302,6 +305,8 @@ export const appRouter = router({
         isBlocked: user.isBlocked,
         isMaster: user.isMaster,
         mustChangePassword: user.mustChangePassword,
+        accessExpiresAt: user.accessExpiresAt,
+        accessExpired: authService.isAccessExpired(user),
         createdAt: user.createdAt,
         lastSignedIn: user.lastSignedIn,
       }));
@@ -312,13 +317,14 @@ export const appRouter = router({
         email: z.string().trim().email('Email inválido'),
         temporaryPassword: z.string().min(8, 'A senha temporária deve ter no mínimo 8 caracteres'),
         name: z.string().trim().min(1, 'Nome inválido').max(120).optional(),
+        accessDurationDays: z.number().int().min(1, 'Informe pelo menos 1 dia').max(3650, 'O prazo máximo é de 3650 dias').default(90),
       }))
       .mutation(async ({ input, ctx }) => {
         if (ctx.user?.role !== 'admin') {
           throw new TRPCError({ code: 'FORBIDDEN' });
         }
         try {
-          const user = await authService.createUserByAdmin(input.email, input.temporaryPassword, input.name);
+          const user = await authService.createUserByAdmin(input.email, input.temporaryPassword, input.name, input.accessDurationDays);
           return { success: true, user };
         } catch (error) {
           throw new TRPCError({
@@ -328,6 +334,20 @@ export const appRouter = router({
         }
       }),
     
+    renewUserAccess: protectedProcedure
+      .input(z.object({
+        userId: z.number().int().positive(),
+        accessDurationDays: z.number().int().min(1, 'Informe pelo menos 1 dia').max(3650, 'O prazo máximo é de 3650 dias'),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user?.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN' });
+        try {
+          return await db.renewUserAccess(input.userId, input.accessDurationDays);
+        } catch (error) {
+          throw new TRPCError({ code: 'BAD_REQUEST', message: error instanceof Error ? error.message : 'Falha ao renovar o acesso' });
+        }
+      }),
+
     approveUser: protectedProcedure
       .input(z.object({ userId: z.number() }))
       .mutation(async ({ input, ctx }) => {

@@ -16,7 +16,7 @@ export function ProtectedRoute({ component: Component }: ProtectedRouteProps) {
       setLocation('/login');
       return;
     }
-    if (!loading && user && (!user.isApproved || user.isBlocked)) {
+    if (!loading && user && (!user.isApproved || user.isBlocked || user.accessExpired)) {
       setLocation('/login');
       return;
     }
@@ -28,7 +28,7 @@ export function ProtectedRoute({ component: Component }: ProtectedRouteProps) {
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center"><Spinner /></div>;
   }
-  if (!isAuthenticated || !user?.isApproved || user.isBlocked || (user.mustChangePassword && location !== '/change-password')) {
+  if (!isAuthenticated || !user?.isApproved || user.isBlocked || user.accessExpired || (user.mustChangePassword && location !== '/change-password')) {
     return null;
   }
   return <Component />;

@@ -23,6 +23,8 @@ export const users = mysqlTable("users", {
   isBlocked: boolean("isBlocked").default(false).notNull(),
   mustChangePassword: boolean("mustChangePassword").default(false).notNull(),
   isMaster: boolean("isMaster").default(false).notNull(),
+  // Null keeps legacy and master accounts unrestricted; student accounts created by admin receive a date.
+  accessExpiresAt: timestamp("accessExpiresAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn"),

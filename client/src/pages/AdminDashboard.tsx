@@ -18,6 +18,7 @@ export default function AdminDashboard() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [temporaryPassword, setTemporaryPassword] = useState('');
+  const [accessDurationDays, setAccessDurationDays] = useState(90);
   const [showTemporaryPassword, setShowTemporaryPassword] = useState(false);
   const [editingPasswordUserId, setEditingPasswordUserId] = useState<number | null>(null);
   const [replacementPassword, setReplacementPassword] = useState('');
@@ -53,6 +54,7 @@ export default function AdminDashboard() {
   const createUserMutation = trpc.admin.createUser.useMutation();
   const resetPasswordMutation = trpc.admin.resetUserPassword.useMutation();
   const deleteUserMutation = trpc.admin.deleteUser.useMutation();
+  const renewAccessMutation = trpc.admin.renewUserAccess.useMutation();
 
   useEffect(() => {
     if (user && user.role !== 'admin') {
@@ -77,11 +79,13 @@ export default function AdminDashboard() {
         name: name || undefined,
         email,
         temporaryPassword,
+        accessDurationDays,
       });
       setName('');
       setEmail('');
       setTemporaryPassword('');
-      setSuccessMessage(text.created);
+      setAccessDurationDays(90);
+      setSuccessMessage(`${text.created} Acesso liberado por ${accessDurationDays} dias.`);
       await refreshUsers();
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Não foi possível criar a conta.');
@@ -120,6 +124,17 @@ export default function AdminDashboard() {
       await refreshUsers();
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Não foi possível atualizar a senha.');
+    }
+  };
+
+  const handleRenewAccess = async (userId: number) => {
+    setFormError('');
+    try {
+      await renewAccessMutation.mutateAsync({ userId, accessDurationDays });
+      setSuccessMessage(`Acesso renovado por ${accessDurationDays} dias.`);
+      await refreshUsers();
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Não foi possível renovar o acesso.');
     }
   };
 
@@ -170,11 +185,12 @@ export default function AdminDashboard() {
             <CardDescription>{text.createDescription}</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleCreateUser} autoComplete="off" className="grid gap-4 md:grid-cols-3">
+            <form onSubmit={handleCreateUser} autoComplete="off" className="grid gap-4 md:grid-cols-4">
               <div className="space-y-2"><Label htmlFor="new-name">{text.name}</Label><Input id="new-name" name="student-name" autoComplete="off" value={name} onChange={event => setName(event.target.value)} disabled={createUserMutation.isPending} /></div>
               <div className="space-y-2"><Label htmlFor="new-email">{text.email}</Label><Input id="new-email" name="student-email" type="email" autoComplete="off" value={email} onChange={event => setEmail(event.target.value)} disabled={createUserMutation.isPending} required /></div>
               <div className="space-y-2"><Label htmlFor="temporary-password">{text.temporaryPassword}</Label><div className="flex gap-2"><Input id="temporary-password" name="student-temporary-password" autoComplete="new-password" type={showTemporaryPassword ? 'text' : 'password'} minLength={8} value={temporaryPassword} onChange={event => setTemporaryPassword(event.target.value)} disabled={createUserMutation.isPending} required /><Button type="button" variant="outline" size="sm" onClick={() => setShowTemporaryPassword(value => !value)}>{showTemporaryPassword ? text.hidePassword : text.showPassword}</Button></div></div>
-              <div className="md:col-span-3"><Button type="submit" disabled={createUserMutation.isPending}>{createUserMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}{createUserMutation.isPending ? text.creating : text.create}</Button></div>
+              <div className="space-y-2"><Label htmlFor="access-days">Período de acesso</Label><Input id="access-days" type="number" min={1} max={3650} value={accessDurationDays} onChange={event => setAccessDurationDays(Math.max(1, Number(event.target.value) || 1))} disabled={createUserMutation.isPending} required /><div className="flex gap-2"><Button type="button" size="sm" variant={accessDurationDays === 90 ? 'default' : 'outline'} onClick={() => setAccessDurationDays(90)}>3 meses</Button><Button type="button" size="sm" variant={accessDurationDays === 365 ? 'default' : 'outline'} onClick={() => setAccessDurationDays(365)}>1 ano</Button></div><p className="text-xs text-slate-500">Use 90 dias para acesso intensivo ou 365 para acesso estendido; o campo aceita exceções.</p></div>
+              <div className="md:col-span-4"><Button type="submit" disabled={createUserMutation.isPending}>{createUserMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}{createUserMutation.isPending ? text.creating : text.create}</Button></div>
             </form>
           </CardContent>
         </Card>
@@ -189,7 +205,7 @@ export default function AdminDashboard() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[760px] text-sm">
-                  <thead><tr className="border-b border-slate-200"><th className="px-4 py-3 text-left font-semibold">{text.email}</th><th className="px-4 py-3 text-left font-semibold">{text.name}</th><th className="px-4 py-3 text-left font-semibold">{text.status}</th><th className="px-4 py-3 text-left font-semibold">{text.actions}</th></tr></thead>
+                  <thead><tr className="border-b border-slate-200"><th className="px-4 py-3 text-left font-semibold">{text.email}</th><th className="px-4 py-3 text-left font-semibold">{text.name}</th><th className="px-4 py-3 text-left font-semibold">{text.status}</th><th className="px-4 py-3 text-left font-semibold">Acesso até</th><th className="px-4 py-3 text-left font-semibold">{text.actions}</th></tr></thead>
                   <tbody>{(usersQuery.data || []).map(account => (
                     <tr key={account.id} className="border-b border-slate-100 align-top hover:bg-slate-50">
                       <td className="px-4 py-3">{account.email}</td><td className="px-4 py-3">{account.name || '-'}</td>
@@ -200,17 +216,19 @@ export default function AdminDashboard() {
                         {account.isApproved && !account.isBlocked && <Badge className="bg-emerald-100 text-emerald-800">{text.approvedStatus}</Badge>}
                         {account.mustChangePassword && <Badge className="bg-blue-100 text-blue-800">{text.temporary}</Badge>}
                       </div></td>
+                      <td className="px-4 py-3">{account.isMaster ? 'Sem vencimento' : account.accessExpiresAt ? <div><div>{new Date(account.accessExpiresAt).toLocaleDateString(isEs ? 'es-ES' : 'pt-BR')}</div>{account.accessExpired && <Badge className="mt-1 bg-rose-100 text-rose-800">Vencido</Badge>}</div> : <Badge variant="secondary">Sem prazo</Badge>}</td>
                       <td className="px-4 py-3"><div className="flex flex-wrap gap-2">
                         {!account.isApproved && <Button onClick={() => handleApprove(account.id)} size="sm" variant="outline" disabled={approveMutation.isPending}>{text.approve}</Button>}
                         {!account.isMaster && !account.isBlocked && <Button onClick={() => handleBlock(account.id, true)} size="sm" variant="outline" className="text-rose-600 hover:text-rose-700" disabled={blockMutation.isPending}>{text.block}</Button>}
                         {!account.isMaster && account.isBlocked && <Button onClick={() => handleBlock(account.id, false)} size="sm" variant="outline" className="text-emerald-600 hover:text-emerald-700" disabled={blockMutation.isPending}>{text.unblock}</Button>}
+                        {!account.isMaster && <Button onClick={() => handleRenewAccess(account.id)} size="sm" variant="outline" className="text-emerald-700 hover:text-emerald-800" disabled={renewAccessMutation.isPending}>Renovar {accessDurationDays} dias</Button>}
                         {!account.isMaster && <Button onClick={() => { setEditingPasswordUserId(editingPasswordUserId === account.id ? null : account.id); setReplacementPassword(''); }} size="sm" variant="outline" disabled={resetPasswordMutation.isPending}>{text.resetPassword}</Button>}
                         {!account.isMaster && confirmDeleteUserId !== account.id && <Button onClick={() => setConfirmDeleteUserId(account.id)} size="sm" variant="outline" className="text-rose-700 hover:text-rose-800" disabled={deleteUserMutation.isPending}>{text.delete}</Button>}
                         {!account.isMaster && confirmDeleteUserId === account.id && <><Button onClick={() => handleDeleteUser(account.id)} size="sm" variant="destructive" disabled={deleteUserMutation.isPending}>{text.confirmDelete}</Button><Button onClick={() => setConfirmDeleteUserId(null)} size="sm" variant="outline">{text.cancel}</Button></>}
                       </div></td>
                     </tr>
                   ))}{(usersQuery.data || []).map(account => editingPasswordUserId === account.id ? (
-                    <tr key={`password-${account.id}`} className="border-b border-slate-100 bg-blue-50"><td colSpan={4} className="px-4 py-3"><div className="flex flex-wrap items-end gap-2"><div className="min-w-56 flex-1"><Label htmlFor={`reset-password-${account.id}`}>{text.resetPassword}</Label><Input id={`reset-password-${account.id}`} name={`reset-user-${account.id}-password`} autoComplete="new-password" className="mt-1" type={showTemporaryPassword ? 'text' : 'password'} minLength={8} value={replacementPassword} onChange={event => setReplacementPassword(event.target.value)} /></div><Button type="button" variant="outline" size="sm" onClick={() => setShowTemporaryPassword(value => !value)}>{showTemporaryPassword ? text.hidePassword : text.showPassword}</Button><Button type="button" size="sm" onClick={() => handleResetPassword(account.id)} disabled={replacementPassword.length < 8 || resetPasswordMutation.isPending}>{text.savePassword}</Button><Button type="button" size="sm" variant="outline" onClick={() => { setEditingPasswordUserId(null); setReplacementPassword(''); }}>{text.cancel}</Button></div></td></tr>
+                    <tr key={`password-${account.id}`} className="border-b border-slate-100 bg-blue-50"><td colSpan={5} className="px-4 py-3"><div className="flex flex-wrap items-end gap-2"><div className="min-w-56 flex-1"><Label htmlFor={`reset-password-${account.id}`}>{text.resetPassword}</Label><Input id={`reset-password-${account.id}`} name={`reset-user-${account.id}-password`} autoComplete="new-password" className="mt-1" type={showTemporaryPassword ? 'text' : 'password'} minLength={8} value={replacementPassword} onChange={event => setReplacementPassword(event.target.value)} /></div><Button type="button" variant="outline" size="sm" onClick={() => setShowTemporaryPassword(value => !value)}>{showTemporaryPassword ? text.hidePassword : text.showPassword}</Button><Button type="button" size="sm" onClick={() => handleResetPassword(account.id)} disabled={replacementPassword.length < 8 || resetPasswordMutation.isPending}>{text.savePassword}</Button><Button type="button" size="sm" variant="outline" onClick={() => { setEditingPasswordUserId(null); setReplacementPassword(''); }}>{text.cancel}</Button></div></td></tr>
                   ) : null)}</tbody>
                 </table>
               </div>

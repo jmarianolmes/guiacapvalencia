@@ -654,12 +654,34 @@ export async function approveUser(userId: number) {
   if (!db) return null;
   
   try {
-    await db.update(users).set({ isApproved: true }).where(eq(users.id, userId));
+    const [targetUser] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    if (!targetUser) throw new Error('User not found');
+    const accessExpiresAt = targetUser.isMaster ? targetUser.accessExpiresAt : (targetUser.accessExpiresAt ?? addAccessDays(90));
+    await db.update(users).set({ isApproved: true, accessExpiresAt }).where(eq(users.id, userId));
     return true;
   } catch (error) {
     console.error("[Database] Failed to approve user:", error);
     return null;
   }
+}
+
+function addAccessDays(days: number, from = new Date()) {
+  const expiration = new Date(from);
+  expiration.setDate(expiration.getDate() + days);
+  return expiration;
+}
+
+export async function renewUserAccess(userId: number, accessDurationDays: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const [targetUser] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  if (!targetUser) throw new Error('User not found');
+  if (targetUser.isMaster) throw new Error('A conta mestre não precisa de renovação de acesso');
+
+  const accessExpiresAt = addAccessDays(accessDurationDays);
+  await db.update(users).set({ accessExpiresAt, isApproved: true }).where(eq(users.id, userId));
+  return { accessExpiresAt };
 }
 
 export async function blockUser(userId: number, blocked: boolean) {

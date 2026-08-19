@@ -5,6 +5,17 @@ import { getDb } from './db';
 
 const SALT_ROUNDS = 10;
 const PASSWORD_RESET_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
+export const DEFAULT_ACCESS_DURATION_DAYS = 90;
+
+export function calculateAccessExpiry(days: number, from = new Date()) {
+  const expiration = new Date(from);
+  expiration.setDate(expiration.getDate() + days);
+  return expiration;
+}
+
+export function isAccessExpired(user: { isMaster: boolean; accessExpiresAt: Date | null }, now = new Date()) {
+  return !user.isMaster && Boolean(user.accessExpiresAt && user.accessExpiresAt.getTime() <= now.getTime());
+}
 
 /**
  * Hash a password using bcrypt
@@ -53,7 +64,7 @@ export async function registerUser(email: string, password: string, name?: strin
 /**
  * Create an approved account with a temporary password set by an administrator.
  */
-export async function createUserByAdmin(email: string, temporaryPassword: string, name?: string) {
+export async function createUserByAdmin(email: string, temporaryPassword: string, name?: string, accessDurationDays = DEFAULT_ACCESS_DURATION_DAYS) {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
 
@@ -65,6 +76,7 @@ export async function createUserByAdmin(email: string, temporaryPassword: string
 
   const passwordHash = await hashPassword(temporaryPassword);
   const openId = `email_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  const accessExpiresAt = calculateAccessExpiry(accessDurationDays);
 
   await db.insert(users).values({
     openId,
@@ -76,6 +88,7 @@ export async function createUserByAdmin(email: string, temporaryPassword: string
     isBlocked: false,
     mustChangePassword: true,
     isMaster: false,
+    accessExpiresAt,
   });
 
   return { email: normalizedEmail, name: name?.trim() || normalizedEmail.split('@')[0] };
@@ -105,6 +118,10 @@ export async function authenticateUser(email: string, password: string) {
 
   if (!user.isApproved) {
     throw new Error('User account is pending approval');
+  }
+
+  if (isAccessExpired(user)) {
+    throw new Error('O acesso desta conta venceu. Entre em contato para renovar.');
   }
 
   const isValid = await verifyPassword(password, user.passwordHash);
