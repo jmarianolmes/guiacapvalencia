@@ -130,6 +130,7 @@ export const userSimulatorResults = mysqlTable("user_simulator_results", {
   userId: int("userId").notNull(),
   model: varchar("model", { length: 50 }).notNull(),
   mode: varchar("mode", { length: 20 }).default("statistical").notNull(),
+  studyMode: mysqlEnum("studyMode", ["exam", "learning"]).default("exam").notNull(),
   chapterId: varchar("chapterId", { length: 50 }),
   attemptNumber: int("attemptNumber").default(1).notNull(),
   questionCount: int("questionCount").default(100).notNull(),

@@ -64,6 +64,13 @@
       "when": 1787130109553,
       "tag": "0008_user_study_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1787133888655,
+      "tag": "0009_simulator_study_mode",
+      "breakpoints": true
     }
   ]
 }

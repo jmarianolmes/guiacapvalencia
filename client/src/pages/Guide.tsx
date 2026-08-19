@@ -25,9 +25,24 @@ export default function Guide() {
   const { user } = useAuth();
   const { language, setLanguage } = useLanguage();
   const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get('tab') === 'temarios' ? 'temarios' : 'overview');
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const statsQuery = trpc.guide.getStats.useQuery();
   const officialExamDatesQuery = trpc.guide.getOfficialExamDates.useQuery();
+  const profileQuery = trpc.profile.get.useQuery(undefined, { enabled: Boolean(user), staleTime: 60 * 1000, retry: 1 });
+
+  useEffect(() => {
+    if (!user || profileQuery.isLoading || profileQuery.isError || profileQuery.data) return;
+    const dismissedKey = `cap-profile-onboarding-dismissed-${user.id}`;
+    if (sessionStorage.getItem(dismissedKey) !== 'true') setProfileOpen(true);
+  }, [profileQuery.data, profileQuery.isError, profileQuery.isLoading, user]);
+
+  const handleProfileOpenChange = (nextOpen: boolean) => {
+    setProfileOpen(nextOpen);
+    if (!nextOpen && user && !profileQuery.data) {
+      sessionStorage.setItem(`cap-profile-onboarding-dismissed-${user.id}`, 'true');
+    }
+  };
 
   const t = {
     pt: {
@@ -83,7 +98,7 @@ export default function Guide() {
               <p className="text-blue-100">{texts.subtitle(officialExamDatesQuery.data?.length)}</p>
             </div>
             <div className="flex shrink-0 self-end gap-2 sm:self-auto">
-              {user && <ProfileDialog language={language} />}
+              {user && <ProfileDialog language={language} open={profileOpen} onOpenChange={handleProfileOpenChange} onboarding={!profileQuery.data} />}
               <button
                 onClick={() => setLanguage('pt')}
                 className={`px-3 py-1 rounded font-semibold transition-colors ${

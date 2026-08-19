@@ -423,6 +423,7 @@ export async function getSimulatorStats() {
 export async function saveSimulatorResult(userId: number, input: {
   model: string;
   mode: 'statistical' | 'official' | 'chapter';
+  studyMode: 'exam' | 'learning';
   chapterId?: string;
   attemptNumber?: number;
   questionCount: number;
@@ -440,6 +441,7 @@ export async function saveSimulatorResult(userId: number, input: {
       userId,
       model: input.model,
       mode: input.mode,
+      studyMode: input.studyMode,
       chapterId: input.chapterId ?? null,
       attemptNumber: input.attemptNumber ?? 1,
       questionCount: input.questionCount,
@@ -515,7 +517,9 @@ export async function getUserStudyPlan(userId: number) {
     planEnabled: true,
   };
   const chapterPriorities = analysis?.chapterPriorities ?? [];
-  const plan = buildStudyPlan(profile, chapterPriorities, results);
+  // Learning attempts reveal answers immediately; they are useful in history but not a fair exam-readiness signal.
+  const examResults = results.filter((result) => result.studyMode !== 'learning');
+  const plan = buildStudyPlan(profile, chapterPriorities, examResults);
   return { profile, plan, chapterPriorities };
 }
 

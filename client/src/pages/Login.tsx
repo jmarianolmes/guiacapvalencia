@@ -27,7 +27,7 @@ export function Login() {
     onSuccess: async result => {
       await refresh();
       setIsLoading(false);
-      navigate(result.user.mustChangePassword ? '/change-password' : '/');
+      navigate(result.user.mustChangePassword ? '/change-password' : '/guide');
     },
     onError: mutationError => {
       setError(mutationError.message || text.failed);

@@ -24,13 +24,13 @@ export function ChangePassword() {
 
   useEffect(() => {
     if (!loading && !isAuthenticated) navigate('/login');
-    if (!loading && user && !user.mustChangePassword) navigate('/');
+    if (!loading && user && !user.mustChangePassword) navigate('/guide');
   }, [isAuthenticated, loading, navigate, user]);
 
   const changePasswordMutation = trpc.auth.changePassword.useMutation({
     onSuccess: async () => {
       await refresh();
-      navigate('/');
+      navigate('/guide');
     },
     onError: mutationError => setError(mutationError.message || text.failed),
   });

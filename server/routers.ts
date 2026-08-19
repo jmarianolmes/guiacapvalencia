@@ -207,6 +207,7 @@ export const appRouter = router({
       .input(z.object({
         model: z.string(),
         mode: z.enum(['statistical', 'official', 'chapter']),
+        studyMode: z.enum(['exam', 'learning']),
         chapterId: z.string().optional(),
         attemptNumber: z.number().int().min(1).optional(),
         questionCount: z.number().int().min(1),

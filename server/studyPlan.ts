@@ -178,12 +178,13 @@ export function buildStudyPlan(profile: StudyProfileInput, priorities: ChapterPr
   }
 
   const status: StudyPlan['status'] = daysUntilExam >= 21 ? 'complete' : daysUntilExam >= 8 ? 'accelerated' : 'emergency';
-  const planDays = Math.min(daysUntilExam - 1, 60);
+  // Include today and stop on the day before the exam.
+  const planDays = Math.min(daysUntilExam, 60);
   const days: StudyPlanDay[] = [];
   const topPriorities = goodsPriorities.slice(0, Math.max(1, Math.min(7, goodsPriorities.length)));
 
   for (let index = 0; index < planDays; index += 1) {
-    const date = today + (index + 1) * 86_400_000;
+    const date = today + index * 86_400_000;
     const chapter = topPriorities[index % topPriorities.length];
     const chapterTitlePt = `${chapter.code} · ${chapter.titlePt}`;
     const chapterTitleEs = `${chapter.code} · ${chapter.titleEs}`;

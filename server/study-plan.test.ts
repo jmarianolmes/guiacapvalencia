@@ -23,14 +23,18 @@ describe('study plan', () => {
     const plan = buildStudyPlan({ track: 'goods', targetExamDate: '2026-09-20', dailyStudyMinutes: 60, planEnabled: true }, priorities, validResults, new Date('2026-08-19T10:00:00Z'));
     expect(plan.status).toBe('complete');
     expect(plan.daysUntilExam).toBe(32);
-    expect(plan.days.length).toBe(31);
+    expect(plan.days.length).toBe(32);
+    expect(plan.days[0]?.date).toBe('2026-08-19');
+    expect(plan.days.at(-1)?.date).toBe('2026-09-19');
     expect(plan.readiness.status).not.toBe('insufficient');
   });
 
   it('uses the emergency plan for a near exam date', () => {
     const plan = buildStudyPlan({ track: 'goods', targetExamDate: '2026-08-24', dailyStudyMinutes: 40, planEnabled: true }, priorities, validResults, new Date('2026-08-19T10:00:00Z'));
     expect(plan.status).toBe('emergency');
-    expect(plan.days.length).toBe(4);
+    expect(plan.days.length).toBe(5);
+    expect(plan.days[0]?.date).toBe('2026-08-19');
+    expect(plan.days.at(-1)?.date).toBe('2026-08-23');
     expect(plan.messagePt).toContain('emergência');
   });
 

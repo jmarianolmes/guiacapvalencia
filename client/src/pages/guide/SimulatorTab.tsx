@@ -34,6 +34,7 @@ const quickGlossary = [
 
 export default function SimulatorTab({ language }: SimulatorTabProps) {
   const [simulatorMode, setSimulatorMode] = useState<'statistical' | 'byDate' | 'byChapter'>('statistical');
+  const [studyMode, setStudyMode] = useState<'exam' | 'learning'>('exam');
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<string | null>(null);
@@ -93,7 +94,8 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       attemptNumber: selectedChapter ? chapterAttempt : undefined,
       questionCount: questions.length,
       ...stats,
-      timeTaken: Math.max(0, 7200 - timeLeft),
+      studyMode,
+      timeTaken: studyMode === 'exam' ? Math.max(0, 7200 - timeLeft) : 0,
     }, {
       onSuccess: () => simulatorUtils.guide.getUserResults.invalidate(),
     });
@@ -131,6 +133,13 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       glossaryNote: 'Apoio contextual CAP. Para frases completas, use também o tradutor do navegador.',
       chapter: 'Capítulo',
       start: 'Iniciar Simulado',
+      examMode: 'Modo exame',
+      examModeDesc: 'Sem revelar correções até o resultado final. Conta para seu índice de prontidão.',
+      learningMode: 'Modo aprendizagem',
+      learningModeDesc: 'Mostra a correção ao responder. Ideal para aprender; não entra no índice de prontidão.',
+      selectedStudyMode: 'Método escolhido',
+      learning: 'Aprendizagem',
+      exam: 'Exame',
       model: 'Modelo',
       date: 'Data',
       question: 'Questão',
@@ -188,6 +197,13 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       glossaryNote: 'Apoyo contextual CAP. Para frases completas, utiliza también el traductor del navegador.',
       chapter: 'Capítulo',
       start: 'Iniciar Simulacro',
+      examMode: 'Modo examen',
+      examModeDesc: 'No muestra correcciones hasta el resultado final. Cuenta para tu índice de preparación.',
+      learningMode: 'Modo aprendizaje',
+      learningModeDesc: 'Muestra la corrección al responder. Es ideal para aprender; no entra en el índice de preparación.',
+      selectedStudyMode: 'Método elegido',
+      learning: 'Aprendizaje',
+      exam: 'Examen',
       model: 'Modelo',
       date: 'Fecha',
       question: 'Pregunta',
@@ -220,7 +236,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
 
   // Timer
   useEffect(() => {
-    if ((!selectedModel && !selectedChapter) || showResults) return;
+    if ((!selectedModel && !selectedChapter) || showResults || studyMode !== 'exam') return;
     const interval = setInterval(() => {
       setTimeLeft(prev => Math.max(0, prev - 1));
     }, 1000);
@@ -242,6 +258,14 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
           <h2 className="text-3xl font-bold mb-2">{texts.title}</h2>
           <p className="text-slate-600">{texts.selectMode}</p>
         </div>
+
+        <Card className="border-violet-100 bg-gradient-to-r from-violet-50 to-blue-50">
+          <CardHeader className="pb-3"><CardTitle className="text-lg">{texts.selectedStudyMode}</CardTitle></CardHeader>
+          <CardContent><div className="grid gap-3 md:grid-cols-2">
+            <button type="button" onClick={() => setStudyMode('exam')} aria-pressed={studyMode === 'exam'} className={`rounded-xl border-2 p-4 text-left transition-all ${studyMode === 'exam' ? 'border-blue-600 bg-white shadow-sm' : 'border-transparent bg-white/60 hover:border-blue-200'}`}><span className="block text-base font-bold text-slate-900">{texts.examMode}</span><span className="mt-1 block text-sm leading-5 text-slate-600">{texts.examModeDesc}</span></button>
+            <button type="button" onClick={() => setStudyMode('learning')} aria-pressed={studyMode === 'learning'} className={`rounded-xl border-2 p-4 text-left transition-all ${studyMode === 'learning' ? 'border-emerald-600 bg-white shadow-sm' : 'border-transparent bg-white/60 hover:border-emerald-200'}`}><span className="block text-base font-bold text-slate-900">{texts.learningMode}</span><span className="mt-1 block text-sm leading-5 text-slate-600">{texts.learningModeDesc}</span></button>
+          </div></CardContent>
+        </Card>
 
         <div className="grid gap-6 md:grid-cols-3">
           {/* Modo Estatístico */}
@@ -599,13 +623,14 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex flex-wrap gap-2">
           <Badge className="text-xs md:text-sm">{selectedChapter ? texts.chapter : texts.model}: {selectedChapter ? (chaptersQuery.data || []).find((chapter) => chapter.id === selectedChapter)?.code : selectedModel}</Badge>
+          <Badge variant="outline" className={`text-xs md:text-sm ${studyMode === 'learning' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-blue-200 bg-blue-50 text-blue-800'}`}>{studyMode === 'learning' ? texts.learning : texts.exam}</Badge>
           {selectedChapter && chapterAttemptData && <Badge variant="outline" className="text-xs md:text-sm">{texts.attempt} {chapterAttemptData.attemptNumber}/{chapterAttemptData.availableAttempts}</Badge>}
           {selectedChapter && chapterAttemptData && <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-xs text-emerald-800 md:text-sm">{chapterAttemptData.officialQuestionsInAttempt}/{questions.length} {texts.official_in_attempt}</Badge>}
           <Badge variant="outline" className="text-xs md:text-sm">
             {texts.question} {currentQuestion + 1}/{questions.length}
           </Badge>
         </div>
-        <div className="font-semibold text-sm md:text-base">{texts.time}: {formatTime(timeLeft)}</div>
+        {studyMode === 'exam' && <div className="font-semibold text-sm md:text-base">{texts.time}: {formatTime(timeLeft)}</div>}
       </div>
 
       {/* Question */}
@@ -616,10 +641,10 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
           <div className="space-y-3">
             {(['A', 'B', 'C', 'D'] as const).map(option => {
               const selectedAnswer = answers[currentQuestion];
-              const isChapterFeedback = Boolean(selectedChapter && selectedAnswer);
+              const isLearningFeedback = Boolean(studyMode === 'learning' && selectedAnswer);
               const isCorrectOption = option === question.correctAnswer;
               const isSelectedOption = option === selectedAnswer;
-              const optionClass = isChapterFeedback
+              const optionClass = isLearningFeedback
                 ? isCorrectOption
                   ? 'border-green-600 bg-green-50 text-green-950'
                   : isSelectedOption
@@ -633,7 +658,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                 <button
                   key={option}
                   onClick={() => setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: option }))}
-                  disabled={isChapterFeedback}
+                  disabled={isLearningFeedback}
                   aria-pressed={isSelectedOption}
                   className={`w-full rounded-lg border-2 p-3 text-left text-sm transition-all disabled:cursor-default md:p-4 md:text-base ${optionClass}`}
                 >
@@ -642,7 +667,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
               );
             })}
           </div>
-          {selectedChapter && answers[currentQuestion] && (
+          {studyMode === 'learning' && answers[currentQuestion] && (
             <div className={`mt-4 rounded-lg border px-4 py-3 text-sm font-medium ${
               answers[currentQuestion] === question.correctAnswer
                 ? 'border-green-200 bg-green-50 text-green-800'
@@ -675,7 +700,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
               const isCurrent = currentQuestion === idx;
               const wasCorrect = answer === navigationQuestion.correctAnswer;
               const colorClass = wasAnswered
-                ? selectedChapter
+                ? studyMode === 'learning'
                   ? wasCorrect ? 'bg-green-100 text-green-800 ring-green-300' : 'bg-red-100 text-red-800 ring-red-300'
                   : 'bg-green-100 text-green-800 ring-green-300'
                 : isCurrent ? 'bg-blue-600 text-white ring-blue-300' : 'bg-slate-200 text-slate-700 ring-slate-300';
@@ -702,7 +727,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
               const isCurrent = currentQuestion === idx;
               const wasCorrect = answer === navigationQuestion.correctAnswer;
               const colorClass = wasAnswered
-                ? selectedChapter
+                ? studyMode === 'learning'
                   ? wasCorrect ? 'bg-green-100 text-green-800 ring-green-300' : 'bg-red-100 text-red-800 ring-red-300'
                   : 'bg-green-100 text-green-800 ring-green-300'
                 : isCurrent ? 'bg-blue-600 text-white ring-blue-300' : 'bg-slate-200 text-slate-700 ring-slate-300';

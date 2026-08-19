@@ -8,20 +8,28 @@ import { trpc } from '@/lib/trpc';
 
 type Props = {
   language: 'pt' | 'es';
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onboarding?: boolean;
 };
 
-export default function ProfileDialog({ language }: Props) {
+export default function ProfileDialog({ language, open, onOpenChange, onboarding = false }: Props) {
   const isEs = language === 'es';
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [targetExamDate, setTargetExamDate] = useState('');
   const [dailyStudyMinutes, setDailyStudyMinutes] = useState<40 | 60 | 90>(60);
   const [planEnabled, setPlanEnabled] = useState(true);
-  const profileQuery = trpc.profile.get.useQuery(undefined, { enabled: open });
+  const dialogOpen = open ?? internalOpen;
+  const setDialogOpen = (nextOpen: boolean) => {
+    setInternalOpen(nextOpen);
+    onOpenChange?.(nextOpen);
+  };
+  const profileQuery = trpc.profile.get.useQuery(undefined, { enabled: dialogOpen });
   const utils = trpc.useUtils();
   const saveMutation = trpc.profile.save.useMutation({
     onSuccess: async () => {
-      await Promise.all([profileQuery.refetch(), utils.guide.getStudyPlan.invalidate()]);
-      setOpen(false);
+      await Promise.all([profileQuery.refetch(), utils.profile.get.invalidate(), utils.guide.getStudyPlan.invalidate()]);
+      setDialogOpen(false);
     },
   });
 
@@ -33,15 +41,15 @@ export default function ProfileDialog({ language }: Props) {
   }, [profileQuery.data]);
 
   const text = isEs ? {
-    trigger: 'Perfil', title: 'Perfil de estudio', description: 'Configura tu objetivo para recibir un plan de estudio adaptado.',
+    trigger: 'Perfil', title: onboarding ? 'Antes de empezar, configura tu estudio' : 'Perfil de estudio', description: onboarding ? 'Indica la fecha estimada del examen y tu tiempo diario. Siempre podrás cambiarlo desde Perfil.' : 'Configura tu objetivo para recibir un plan de estudio adaptado.',
     track: 'Modalidad', goods: 'Mercancías', passengers: 'Viajeros — en implementación', date: 'Fecha prevista del examen',
     time: 'Tiempo disponible por día', minutes: 'minutos', plan: 'Activar plan de estudios', planHint: 'Puedes usar libremente el guía sin seguir el itinerario.',
-    save: 'Guardar perfil', saving: 'Guardando...', error: 'No se pudo guardar el perfil.',
+    save: onboarding ? 'Guardar y ver mi plan' : 'Guardar perfil', saving: 'Guardando...', error: 'No se pudo guardar el perfil.',
   } : {
-    trigger: 'Perfil', title: 'Perfil de estudo', description: 'Configure seu objetivo para receber um plano de estudos adaptado.',
+    trigger: 'Perfil', title: onboarding ? 'Antes de começar, configure seu estudo' : 'Perfil de estudo', description: onboarding ? 'Informe a data estimada da prova e seu tempo diário. Você poderá alterar tudo pelo Perfil quando quiser.' : 'Configure seu objetivo para receber um plano de estudos adaptado.',
     track: 'Modalidade', goods: 'Mercadorias', passengers: 'Viajantes — em implementação', date: 'Data prevista da prova',
     time: 'Tempo disponível por dia', minutes: 'minutos', plan: 'Ativar plano de estudos', planHint: 'Você pode usar livremente o guia sem seguir o roteiro.',
-    save: 'Salvar perfil', saving: 'Salvando...', error: 'Não foi possível salvar o perfil.',
+    save: onboarding ? 'Salvar e ver meu plano' : 'Salvar perfil', saving: 'Salvando...', error: 'Não foi possível salvar o perfil.',
   };
 
   const submit = async (event: React.FormEvent) => {
@@ -55,7 +63,7 @@ export default function ProfileDialog({ language }: Props) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Button type="button" size="sm" variant="secondary" className="bg-white text-blue-700 hover:bg-blue-50">{text.trigger}</Button>
       </DialogTrigger>
