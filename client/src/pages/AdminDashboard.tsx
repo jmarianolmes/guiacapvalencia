@@ -151,6 +151,15 @@ export default function AdminDashboard() {
     }
   };
 
+  const copyPaymentReference = async (reference: string) => {
+    try {
+      await navigator.clipboard.writeText(reference);
+      setSuccessMessage(`Referência ${reference} copiada.`);
+    } catch {
+      setFormError('Não foi possível copiar automaticamente a referência.');
+    }
+  };
+
   const handleDeleteUser = async (userId: number) => {
     setFormError('');
     setSuccessMessage('');
@@ -217,8 +226,8 @@ export default function AdminDashboard() {
               <div className="py-8 text-center text-slate-500">{text.noUsers}</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[760px] text-sm">
-                  <thead><tr className="border-b border-slate-200"><th className="px-4 py-3 text-left font-semibold">{text.email}</th><th className="px-4 py-3 text-left font-semibold">{text.name}</th><th className="px-4 py-3 text-left font-semibold">{text.status}</th><th className="px-4 py-3 text-left font-semibold">Acesso até</th><th className="px-4 py-3 text-left font-semibold">{text.actions}</th></tr></thead>
+                <table className="w-full min-w-[980px] text-sm">
+                  <thead><tr className="border-b border-slate-200"><th className="px-4 py-3 text-left font-semibold">{text.email}</th><th className="px-4 py-3 text-left font-semibold">{text.name}</th><th className="px-4 py-3 text-left font-semibold">{text.status}</th><th className="px-4 py-3 text-left font-semibold">Código de referência</th><th className="px-4 py-3 text-left font-semibold">Acesso até</th><th className="px-4 py-3 text-left font-semibold">{text.actions}</th></tr></thead>
                   <tbody>{(usersQuery.data || []).map(account => (
                     <tr key={account.id} className="border-b border-slate-100 align-top hover:bg-slate-50">
                       <td className="px-4 py-3">{account.email}</td><td className="px-4 py-3">{account.name || '-'}</td>
@@ -229,6 +238,7 @@ export default function AdminDashboard() {
                         {account.isApproved && !account.isBlocked && <Badge className="bg-emerald-100 text-emerald-800">{text.approvedStatus}</Badge>}
                         {account.mustChangePassword && <Badge className="bg-blue-100 text-blue-800">{text.temporary}</Badge>}
                       </div></td>
+                      <td className="px-4 py-3">{account.paymentReference ? <div className="flex flex-wrap items-center gap-2"><span className="font-mono font-semibold tracking-wide">{account.paymentReference}</span><Button type="button" variant="outline" size="sm" className="h-6 px-2 text-xs" onClick={() => copyPaymentReference(account.paymentReference!)}>Copiar</Button></div> : <span className="text-xs text-slate-500">Sem código</span>}</td>
                       <td className="px-4 py-3">{account.isMaster ? 'Sem vencimento' : account.accessExpiresAt ? <div><div>{new Date(account.accessExpiresAt).toLocaleDateString(isEs ? 'es-ES' : 'pt-BR')}</div>{account.accessExpired && <Badge className="mt-1 bg-rose-100 text-rose-800">Vencido</Badge>}</div> : <Badge variant="secondary">Sem prazo</Badge>}</td>
                       <td className="px-4 py-3"><div className="flex flex-wrap gap-2">
                         {!account.isApproved && <Button onClick={() => handleApprove(account.id)} size="sm" variant="outline" disabled={approveMutation.isPending}>{text.approve}</Button>}
@@ -241,7 +251,7 @@ export default function AdminDashboard() {
                       </div></td>
                     </tr>
                   ))}{(usersQuery.data || []).map(account => editingPasswordUserId === account.id ? (
-                    <tr key={`password-${account.id}`} className="border-b border-slate-100 bg-blue-50"><td colSpan={5} className="px-4 py-3"><div className="flex flex-wrap items-end gap-2"><div className="min-w-56 flex-1"><Label htmlFor={`reset-password-${account.id}`}>{text.resetPassword}</Label><Input id={`reset-password-${account.id}`} name={`reset-user-${account.id}-password`} autoComplete="new-password" className="mt-1" type={showTemporaryPassword ? 'text' : 'password'} minLength={8} value={replacementPassword} onChange={event => setReplacementPassword(event.target.value)} /></div><Button type="button" variant="outline" size="sm" onClick={() => setShowTemporaryPassword(value => !value)}>{showTemporaryPassword ? text.hidePassword : text.showPassword}</Button><Button type="button" size="sm" onClick={() => handleResetPassword(account.id)} disabled={replacementPassword.length < 8 || resetPasswordMutation.isPending}>{text.savePassword}</Button><Button type="button" size="sm" variant="outline" onClick={() => { setEditingPasswordUserId(null); setReplacementPassword(''); }}>{text.cancel}</Button></div></td></tr>
+                    <tr key={`password-${account.id}`} className="border-b border-slate-100 bg-blue-50"><td colSpan={6} className="px-4 py-3"><div className="flex flex-wrap items-end gap-2"><div className="min-w-56 flex-1"><Label htmlFor={`reset-password-${account.id}`}>{text.resetPassword}</Label><Input id={`reset-password-${account.id}`} name={`reset-user-${account.id}-password`} autoComplete="new-password" className="mt-1" type={showTemporaryPassword ? 'text' : 'password'} minLength={8} value={replacementPassword} onChange={event => setReplacementPassword(event.target.value)} /></div><Button type="button" variant="outline" size="sm" onClick={() => setShowTemporaryPassword(value => !value)}>{showTemporaryPassword ? text.hidePassword : text.showPassword}</Button><Button type="button" size="sm" onClick={() => handleResetPassword(account.id)} disabled={replacementPassword.length < 8 || resetPasswordMutation.isPending}>{text.savePassword}</Button><Button type="button" size="sm" variant="outline" onClick={() => { setEditingPasswordUserId(null); setReplacementPassword(''); }}>{text.cancel}</Button></div></td></tr>
                   ) : null)}</tbody>
                 </table>
               </div>

@@ -25,6 +25,9 @@ export const users = mysqlTable("users", {
   isMaster: boolean("isMaster").default(false).notNull(),
   // Null keeps legacy and master accounts unrestricted; student accounts created by admin receive a date.
   accessExpiresAt: timestamp("accessExpiresAt"),
+  // Código numérico de oito dígitos, visível no painel para conferência manual do extrato.
+  // Não é senha, meio de pagamento, comprovante nem libera acesso automaticamente.
+  paymentReference: varchar("paymentReference", { length: 8 }).unique(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn"),

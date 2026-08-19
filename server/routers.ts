@@ -42,10 +42,11 @@ export const appRouter = router({
       }))
       .mutation(async ({ input }) => {
         try {
-          await authService.registerUser(input.email, input.password, input.name);
-          return { 
-            success: true, 
-            message: "Usuário registrado com sucesso. Aguardando aprovação do administrador." 
+          const registration = await authService.registerUser(input.email, input.password, input.name);
+          return {
+            success: true,
+            message: "Cadastro realizado. Guarde a referência informada e aguarde a aprovação do administrador.",
+            ...registration,
           };
         } catch (error) {
           throw new TRPCError({
@@ -307,6 +308,7 @@ export const appRouter = router({
         mustChangePassword: user.mustChangePassword,
         accessExpiresAt: user.accessExpiresAt,
         accessExpired: authService.isAccessExpired(user),
+        paymentReference: user.paymentReference,
         createdAt: user.createdAt,
         lastSignedIn: user.lastSignedIn,
       }));

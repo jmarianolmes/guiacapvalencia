@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { users, passwordResets } from '../drizzle/schema';
 import { getDb } from './db';
+import { generatePaymentReference } from './paymentReferences';
 
 const SALT_ROUNDS = 10;
 const PASSWORD_RESET_EXPIRY_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -34,31 +35,49 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 /**
  * Register a new user with email and password
  */
+async function createUniquePaymentReference() {
+  const db = await getDb();
+  if (!db) throw new Error('Database not available');
+
+  // Eight characters from a 32-symbol alphabet make accidental collisions rare.
+  // The unique database index remains the final protection in the unlikely race.
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const paymentReference = generatePaymentReference();
+    const existing = await db.select({ id: users.id }).from(users).where(eq(users.paymentReference, paymentReference)).limit(1);
+    if (!existing.length) return paymentReference;
+  }
+  throw new Error('Não foi possível gerar uma referência de pagamento única. Tente novamente.');
+}
+
+/**
+ * Register a pending student with a numeric reference for manual statement
+ * matching. The reference never proves payment or grants access by itself.
+ */
 export async function registerUser(email: string, password: string, name?: string) {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
 
-  // Check if user already exists
-  const existing = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  const normalizedEmail = email.trim().toLowerCase();
+  const existing = await db.select().from(users).where(eq(users.email, normalizedEmail)).limit(1);
   if (existing.length > 0) {
     throw new Error('Email already registered');
   }
 
   const passwordHash = await hashPassword(password);
-  // Generate a unique openId for email/password users
   const openId = `email_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-  
-  const result = await db.insert(users).values({
+  const paymentReference = await createUniquePaymentReference();
+  await db.insert(users).values({
     openId,
-    email,
-    name: name || email.split('@')[0],
+    email: normalizedEmail,
+    name: name?.trim() || normalizedEmail.split('@')[0],
     passwordHash,
     role: 'user',
-    isApproved: false, // Requires admin approval
+    isApproved: false,
     isBlocked: false,
+    paymentReference,
   });
 
-  return result;
+  return { paymentReference };
 }
 
 /**
