@@ -236,6 +236,9 @@ async function importHistoricalData() {
     tricks: tricksCount.total,
     siglas: siglasCount.total,
   });
+
+  // O pool mysql2 mantém o loop de eventos ativo; encerrar permite continuar para pnpm run start.
+  process.exit(0);
 }
 
 importHistoricalData().catch((error) => {
