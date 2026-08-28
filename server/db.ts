@@ -95,12 +95,13 @@ async function withSimulatorDbRetry<T>(operation: (db: NonNullable<typeof _db>) 
 }
 
 export function simulatorQuestionSignature(question: SimulatorQuestion) {
+  if (question.equivalenceKey?.trim()) return question.equivalenceKey;
   return [
     (question.normalized || question.question).trim().toLocaleLowerCase('es-ES'),
-    question.optionA.trim(),
-    question.optionB.trim(),
-    question.optionC.trim(),
-    question.optionD.trim(),
+    [question.optionA, question.optionB, question.optionC, question.optionD]
+      .map((option) => option.trim().toLocaleLowerCase('es-ES'))
+      .sort()
+      .join('¦'),
     question.correctAnswer,
   ].join('│');
 }
@@ -149,7 +150,12 @@ async function getChapterQuestionIndex() {
     const indexed: ChapterQuestionIndex = new Map(simulatorChapters.map((chapter) => [chapter.id, []]));
 
     for (const question of pool) {
-      const chapterId = classifySimulatorQuestion(question).chapter?.id;
+      // NO permanece no banco para uso futuro, mas não entra nos simulados atuais.
+      if (question.internalCode !== null && question.origin === 'non_official') continue;
+      // Registros catalogados sem capítulo aguardam revisão e não são misturados por fallback.
+      const chapterId = question.internalCode !== null
+        ? question.chapterId
+        : classifySimulatorQuestion(question).chapter?.id;
       if (chapterId) indexed.get(chapterId)?.push(question);
     }
 

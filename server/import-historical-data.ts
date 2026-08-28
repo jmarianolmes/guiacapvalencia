@@ -9,6 +9,7 @@ import {
   tricks,
 } from '../drizzle/schema';
 import { buildOfficialStatisticalModels } from './officialStatisticalModels';
+import { normalizedQuestionKey } from './questionCatalog';
 
 type RawQuestion = {
   prova: string;
@@ -42,6 +43,17 @@ type RepeatedQuestion = {
 };
 type Trick = { title: string; percentage: string; description_pt: string; description_es: string };
 type Sigla = { acronym: string; full_name: string; description_pt: string; description_es: string };
+type CatalogEntry = {
+  internalCode: string | null;
+  normalizedKey: string;
+  equivalenceKey: string;
+  chapterId: string | null;
+  chapterCode: string | null;
+  origin: 'official' | 'non_official';
+  reviewStatus: 'reviewed' | 'provisional' | 'pending_review';
+  isVariant: boolean;
+};
+type QuestionCatalog = { entries: CatalogEntry[] };
 
 const dataDirectory = path.join(process.cwd(), 'server', 'data');
 const batchSize = 100;
@@ -78,6 +90,7 @@ function loadAndValidateSources() {
   const repeated = readJson<RepeatedQuestion[]>('repeated_questions.json');
   const trickRows = readJson<Trick[]>('tricks.json');
   const siglaRows = readJson<Sigla[]>('siglas.json');
+  const questionCatalog = readJson<QuestionCatalog>('question_catalog.json');
 
   if (statisticalPools.length !== 10 || statisticalPools.some((pool) => pool.length !== 100)) {
     throw new Error('O pool estatístico deve conter 10 modelos A–J de 100 questões.');
@@ -105,12 +118,27 @@ function loadAndValidateSources() {
   if (repeated.length !== 146 || trickRows.length !== 21 || siglaRows.length !== 18) {
     throw new Error('As contagens de repetidas, pegadinhas ou siglas não correspondem ao acervo validado.');
   }
+  if (!questionCatalog.entries.length) throw new Error('O catálogo interno de questões está vazio.');
 
-  return { statisticalPools, originalExams, gvaExtraction, repeated, trickRows, siglaRows };
+  return { statisticalPools, originalExams, gvaExtraction, repeated, trickRows, siglaRows, questionCatalog };
 }
 
 async function importHistoricalData() {
-  const { statisticalPools, originalExams, gvaExtraction, repeated, trickRows, siglaRows } = loadAndValidateSources();
+  const { statisticalPools, originalExams, gvaExtraction, repeated, trickRows, siglaRows, questionCatalog } = loadAndValidateSources();
+  const catalogByNormalized = new Map(questionCatalog.entries.map((entry) => [entry.normalizedKey, entry]));
+  const catalogMetadata = (question: { normalized?: string | null; question: string }) => {
+    const entry = catalogByNormalized.get(normalizedQuestionKey(question));
+    if (!entry) throw new Error(`Questão sem catálogo interno: ${question.question.slice(0, 80)}`);
+    return {
+      internalCode: entry.internalCode,
+      equivalenceKey: entry.equivalenceKey,
+      chapterId: entry.chapterId,
+      chapterCode: entry.chapterCode,
+      origin: entry.origin,
+      reviewStatus: entry.reviewStatus,
+      isVariant: entry.isVariant,
+    };
+  };
 
   const statisticalRows = statisticalPools.flatMap((pool, poolIndex) => {
     const model = String.fromCharCode(65 + poolIndex);
@@ -127,6 +155,7 @@ async function importHistoricalData() {
       optionD: question.options.D,
       correctAnswer: question.answer,
       normalized: question.normalized || question.stem.toLocaleLowerCase('es-ES'),
+      ...catalogMetadata({ normalized: question.normalized, question: question.question }),
     }));
   });
 
@@ -144,6 +173,7 @@ async function importHistoricalData() {
       optionD: question.options.D,
       correctAnswer: question.answer,
       normalized: question.normalized || question.stem.toLocaleLowerCase('es-ES'),
+      ...catalogMetadata({ normalized: question.normalized, question: question.question }),
     })),
   );
 
@@ -161,6 +191,7 @@ async function importHistoricalData() {
     optionD: question.optionD,
     correctAnswer: question.correctAnswer,
     normalized: question.normalized || question.stem.toLocaleLowerCase('es-ES'),
+    ...catalogMetadata({ normalized: question.normalized, question: question.question }),
   })));
 
   const expected = {

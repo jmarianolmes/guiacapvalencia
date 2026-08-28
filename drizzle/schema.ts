@@ -76,6 +76,14 @@ export const simulatorQuestions = mysqlTable("simulator_questions", {
   optionD: text("optionD").notNull(),
   correctAnswer: varchar("correctAnswer", { length: 1 }).notNull(), // A, B, C, D
   normalized: text("normalized"), // Normalized version for search
+  // Internal catalog metadata; these fields are not exposed in the public simulator UI.
+  internalCode: varchar("internalCode", { length: 24 }),
+  equivalenceKey: text("equivalenceKey"),
+  chapterId: varchar("chapterId", { length: 50 }),
+  chapterCode: varchar("chapterCode", { length: 12 }),
+  origin: varchar("origin", { length: 20 }).default("official").notNull(), // official | non_official
+  reviewStatus: varchar("reviewStatus", { length: 20 }).default("pending_review").notNull(), // reviewed | provisional | pending_review
+  isVariant: boolean("isVariant").default(false).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, (table) => [
   index("simulator_questions_model_question_idx").on(table.model, table.questionNumber),
