@@ -102,7 +102,7 @@ export function simulatorQuestionSignature(question: SimulatorQuestion) {
       .map((option) => option.trim().toLocaleLowerCase('es-ES'))
       .sort()
       .join('¦'),
-    question.correctAnswer,
+    (question.correctAnswer === 'A' ? question.optionA : question.correctAnswer === 'B' ? question.optionB : question.correctAnswer === 'C' ? question.optionC : question.optionD).trim().toLocaleLowerCase('es-ES'),
   ].join('│');
 }
 
@@ -410,6 +410,13 @@ export async function getSimulatorStats() {
         officialExams: sql<number>`count(distinct case when ${simulatorQuestions.model} = 'ORIGINAL' then ${simulatorQuestions.provaDate} end)`,
         statisticalModels: sql<number>`count(distinct case when ${simulatorQuestions.model} <> 'ORIGINAL' then ${simulatorQuestions.model} end)`,
         repeatedQuestions: sql<number>`(select count(*) from ${repeatedQuestions})`,
+        catalogUniqueEntries: sql<number>`count(distinct ${simulatorQuestions.equivalenceKey})`,
+        catalogOfficialUniqueEntries: sql<number>`count(distinct case when ${simulatorQuestions.origin} = 'official' then ${simulatorQuestions.equivalenceKey} end)`,
+        catalogNonOfficialUniqueEntries: sql<number>`count(distinct case when ${simulatorQuestions.origin} = 'non_official' then ${simulatorQuestions.equivalenceKey} end)`,
+        catalogVariantEntries: sql<number>`count(distinct case when ${simulatorQuestions.isVariant} = true then ${simulatorQuestions.equivalenceKey} end)`,
+        catalogReviewedEntries: sql<number>`count(distinct case when ${simulatorQuestions.reviewStatus} = 'reviewed' then ${simulatorQuestions.equivalenceKey} end)`,
+        catalogProvisionalEntries: sql<number>`count(distinct case when ${simulatorQuestions.reviewStatus} = 'provisional' then ${simulatorQuestions.equivalenceKey} end)`,
+        catalogPendingReviewEntries: sql<number>`count(distinct case when ${simulatorQuestions.reviewStatus} = 'pending_review' then ${simulatorQuestions.equivalenceKey} end)`,
       }).from(simulatorQuestions)
     );
 
@@ -420,6 +427,13 @@ export async function getSimulatorStats() {
       totalOfficialExams: Number(summary?.officialExams ?? 0),
       totalModels: Number(summary?.statisticalModels ?? 0),
       totalRepeatedQuestions: Number(summary?.repeatedQuestions ?? 0),
+      catalogUniqueEntries: Number(summary?.catalogUniqueEntries ?? 0),
+      catalogOfficialUniqueEntries: Number(summary?.catalogOfficialUniqueEntries ?? 0),
+      catalogNonOfficialUniqueEntries: Number(summary?.catalogNonOfficialUniqueEntries ?? 0),
+      catalogVariantEntries: Number(summary?.catalogVariantEntries ?? 0),
+      catalogReviewedEntries: Number(summary?.catalogReviewedEntries ?? 0),
+      catalogProvisionalEntries: Number(summary?.catalogProvisionalEntries ?? 0),
+      catalogPendingReviewEntries: Number(summary?.catalogPendingReviewEntries ?? 0),
     };
   } catch (error) {
     console.error("[Database] Failed to get simulator stats:", error);

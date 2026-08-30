@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { classifySimulatorQuestion } from '../server/chapterClassifier';
+import { simulatorChapters } from '../shared/simulatorChapters';
 import { internalQuestionCode, questionEquivalenceKey, questionGroupKey, type CatalogSourceRecord, type QuestionCatalogEntry } from '../server/questionCatalog';
 
 const root = path.resolve(import.meta.dirname, '..');
@@ -29,6 +30,10 @@ function main() {
   const recent = read('original_exams.json') as Array<{ date: string; questions: any[] }>;
   const gva = read('gva_cap_mercancias_extracted.json') as { exams: Array<{ date: string; questions: any[] }> };
   const pools = read('simulator_questions.json') as any[][];
+  const llmSuggestionsPath = path.join(root, 'server', 'data', 'question_catalog_llm_suggestions.json');
+  const llmSuggestions = fs.existsSync(llmSuggestionsPath)
+    ? (JSON.parse(fs.readFileSync(llmSuggestionsPath, 'utf8')).suggestions ?? {}) as Record<string, { chapterId: string; confidence: 'high' | 'medium' | 'low' }>
+    : {};
 
   for (const exam of recent) exam.questions.forEach((q, i) => add(groups, makeRecord(q, 'original_exams', exam.date, q.questionNumber ?? i + 1)));
   for (const exam of gva.exams) exam.questions.forEach((q, i) => add(groups, makeRecord(q, 'gva', exam.date, q.questionNumber ?? i + 1)));
@@ -44,8 +49,12 @@ function main() {
     const poolRows = rows.filter((row) => row.source === 'statistical_pool');
     const origin: 'official' | 'non_official' = officialRows.length > 0 ? 'official' : 'non_official';
     const representative = (officialRows[0] ?? poolRows[0])!;
-    const classification = classifySimulatorQuestion(representative);
-    const chapter = classification.chapter;
+    const fallbackClassification = classifySimulatorQuestion(representative);
+    const suggestion = llmSuggestions[normalizedKey];
+    const chapter = suggestion
+      ? simulatorChapters.find((candidate) => candidate.id === suggestion.chapterId)
+      : fallbackClassification.chapter;
+    const classificationMethod = suggestion ? 'llm_provisional' : fallbackClassification.method;
     const equivalences = new Set(rows.map(questionEquivalenceKey));
     const isVariant = rows.length > 1 || equivalences.size > 1;
     const counterKey = `${origin}:${chapter?.id ?? 'unassigned'}`;
@@ -62,7 +71,7 @@ function main() {
       chapterCode: chapter?.code ?? null,
       group: chapter?.group ?? null,
       origin,
-      reviewStatus: classification.method === 'reviewed' ? 'reviewed' : classification.chapter ? 'provisional' : 'pending_review',
+      reviewStatus: classificationMethod === 'reviewed' ? 'reviewed' : chapter ? 'provisional' : 'pending_review',
       isVariant,
       occurrenceCount: rows.length,
       sources: rows,
@@ -74,8 +83,8 @@ function main() {
     officialSourceRecords: recent.reduce((n, e) => n + e.questions.length, 0) + gva.exams.reduce((n, e) => n + e.questions.length, 0),
     statisticalPoolRecords: pools.reduce((n, p) => n + p.length, 0),
     uniqueCatalogEntries: entries.length,
-    officialEntries: entries.filter((e) => e.origin === 'official').length,
-    nonOfficialEntries: entries.filter((e) => e.origin === 'non_official').length,
+    officialUniqueEntries: entries.filter((e) => e.origin === 'official').length,
+    nonOfficialUniqueEntries: entries.filter((e) => e.origin === 'non_official').length,
     variantEntries: entries.filter((e) => e.isVariant).length,
     pendingReviewEntries: entries.filter((e) => e.reviewStatus === 'pending_review').length,
     provisionalEntries: entries.filter((e) => e.reviewStatus === 'provisional').length,

@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-28T10:15:36.739Z",
+  "generatedAt": "2026-08-30T14:26:18.786Z",
   "officialSourceRecords": 3400,
   "statisticalPoolRecords": 1000,
   "uniqueCatalogEntries": 2490,
-  "officialEntries": 2478,
-  "nonOfficialEntries": 12,
+  "officialUniqueEntries": 2478,
+  "nonOfficialUniqueEntries": 12,
   "variantEntries": 892,
-  "pendingReviewEntries": 941,
-  "provisionalEntries": 1024,
+  "pendingReviewEntries": 0,
+  "provisionalEntries": 1965,
   "reviewedEntries": 525,
   "duplicateStatisticalRowsExcludedFromNonOfficial": 981
 }

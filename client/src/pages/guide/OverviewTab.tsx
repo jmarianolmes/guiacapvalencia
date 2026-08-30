@@ -14,6 +14,7 @@ const ANSWER_COLORS: Record<string, string> = { A: '#2563eb', B: '#7c3aed', C: '
 export default function OverviewTab({ language }: OverviewTabProps) {
   const [priorityIndex, setPriorityIndex] = useState(0);
   const analysisQuery = trpc.guide.getOfficialExamAnalysis.useQuery(undefined, { staleTime: 5 * 60 * 1000, retry: 1 });
+  const statsQuery = trpc.guide.getStats.useQuery(undefined, { staleTime: 5 * 60 * 1000, retry: 1 });
   const t = {
     pt: {
       title: 'Visão Geral — Estatísticas Oficiais',
@@ -42,6 +43,7 @@ export default function OverviewTab({ language }: OverviewTabProps) {
       methodologyText: 'O índice pondera 55% de volume relativo, 25% de recorrência literal, 10% de presença nas 34 provas e 10% de presença nas 8 convocatórias mais recentes. Recorrência usa enunciado, quatro alternativas e gabarito; apenas provas oficiais entram no cálculo.',
       loading: 'Calculando a análise oficial...', error: 'Não foi possível carregar a análise oficial.',
       questionsShort: 'questões', percentage: 'percentual',
+      catalogTitle: 'Catálogo interno complementar', catalogUnique: 'Grupos únicos catalogados', catalogVariants: 'Variantes R', catalogNonOfficial: 'Questões NO preservadas', catalogPending: 'Pendentes de revisão',
     },
     es: {
       title: 'Visión General — Estadísticas Oficiales',
@@ -70,6 +72,7 @@ export default function OverviewTab({ language }: OverviewTabProps) {
       methodologyText: 'El índice pondera 55% de volumen relativo, 25% de recurrencia literal, 10% de presencia en los 34 exámenes y 10% de presencia en las 8 convocatorias más recientes. La recurrencia usa enunciado, cuatro alternativas y respuesta; solo entran exámenes oficiales.',
       loading: 'Calculando el análisis oficial...', error: 'No se ha podido cargar el análisis oficial.',
       questionsShort: 'preguntas', percentage: 'porcentaje',
+      catalogTitle: 'Catálogo interno complementario', catalogUnique: 'Grupos únicos catalogados', catalogVariants: 'Variantes R', catalogNonOfficial: 'Preguntas NO preservadas', catalogPending: 'Pendientes de revisión',
     },
   } as const;
   const texts = t[language];
@@ -107,6 +110,8 @@ export default function OverviewTab({ language }: OverviewTabProps) {
           { value: analysis.repeatedGroups, label: texts.repeated, color: 'text-amber-700' },
         ].map((stat) => <Card key={stat.label}><CardContent className="p-4"><div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div><div className="mt-1 text-xs text-slate-600">{stat.label}</div></CardContent></Card>)}
       </div>
+
+      {statsQuery.data?.catalogUniqueEntries ? <Card className="border-emerald-200 bg-emerald-50"><CardHeader><CardTitle className="text-emerald-900">{texts.catalogTitle}</CardTitle></CardHeader><CardContent className="grid grid-cols-2 gap-3 pt-0 sm:grid-cols-4"><div><div className="text-xl font-bold text-emerald-800">{statsQuery.data.catalogUniqueEntries}</div><div className="text-xs text-emerald-900">{texts.catalogUnique}</div></div><div><div className="text-xl font-bold text-emerald-800">{statsQuery.data.catalogVariantEntries}</div><div className="text-xs text-emerald-900">{texts.catalogVariants}</div></div><div><div className="text-xl font-bold text-emerald-800">{statsQuery.data.catalogNonOfficialUniqueEntries}</div><div className="text-xs text-emerald-900">{texts.catalogNonOfficial}</div></div><div><div className="text-xl font-bold text-emerald-800">{statsQuery.data.catalogPendingReviewEntries}</div><div className="text-xs text-emerald-900">{texts.catalogPending}</div></div></CardContent></Card> : null}
 
       <div className="grid gap-6 xl:grid-cols-2">
         <Card>

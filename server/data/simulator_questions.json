@@ -181,19 +181,19 @@
       "normalized": "en el caso de un transporte efectuado en régimen de tránsito de la unión, ¿qué se debe presentar en las aduanas de tránsito?"
     },
     {
-      "prova": "07/02/2026",
-      "q_num": 76,
-      "materia": "Materiales Comunes",
-      "question": "(Reserva 5º) ¿Cómo se debe señalizar un vehículo que transporta mercancías peligrosas durante la noche?",
-      "stem": "(Reserva 5º) ¿Cómo se debe señalizar un vehículo que transporta mercancías peligrosas durante la noche?",
+      "prova": "29/11/2025",
+      "q_num": 8,
+      "materia": "Mercancias",
+      "question": "¿La carencia de autorización de transporte puede dar lugar a la inmovilización de un autobús?",
+      "stem": "¿La carencia de autorización de transporte puede dar lugar a la inmovilización de un autobús?",
       "options": {
-        "A": "Con luces de gálibo.",
-        "B": "Con las señales naranjas retrorreflectantes.",
-        "C": "Con una luz giratoria amarilla.",
-        "D": "No es necesaria ninguna señalización especial nocturna."
+        "A": "Sí.",
+        "B": "No.",
+        "C": "Solo en caso de reiteración de la infracción.",
+        "D": "Depende del tipo de servicio que esté realizando."
       },
-      "answer": "B",
-      "normalized": "(reserva 5º) ¿cómo se debe señalizar un vehículo que transporta mercancías peligrosas durante la noche?"
+      "answer": "A",
+      "normalized": "¿la carencia de autorización de transporte puede dar lugar a la inmovilización de un autobús?"
     },
     {
       "prova": "01/02/2025",
@@ -1261,19 +1261,19 @@
       "normalized": "¿cuál de estas afirmaciones es falsa?"
     },
     {
-      "prova": "27/09/2025",
-      "q_num": 3,
+      "prova": "07/02/2026",
+      "q_num": 19,
       "materia": "Mercancias",
-      "question": "El dispositivo de seguridad BAS, ¿qué acción lleva a cabo?",
-      "stem": "El dispositivo de seguridad BAS, ¿qué acción lleva a cabo?",
+      "question": "En un contrato de transporte sujeto al Convenio CMR, ¿qué indicaciones debe contener la carta de porte?",
+      "stem": "En un contrato de transporte sujeto al Convenio CMR, ¿qué indicaciones debe contener la carta de porte?",
       "options": {
-        "A": "Mide la distancia con el vehículo que circula delante y calcula la distancia de seguridad.",
-        "B": "En un frenada de emergencia, corrige la presión de frenado para evitar la colisión.",
-        "C": "Si capta que se va a producir el bloqueo de una rueda, disminuye la fuerza de frenado sobre ella.",
-        "D": "Si, al arrancar, una rueda motriz patina, la frena."
+        "A": "Denominación de la naturaleza de la mercancía.",
+        "B": "Recorrido total del transporte expresado en kilómetros.",
+        "C": "Matrícula del vehículo utilizado en el transporte.",
+        "D": "Todas las respuestas anteriores son correctas."
       },
-      "answer": "B",
-      "normalized": "el dispositivo de seguridad bas, ¿qué acción lleva a cabo?"
+      "answer": "D",
+      "normalized": "en un contrato de transporte sujeto al convenio cmr, ¿qué indicaciones debe contener la carta de porte?"
     },
     {
       "prova": "30/05/2026",
@@ -2583,19 +2583,19 @@
       "normalized": "¿cuáles son las características que mejor describen las prestaciones de un motor?"
     },
     {
-      "prova": "05/04/2025",
-      "q_num": 14,
+      "prova": "27/09/2025",
+      "q_num": 16,
       "materia": "Mercancias",
-      "question": "El Instituto Nacional de Seguridad e Higiene en el Trabajo recomienda que, para el levantamiento de pesos manualmente en posición sentado, no se superen:",
-      "stem": "El Instituto Nacional de Seguridad e Higiene en el Trabajo recomienda que, para el levantamiento de pesos manualmente en posición sentado, no se superen:",
+      "question": "¿Cuántos vocales debe tener una Junta Arbitral de Transporte?",
+      "stem": "¿Cuántos vocales debe tener una Junta Arbitral de Transporte?",
       "options": {
-        "A": "5 kilos.",
-        "B": "15 kilos.",
-        "C": "25 kilos.",
-        "D": "50 kilos."
+        "A": "Dos.",
+        "B": "Cuatro.",
+        "C": "Un mínimo de dos.",
+        "D": "Un mínimo de cuatro."
       },
       "answer": "A",
-      "normalized": "el instituto nacional de seguridad e higiene en el trabajo recomienda que, para el levantamiento de pesos manualmente en posición sentado, no se superen:"
+      "normalized": "¿cuántos vocales debe tener una junta arbitral de transporte?"
     },
     {
       "prova": "01/02/2025",
@@ -2674,18 +2674,18 @@
     },
     {
       "prova": "07/02/2026",
-      "q_num": 46,
-      "materia": "Materiales Comunes",
-      "question": "¿Qué zapatos son adecuados para trabajar de pie?",
-      "stem": "¿Qué zapatos son adecuados para trabajar de pie?",
+      "q_num": 18,
+      "materia": "Mercancias",
+      "question": "El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:",
+      "stem": "El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:",
       "options": {
-        "A": "De tacón alto.",
-        "B": "Los completamente planos.",
-        "C": "Tacón de 2 a 4cm.",
-        "D": "Los de plataforma."
+        "A": "los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, uno al menos firmante del Convenio.",
+        "B": "los lugares de carga y entrega de la mercancía pertenezcan al mismo país, siempre que el transporte haya transcurrido en parte por un país extranjero.",
+        "C": "el lugar de carga se encuentre en un país firmante y el transportista sea nacional de otro país firmante.",
+        "D": "los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, ambos deben ser firmantes del Convenio."
       },
-      "answer": "C",
-      "normalized": "¿qué zapatos son adecuados para trabajar de pie?"
+      "answer": "A",
+      "normalized": "el convenio cmr se aplicará a los contratos de transporte de mercancías por carretera en los que:"
     },
     {
       "prova": "27/09/2025",
@@ -2763,19 +2763,19 @@
       "normalized": "¿qué es el \"aquaplaning\"?"
     },
     {
-      "prova": "07/02/2026",
-      "q_num": 58,
-      "materia": "Materiales Comunes",
-      "question": "¿Cuántos puntos pierde en el permiso de conducir un conductor que haya colaborado en la manipulación del tacógrafo?",
-      "stem": "¿Cuántos puntos pierde en el permiso de conducir un conductor que haya colaborado en la manipulación del tacógrafo?",
+      "prova": "27/09/2025",
+      "q_num": 13,
+      "materia": "Mercancias",
+      "question": "En el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:",
+      "stem": "En el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:",
       "options": {
-        "A": "Dos.",
-        "B": "Cuatro.",
-        "C": "Seis.",
-        "D": "Ninguno, pues la responsable de las infracciones a la normativa de transportes es la empresa transportista."
+        "A": "del cargador, siempre.",
+        "B": "del cargador y del porteador al 50%.",
+        "C": "del porteador.",
+        "D": "Es indiferente que sea el cargador o el porteador, la responsabilidad será del que realice la carga."
       },
       "answer": "C",
-      "normalized": "¿cuántos puntos pierde en el permiso de conducir un conductor que haya colaborado en la manipulación del tacógrafo?"
+      "normalized": "en el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:"
     },
     {
       "prova": "05/04/2025",
@@ -4130,19 +4130,19 @@
       "normalized": "el acuerdo atp se aplica:"
     },
     {
-      "prova": "05/04/2025",
-      "q_num": 9,
+      "prova": "27/09/2025",
+      "q_num": 13,
       "materia": "Mercancias",
-      "question": "Según la Ley de responsabilidad civil y seguro en la circulación de vehículos a motor, ¿a qué dará lugar el incumplimiento de la obligación de asegurarse?",
-      "stem": "Según la Ley de responsabilidad civil y seguro en la circulación de vehículos a motor, ¿a qué dará lugar el incumplimiento de la obligación de asegurarse?",
+      "question": "En el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:",
+      "stem": "En el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:",
       "options": {
-        "A": "Al depósito del vehículo a cargo del propietario.",
-        "B": "A la requisa del vehículo.",
-        "C": "A la prohibición de circular el vehículo afectado durante tres años, aunque se asegure posteriormente.",
-        "D": "Al pago de los gastos que origine el depósito del vehículo, si bien serán por cuenta de la Administración si se asegura en un plazo inferior a un mes."
+        "A": "del cargador, siempre.",
+        "B": "del cargador y del porteador al 50%.",
+        "C": "del porteador.",
+        "D": "Es indiferente que sea el cargador o el porteador, la responsabilidad será del que realice la carga."
       },
-      "answer": "A",
-      "normalized": "según la ley de responsabilidad civil y seguro en la circulación de vehículos a motor, ¿a qué dará lugar el incumplimiento de la obligación de asegurarse?"
+      "answer": "C",
+      "normalized": "en el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:"
     },
     {
       "prova": "27/09/2025",
@@ -5887,19 +5887,19 @@
       "normalized": "¿qué tipo de control de una empresa cap debe realizar la administración que la autorizó?"
     },
     {
-      "prova": "31/05/2025",
-      "q_num": 7,
+      "prova": "07/02/2026",
+      "q_num": 18,
       "materia": "Mercancias",
-      "question": "¿Qué haremos para prevenir la aparición de sueño durante la conducción?",
-      "stem": "¿Qué haremos para prevenir la aparición de sueño durante la conducción?",
+      "question": "El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:",
+      "stem": "El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:",
       "options": {
-        "A": "Poner la radio más fuerte para distraernos.",
-        "B": "Tomar mucho café.",
-        "C": "Comer copiosamente y continuar el viaje.",
-        "D": "Todas las respuestas anteriores son incorrectas."
+        "A": "los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, uno al menos firmante del Convenio.",
+        "B": "los lugares de carga y entrega de la mercancía pertenezcan al mismo país, siempre que el transporte haya transcurrido en parte por un país extranjero.",
+        "C": "el lugar de carga se encuentre en un país firmante y el transportista sea nacional de otro país firmante.",
+        "D": "los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, ambos deben ser firmantes del Convenio."
       },
-      "answer": "D",
-      "normalized": "¿qué haremos para prevenir la aparición de sueño durante la conducción?"
+      "answer": "A",
+      "normalized": "el convenio cmr se aplicará a los contratos de transporte de mercancías por carretera en los que:"
     },
     {
       "prova": "19/07/2025",
@@ -7044,19 +7044,19 @@
       "normalized": "¿por qué es importante el dispositivo abs?"
     },
     {
-      "prova": "30/05/2026",
-      "q_num": 35,
-      "materia": "Materiales Comunes",
-      "question": "¿Cómo se denomina también el método de las preferencias declaradas, utilizado para valorar económicamente los costes humanos de los accidentes de tráfico?",
-      "stem": "¿Cómo se denomina también el método de las preferencias declaradas, utilizado para valorar económicamente los costes humanos de los accidentes de tráfico?",
+      "prova": "27/09/2025",
+      "q_num": 16,
+      "materia": "Mercancias",
+      "question": "¿Cuántos vocales debe tener una Junta Arbitral de Transporte?",
+      "stem": "¿Cuántos vocales debe tener una Junta Arbitral de Transporte?",
       "options": {
-        "A": "Método de las indemnizaciones.",
-        "B": "Método de la disposición al pago.",
-        "C": "Método de capitalización.",
-        "D": "Método de la invariante productiva."
+        "A": "Dos.",
+        "B": "Cuatro.",
+        "C": "Un mínimo de dos.",
+        "D": "Un mínimo de cuatro."
       },
-      "answer": "B",
-      "normalized": "¿cómo se denomina también el método de las preferencias declaradas, utilizado para valorar económicamente los costes humanos de los accidentes de tráfico?"
+      "answer": "A",
+      "normalized": "¿cuántos vocales debe tener una junta arbitral de transporte?"
     },
     {
       "prova": "19/07/2025",
@@ -7240,18 +7240,18 @@
     },
     {
       "prova": "07/02/2026",
-      "q_num": 54,
-      "materia": "Materiales Comunes",
-      "question": "El dispositivo de seguridad BAS, ¿qué acción lleva a cabo?",
-      "stem": "El dispositivo de seguridad BAS, ¿qué acción lleva a cabo?",
+      "q_num": 18,
+      "materia": "Mercancias",
+      "question": "El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:",
+      "stem": "El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:",
       "options": {
-        "A": "Mide la distancia con el vehículo que circula delante y calcula la distancia de seguridad.",
-        "B": "En un frenada de emergencia, corrige la presión de frenado para evitar la colisión.",
-        "C": "Si capta que se va a producir el bloqueo de una rueda, disminuye la fuerza de frenado sobre ella.",
-        "D": "Si, al arrancar, una rueda motriz patina, la frena."
+        "A": "los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, uno al menos firmante del Convenio.",
+        "B": "los lugares de carga y entrega de la mercancía pertenezcan al mismo país, siempre que el transporte haya transcurrido en parte por un país extranjero.",
+        "C": "el lugar de carga se encuentre en un país firmante y el transportista sea nacional de otro país firmante.",
+        "D": "los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, ambos deben ser firmantes del Convenio."
       },
-      "answer": "B",
-      "normalized": "el dispositivo de seguridad bas, ¿qué acción lleva a cabo?"
+      "answer": "A",
+      "normalized": "el convenio cmr se aplicará a los contratos de transporte de mercancías por carretera en los que:"
     },
     {
       "prova": "05/04/2025",
@@ -7479,19 +7479,19 @@
       "normalized": "(reserva 20º) ¿qué se debe hacer ante una señal de stop?"
     },
     {
-      "prova": "07/02/2026",
-      "q_num": 61,
-      "materia": "Materiales Comunes",
-      "question": "¿Qué requisitos deben cumplir los extranjeros que quieran entrar en España?",
-      "stem": "¿Qué requisitos deben cumplir los extranjeros que quieran entrar en España?",
+      "prova": "27/09/2025",
+      "q_num": 13,
+      "materia": "Mercancias",
+      "question": "En el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:",
+      "stem": "En el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:",
       "options": {
-        "A": "Tener pasaporte o documento de viaje acreditativo de su identidad.",
-        "B": "Justificar el objeto de la estancia.",
-        "C": "Justificar medios de vida suficientes para el tiempo de permanencia en España.",
-        "D": "Todas las respuestas son correctas."
+        "A": "del cargador, siempre.",
+        "B": "del cargador y del porteador al 50%.",
+        "C": "del porteador.",
+        "D": "Es indiferente que sea el cargador o el porteador, la responsabilidad será del que realice la carga."
       },
-      "answer": "D",
-      "normalized": "¿qué requisitos deben cumplir los extranjeros que quieran entrar en españa?"
+      "answer": "C",
+      "normalized": "en el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:"
     },
     {
       "prova": "19/07/2025",
@@ -10153,19 +10153,19 @@
       "normalized": "para que la pena impuesta por una acción de tráfico llegue a ser la privación de libertad, la acción debe ser:"
     },
     {
-      "prova": "07/02/2026",
-      "q_num": 44,
-      "materia": "Materiales Comunes",
-      "question": "¿Qué se entiende por grupos de riesgo en seguridad vial?",
-      "stem": "¿Qué se entiende por grupos de riesgo en seguridad vial?",
+      "prova": "27/09/2025",
+      "q_num": 16,
+      "materia": "Mercancias",
+      "question": "¿Cuántos vocales debe tener una Junta Arbitral de Transporte?",
+      "stem": "¿Cuántos vocales debe tener una Junta Arbitral de Transporte?",
       "options": {
-        "A": "Colectivos de población con una mayor probabilidad de verse afectado directamente por un accidente de tráfico.",
-        "B": "Colectivos de población con una menor probabilidad de verse afectado directamente por un accidente de tráfico.",
-        "C": "Colectivos de población que van en vehículos de dos ruedas.",
-        "D": "Ninguna de las respuestas anteriores es correcta."
+        "A": "Dos.",
+        "B": "Cuatro.",
+        "C": "Un mínimo de dos.",
+        "D": "Un mínimo de cuatro."
       },
       "answer": "A",
-      "normalized": "¿qué se entiende por grupos de riesgo en seguridad vial?"
+      "normalized": "¿cuántos vocales debe tener una junta arbitral de transporte?"
     },
     {
       "prova": "28/03/2026",
@@ -10349,18 +10349,18 @@
     },
     {
       "prova": "07/02/2026",
-      "q_num": 81,
-      "materia": "Materiales Comunes",
-      "question": "(Reserva 10º) ¿Qué son los indicadores de fatiga?",
-      "stem": "(Reserva 10º) ¿Qué son los indicadores de fatiga?",
+      "q_num": 18,
+      "materia": "Mercancias",
+      "question": "El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:",
+      "stem": "El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:",
       "options": {
-        "A": "Sensores que detectan el ritmo cardíaco.",
-        "B": "Sistemas que analizan el comportamiento del conductor para detectar somnolencia.",
-        "C": "Alarmas que avisan del tiempo de conducción.",
-        "D": "Indicadores de presión de neumáticos."
+        "A": "los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, uno al menos firmante del Convenio.",
+        "B": "los lugares de carga y entrega de la mercancía pertenezcan al mismo país, siempre que el transporte haya transcurrido en parte por un país extranjero.",
+        "C": "el lugar de carga se encuentre en un país firmante y el transportista sea nacional de otro país firmante.",
+        "D": "los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, ambos deben ser firmantes del Convenio."
       },
-      "answer": "B",
-      "normalized": "(reserva 10º) ¿qué son los indicadores de fatiga?"
+      "answer": "A",
+      "normalized": "el convenio cmr se aplicará a los contratos de transporte de mercancías por carretera en los que:"
     },
     {
       "prova": "05/04/2025",
@@ -10438,19 +10438,19 @@
       "normalized": "¿quién puede efectuar las operaciones de verificación trimestral de un extintor?"
     },
     {
-      "prova": "01/02/2025",
+      "prova": "27/09/2025",
       "q_num": 13,
       "materia": "Mercancias",
-      "question": "El exceso superior a dos horas sobre los tiempos máximos de conducción diaria, ¿qué tipo de infracción se considera?",
-      "stem": "El exceso superior a dos horas sobre los tiempos máximos de conducción diaria, ¿qué tipo de infracción se considera?",
+      "question": "En el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:",
+      "stem": "En el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:",
       "options": {
-        "A": "Muy grave.",
-        "B": "Grave.",
-        "C": "Leve.",
-        "D": "No se considera infracción."
+        "A": "del cargador, siempre.",
+        "B": "del cargador y del porteador al 50%.",
+        "C": "del porteador.",
+        "D": "Es indiferente que sea el cargador o el porteador, la responsabilidad será del que realice la carga."
       },
-      "answer": "A",
-      "normalized": "el exceso superior a dos horas sobre los tiempos máximos de conducción diaria, ¿qué tipo de infracción se considera?"
+      "answer": "C",
+      "normalized": "en el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:"
     },
     {
       "prova": "29/11/2025",
@@ -11820,19 +11820,19 @@
       "normalized": "¿dónde debe solicitar el conductor su tarjeta para tacógrafo digital?"
     },
     {
-      "prova": "30/05/2026",
-      "q_num": 33,
-      "materia": "Materiales Comunes",
-      "question": "¿Cuándo se incurre en la infracción consistente en carencia significativa de datos registrados en el tacógrafo?",
-      "stem": "¿Cuándo se incurre en la infracción consistente en carencia significativa de datos registrados en el tacógrafo?",
+      "prova": "27/09/2025",
+      "q_num": 16,
+      "materia": "Mercancias",
+      "question": "¿Cuántos vocales debe tener una Junta Arbitral de Transporte?",
+      "stem": "¿Cuántos vocales debe tener una Junta Arbitral de Transporte?",
       "options": {
-        "A": "Cuando falta el reflejo de, al menos, un 10% de los kilómetros realizados.",
-        "B": "Cuando falta el reflejo de, al menos, un 20% de los kilómetros realizados.",
-        "C": "Cuando falta el reflejo de, al menos, un 25% de los kilómetros realizados.",
-        "D": "Cuando la información aportada no permite determinar el número total de kilómetros realizados."
+        "A": "Dos.",
+        "B": "Cuatro.",
+        "C": "Un mínimo de dos.",
+        "D": "Un mínimo de cuatro."
       },
-      "answer": "D",
-      "normalized": "¿cuándo se incurre en la infracción consistente en carencia significativa de datos registrados en el tacógrafo?"
+      "answer": "A",
+      "normalized": "¿cuántos vocales debe tener una junta arbitral de transporte?"
     },
     {
       "prova": "28/03/2026",
@@ -12587,19 +12587,19 @@
       "normalized": "¿cuál es el espacio de trabajo específico de los conductores?"
     },
     {
-      "prova": "07/02/2026",
-      "q_num": 83,
-      "materia": "Materiales Comunes",
-      "question": "(Reserva 12º) ¿Cómo debe ser el alumbrado en caso de lluvia intensa?",
-      "stem": "(Reserva 12º) ¿Cómo debe ser el alumbrado en caso de lluvia intensa?",
+      "prova": "27/09/2025",
+      "q_num": 16,
+      "materia": "Mercancias",
+      "question": "¿Cuántos vocales debe tener una Junta Arbitral de Transporte?",
+      "stem": "¿Cuántos vocales debe tener una Junta Arbitral de Transporte?",
       "options": {
-        "A": "Luces de carretera.",
-        "B": "Luces de corto alcance.",
-        "C": "Luces de emergencia.",
-        "D": "Ninguna."
+        "A": "Dos.",
+        "B": "Cuatro.",
+        "C": "Un mínimo de dos.",
+        "D": "Un mínimo de cuatro."
       },
-      "answer": "B",
-      "normalized": "(reserva 12º) ¿cómo debe ser el alumbrado en caso de lluvia intensa?"
+      "answer": "A",
+      "normalized": "¿cuántos vocales debe tener una junta arbitral de transporte?"
     },
     {
       "prova": "27/09/2025",
@@ -13352,19 +13352,19 @@
       "normalized": "¿cuáles son las características que mejor describen las prestaciones de un motor?"
     },
     {
-      "prova": "29/11/2025",
-      "q_num": 14,
+      "prova": "07/02/2026",
+      "q_num": 18,
       "materia": "Mercancias",
-      "question": "El Instituto Nacional de Seguridad e Higiene en el Trabajo recomienda que, para el levantamiento de pesos manualmente en posición sentado, no se superen:",
-      "stem": "El Instituto Nacional de Seguridad e Higiene en el Trabajo recomienda que, para el levantamiento de pesos manualmente en posición sentado, no se superen:",
+      "question": "El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:",
+      "stem": "El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:",
       "options": {
-        "A": "5 kilos.",
-        "B": "15 kilos.",
-        "C": "25 kilos.",
-        "D": "50 kilos."
+        "A": "los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, uno al menos firmante del Convenio.",
+        "B": "los lugares de carga y entrega de la mercancía pertenezcan al mismo país, siempre que el transporte haya transcurrido en parte por un país extranjero.",
+        "C": "el lugar de carga se encuentre en un país firmante y el transportista sea nacional de otro país firmante.",
+        "D": "los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, ambos deben ser firmantes del Convenio."
       },
       "answer": "A",
-      "normalized": "el instituto nacional de seguridad e higiene en el trabajo recomienda que, para el levantamiento de pesos manualmente en posición sentado, no se superen:"
+      "normalized": "el convenio cmr se aplicará a los contratos de transporte de mercancías por carretera en los que:"
     },
     {
       "prova": "30/05/2026",
@@ -13382,19 +13382,19 @@
       "normalized": "a medida que aumenta la velocidad, el camión tiene que desplazar:"
     },
     {
-      "prova": "07/02/2026",
-      "q_num": 73,
-      "materia": "Materiales Comunes",
-      "question": "(Reserva 2º) ¿En qué se basa el funcionamiento del dispositivo denominado BAS?",
-      "stem": "(Reserva 2º) ¿En qué se basa el funcionamiento del dispositivo denominado BAS?",
+      "prova": "27/09/2025",
+      "q_num": 13,
+      "materia": "Mercancias",
+      "question": "En el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:",
+      "stem": "En el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:",
       "options": {
-        "A": "Según la rapidez o la fuerza con la que se actúa sobre el pedal de freno, detecta si se ha producido una frenada de emergencia.",
-        "B": "Detecta el posible bloqueo de una o varias ruedas en función de su velocidad angular.",
-        "C": "Detecta si una rueda motriz patina.",
-        "D": "Calcula la distancia de seguridad en función de la separación con el vehículo que circula delante."
+        "A": "del cargador, siempre.",
+        "B": "del cargador y del porteador al 50%.",
+        "C": "del porteador.",
+        "D": "Es indiferente que sea el cargador o el porteador, la responsabilidad será del que realice la carga."
       },
-      "answer": "A",
-      "normalized": "(reserva 2º) ¿en qué se basa el funcionamiento del dispositivo denominado bas?"
+      "answer": "C",
+      "normalized": "en el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:"
     },
     {
       "prova": "19/07/2025",
@@ -14435,18 +14435,18 @@
     },
     {
       "prova": "27/09/2025",
-      "q_num": 15,
+      "q_num": 16,
       "materia": "Mercancias",
-      "question": "Salvo pacto previo de sumisión a una Junta concreta, ¿qué Junta Arbitral puede elegir el demandante para la resolución de una controversia?",
-      "stem": "Salvo pacto previo de sumisión a una Junta concreta, ¿qué Junta Arbitral puede elegir el demandante para la resolución de una controversia?",
+      "question": "¿Cuántos vocales debe tener una Junta Arbitral de Transporte?",
+      "stem": "¿Cuántos vocales debe tener una Junta Arbitral de Transporte?",
       "options": {
-        "A": "La que sea competente en su residencia habitual en todo caso, siempre que dicha residencia esté en territorio español o de la Unión Europea.",
-        "B": "La que sea competente en su residencia habitual, cuando se trate de un consumidor o usuario.",
-        "C": "La que elija libremente.",
-        "D": "El demandante nunca puede elegir unilateralmente la Junta sin contar con la aceptación del demandado."
+        "A": "Dos.",
+        "B": "Cuatro.",
+        "C": "Un mínimo de dos.",
+        "D": "Un mínimo de cuatro."
       },
-      "answer": "B",
-      "normalized": "salvo pacto previo de sumisión a una junta concreta, ¿qué junta arbitral puede elegir el demandante para la resolución de una controversia?"
+      "answer": "A",
+      "normalized": "¿cuántos vocales debe tener una junta arbitral de transporte?"
     },
     {
       "prova": "05/04/2025",
@@ -14855,18 +14855,18 @@
     },
     {
       "prova": "07/02/2026",
-      "q_num": 56,
-      "materia": "Materiales Comunes",
-      "question": "¿Cuál es el objetivo principal de los sistemas de contención de vehículos de una carretera?",
-      "stem": "¿Cuál es el objetivo principal de los sistemas de contención de vehículos de una carretera?",
+      "q_num": 18,
+      "materia": "Mercancias",
+      "question": "El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:",
+      "stem": "El Convenio CMR se aplicará a los contratos de transporte de mercancías por carretera en los que:",
       "options": {
-        "A": "La precisión en la detección de vehículos cuya circulación está prohibida por un determinado tramo.",
-        "B": "La capacidad para impedir que un vehículo que se sale de la calzada alcance un obstáculo, desnivel o elemento de riesgo.",
-        "C": "La restricción de circulación a partir de una determinada intensidad de tráfico.",
-        "D": "La restricción de circulación a partir de una determinada densidad de tráfico."
+        "A": "los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, uno al menos firmante del Convenio.",
+        "B": "los lugares de carga y entrega de la mercancía pertenezcan al mismo país, siempre que el transporte haya transcurrido en parte por un país extranjero.",
+        "C": "el lugar de carga se encuentre en un país firmante y el transportista sea nacional de otro país firmante.",
+        "D": "los lugares de carga y entrega de la mercancía pertenezcan a países diferentes, ambos deben ser firmantes del Convenio."
       },
-      "answer": "B",
-      "normalized": "¿cuál es el objetivo principal de los sistemas de contención de vehículos de una carretera?"
+      "answer": "A",
+      "normalized": "el convenio cmr se aplicará a los contratos de transporte de mercancías por carretera en los que:"
     },
     {
       "prova": "01/02/2025",
