@@ -9,6 +9,7 @@ import { classifySimulatorQuestion } from './chapterClassifier';
 import { buildOfficialExamAnalysis } from './officialExamAnalysis';
 import { buildStudyPlan } from './studyPlan';
 import { advanceReviewSchedule, isReviewDue, restartReviewSchedule, retryReviewSchedule } from './errorNotebook';
+import { getDemoChapters, getDemoOfficialAnalysis, getDemoOfficialDates, getDemoQuestionsByChapter, getDemoQuestionsByModel, getDemoModels, getDemoRepeatedQuestions, getDemoResults, getDemoStats, isDemoMode, saveDemoResult, getDemoStudyPlan } from './demoData';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _pool: Pool | null = null;
@@ -248,6 +249,7 @@ export async function getUserByOpenId(openId: string) {
 // Guide data queries
 
 export async function getSimulatorQuestionsByModel(model: string) {
+  if (isDemoMode()) return getDemoQuestionsByModel(model);
   try {
     // Se o identificador contém '/', trata-se de uma prova oficial por data.
     // As provas oficiais são armazenadas separadamente para não misturar
@@ -272,6 +274,7 @@ export async function getSimulatorQuestionsByModel(model: string) {
 }
 
 export async function getAllSimulatorModels() {
+  if (isDemoMode()) return getDemoModels();
   try {
     const result = await withSimulatorDbRetry((db) =>
       db.selectDistinct({ model: simulatorQuestions.model })
@@ -286,6 +289,7 @@ export async function getAllSimulatorModels() {
 }
 
 export async function getOfficialExamDates() {
+  if (isDemoMode()) return getDemoOfficialDates();
   try {
     const result = await withSimulatorDbRetry((db) =>
       db.selectDistinct({ provaDate: simulatorQuestions.provaDate })
@@ -309,6 +313,7 @@ export async function getOfficialExamDates() {
 }
 
 export async function getOfficialExamAnalysis() {
+  if (isDemoMode()) return getDemoOfficialAnalysis();
   if (officialAnalysisCache && Date.now() - officialAnalysisCache.createdAt < OFFICIAL_ANALYSIS_CACHE_TTL_MS) {
     return officialAnalysisCache.value;
   }
@@ -327,6 +332,7 @@ export async function getOfficialExamAnalysis() {
 }
 
 export async function getSimulatorChapters() {
+  if (isDemoMode()) return getDemoChapters();
   try {
     const index = await getChapterQuestionIndex();
     return simulatorChapters
@@ -343,6 +349,7 @@ export async function getSimulatorChapters() {
 }
 
 export async function getSimulatorQuestionsByChapter(chapterId: string, requestedAttempt = 1) {
+  if (isDemoMode()) return getDemoQuestionsByChapter(chapterId, requestedAttempt);
   try {
     const index = await getChapterQuestionIndex();
     const availableQuestions = index.get(chapterId) ?? [];
@@ -362,6 +369,7 @@ export async function getSimulatorQuestionsByChapter(chapterId: string, requeste
 }
 
 export async function getRepeatedQuestions() {
+  if (isDemoMode()) return getDemoRepeatedQuestions();
   const db = await getDb();
   if (!db) return [];
   
@@ -401,6 +409,7 @@ export async function getSiglas() {
 }
 
 export async function getSimulatorStats() {
+  if (isDemoMode()) return getDemoStats();
   try {
     const [summary] = await withSimulatorDbRetry((db) =>
       db.select({
@@ -454,6 +463,7 @@ export async function saveSimulatorResult(userId: number, input: {
   timeTaken: number;
   wrongQuestions?: Array<{ questionId: number; selectedAnswer: 'A' | 'B' | 'C' | 'D' }>;
 }) {
+  if (isDemoMode()) return saveDemoResult(userId, input);
   const db = await getDb();
   if (!db) return null;
   
@@ -484,6 +494,7 @@ export async function saveSimulatorResult(userId: number, input: {
 }
 
 export async function getUserSimulatorResults(userId: number) {
+  if (isDemoMode()) return getDemoResults();
   const db = await getDb();
   if (!db) return [];
   
@@ -637,6 +648,7 @@ export async function saveUserStudyProfile(userId: number, input: {
 }
 
 export async function getUserStudyPlan(userId: number) {
+  if (isDemoMode()) return getDemoStudyPlan();
   const [savedProfile, analysis, results] = await Promise.all([
     getUserStudyProfile(userId),
     getOfficialExamAnalysis(),
