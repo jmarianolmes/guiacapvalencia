@@ -1,11 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { User, SimulatorQuestion, UserSimulatorResult } from '../drizzle/schema';
+import type { User, SimulatorQuestion, UserSimulatorResult, UserErrorNotebookItem } from '../drizzle/schema';
 import { simulatorChapters } from '../shared/simulatorChapters';
 import { buildOfficialStatisticalModels } from './officialStatisticalModels';
 import { buildOfficialExamAnalysis } from './officialExamAnalysis';
 import { buildStudyPlan } from './studyPlan';
 import { questionEquivalenceKey } from './questionCatalog';
+import { advanceReviewSchedule, isReviewDue, restartReviewSchedule, retryReviewSchedule } from './errorNotebook';
 
 const root = path.resolve(import.meta.dirname, '..');
 const dataDir = path.join(root, 'server', 'data');
@@ -14,6 +15,7 @@ const read = (file: string) => JSON.parse(fs.readFileSync(path.join(dataDir, fil
 
 let questionsCache: SimulatorQuestion[] | null = null;
 let resultCache: UserSimulatorResult[] = [];
+let notebookCache: UserErrorNotebookItem[] = [];
 const CHAPTER_ATTEMPT_SIZE = 50;
 
 function simulatorQuestionSignature(question: SimulatorQuestion) {
@@ -276,6 +278,86 @@ export function getDemoRepeatedQuestions() {
 
 export function getDemoResults(): UserSimulatorResult[] {
   return resultCache;
+}
+
+export function recordDemoNotebookErrors(userId: number, wrongQuestions: Array<{ questionId: number; selectedAnswer: 'A' | 'B' | 'C' | 'D' }>) {
+  const now = new Date();
+  const reset = restartReviewSchedule(now);
+  for (const answer of wrongQuestions) {
+    const question = getDemoQuestions().find((item) => item.id === answer.questionId);
+    if (!question || answer.selectedAnswer === question.correctAnswer) continue;
+    const existing = notebookCache.find((item) => item.userId === userId && item.questionId === answer.questionId);
+    if (existing) {
+      existing.chapterId = question.chapterId;
+      existing.wrongCount += 1;
+      existing.reviewLevel = reset.reviewLevel;
+      existing.lastAnswer = answer.selectedAnswer;
+      existing.nextReviewAt = reset.nextReviewAt;
+      existing.lastReviewedAt = null;
+      existing.resolvedAt = null;
+      existing.updatedAt = now;
+    } else {
+      notebookCache.push({
+        id: notebookCache.length + 1,
+        userId,
+        questionId: question.id,
+        chapterId: question.chapterId,
+        wrongCount: 1,
+        reviewLevel: reset.reviewLevel,
+        lastAnswer: answer.selectedAnswer,
+        nextReviewAt: reset.nextReviewAt,
+        lastReviewedAt: null,
+        resolvedAt: null,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+  }
+}
+
+export function getDemoErrorNotebook(userId: number) {
+  const items = notebookCache.filter((item) => item.userId === userId);
+  const now = new Date();
+  const questionsById = new Map(getDemoQuestions().map((question) => [question.id, question]));
+  const dueItems = items
+    .filter((item) => isReviewDue(item, now) && questionsById.has(item.questionId))
+    .sort((left, right) => (left.nextReviewAt?.getTime() ?? 0) - (right.nextReviewAt?.getTime() ?? 0))
+    .slice(0, 30)
+    .map((item) => ({ ...item, question: questionsById.get(item.questionId)! }));
+  const chapterCounts = Array.from(items.reduce((counts, item) => {
+    if (!item.resolvedAt) counts.set(item.chapterId, (counts.get(item.chapterId) ?? 0) + 1);
+    return counts;
+  }, new Map<string | null, number>()).entries())
+    .map(([chapterId, count]) => ({ chapterId, count }))
+    .sort((left, right) => right.count - left.count);
+  return {
+    dueItems,
+    summary: {
+      totalItems: items.length,
+      dueCount: items.filter((item) => isReviewDue(item, now)).length,
+      scheduledCount: items.filter((item) => !item.resolvedAt && !isReviewDue(item, now)).length,
+      resolvedCount: items.filter((item) => Boolean(item.resolvedAt)).length,
+      chapterCounts,
+    },
+  };
+}
+
+export function reviewDemoErrorNotebookItem(userId: number, itemId: number, selectedAnswer: 'A' | 'B' | 'C' | 'D') {
+  const item = notebookCache.find((candidate) => candidate.id === itemId && candidate.userId === userId);
+  if (!item) throw new Error('Item de revisão não encontrado');
+  const question = getDemoQuestions().find((candidate) => candidate.id === item.questionId);
+  if (!question) throw new Error('Questão de revisão não encontrada');
+  const now = new Date();
+  const correct = selectedAnswer === question.correctAnswer;
+  const schedule = correct ? advanceReviewSchedule(item.reviewLevel, now) : retryReviewSchedule(now);
+  item.reviewLevel = schedule.reviewLevel;
+  item.lastAnswer = selectedAnswer;
+  item.nextReviewAt = schedule.nextReviewAt;
+  item.lastReviewedAt = now;
+  item.resolvedAt = schedule.resolvedAt;
+  item.wrongCount = correct ? item.wrongCount : item.wrongCount + 1;
+  item.updatedAt = now;
+  return { correct, nextReviewAt: schedule.nextReviewAt, resolved: Boolean(schedule.resolvedAt), correctAnswer: question.correctAnswer };
 }
 
 export function saveDemoResult(userId: number, input: { model: string; mode: 'statistical' | 'official' | 'chapter'; studyMode: 'exam' | 'learning'; chapterId?: string; attemptNumber?: number; questionCount: number; correct: number; wrong: number; blank: number; timeTaken: number }): UserSimulatorResult {

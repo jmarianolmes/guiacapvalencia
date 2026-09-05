@@ -9,7 +9,7 @@ import { classifySimulatorQuestion } from './chapterClassifier';
 import { buildOfficialExamAnalysis } from './officialExamAnalysis';
 import { buildStudyPlan } from './studyPlan';
 import { advanceReviewSchedule, isReviewDue, restartReviewSchedule, retryReviewSchedule } from './errorNotebook';
-import { getDemoChapters, getDemoOfficialAnalysis, getDemoOfficialDates, getDemoQuestionsByChapter, getDemoQuestionsByModel, getDemoModels, getDemoRepeatedQuestions, getDemoResults, getDemoStats, isDemoMode, saveDemoResult, getDemoStudyPlan } from './demoData';
+import { getDemoChapters, getDemoOfficialAnalysis, getDemoOfficialDates, getDemoQuestionsByChapter, getDemoQuestionsByModel, getDemoModels, getDemoRepeatedQuestions, getDemoResults, getDemoStats, isDemoMode, saveDemoResult, getDemoStudyPlan, recordDemoNotebookErrors, getDemoErrorNotebook, reviewDemoErrorNotebookItem } from './demoData';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _pool: Pool | null = null;
@@ -463,7 +463,11 @@ export async function saveSimulatorResult(userId: number, input: {
   timeTaken: number;
   wrongQuestions?: Array<{ questionId: number; selectedAnswer: 'A' | 'B' | 'C' | 'D' }>;
 }) {
-  if (isDemoMode()) return saveDemoResult(userId, input);
+  if (isDemoMode()) {
+    const result = saveDemoResult(userId, input);
+    if (input.wrongQuestions?.length) recordDemoNotebookErrors(userId, input.wrongQuestions);
+    return result;
+  }
   const db = await getDb();
   if (!db) return null;
   
@@ -554,6 +558,7 @@ export async function recordUserNotebookErrors(userId: number, wrongQuestions: A
 }
 
 export async function getUserErrorNotebook(userId: number) {
+  if (isDemoMode()) return getDemoErrorNotebook(userId);
   const db = await getDb();
   if (!db) return { dueItems: [], summary: { totalItems: 0, dueCount: 0, scheduledCount: 0, resolvedCount: 0, chapterCounts: [] as Array<{ chapterId: string | null; count: number }> } };
 
@@ -588,6 +593,7 @@ export async function getUserErrorNotebook(userId: number) {
 }
 
 export async function reviewUserErrorNotebookItem(userId: number, itemId: number, selectedAnswer: 'A' | 'B' | 'C' | 'D') {
+  if (isDemoMode()) return reviewDemoErrorNotebookItem(userId, itemId, selectedAnswer);
   const db = await getDb();
   if (!db) throw new Error('Database connection unavailable');
 
