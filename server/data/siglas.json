@@ -1,0 +1,110 @@
+[
+  {
+    "acronym": "ABS",
+    "full_name": "Anti-lock Braking System",
+    "description_pt": "Evita o bloqueio das rodas durante frenagens intensas, mantendo a capacidade de direção.",
+    "description_es": "Evita el bloqueo de las ruedas durante frenadas intensas, manteniendo la capacidad de dirección."
+  },
+  {
+    "acronym": "ESP",
+    "full_name": "Electronic Stability Program",
+    "description_pt": "Controle eletrônico de estabilidade. Evita derrapagens e capotamentos em curvas.",
+    "description_es": "Control electrónico de estabilidad. Evita derrapes y vuelcos en curvas."
+  },
+  {
+    "acronym": "ACC",
+    "full_name": "Adaptive Cruise Control",
+    "description_pt": "Controle de cruzeiro adaptativo. Mantém distância segura do veículo à frente automaticamente.",
+    "description_es": "Control de crucero adaptativo. Mantiene una distancia segura con el vehículo de delante automáticamente."
+  },
+  {
+    "acronym": "BAS/EBA",
+    "full_name": "Brake Assist System",
+    "description_pt": "Assistência de frenagem de emergência. Detecta pisada brusca e aplica força máxima de frenagem.",
+    "description_es": "Asistencia de frenado de emergencia. Detecta una frenada brusca y aplica la máxima fuerza de frenado."
+  },
+  {
+    "acronym": "ASR/TCS",
+    "full_name": "Anti-Slip Regulation",
+    "description_pt": "Controle de tração. Evita que as rodas patinem ao acelerar em pisos escorregadios.",
+    "description_es": "Control de tracción. Evita que las ruedas patinen al acelerar en superficies resbaladizas."
+  },
+  {
+    "acronym": "LKA",
+    "full_name": "Lane Keeping Assist",
+    "description_pt": "Assistente de manutenção de faixa. Alerta ou corrige quando o veículo sai da faixa sem sinalizar.",
+    "description_es": "Asistente de mantenimiento de carril. Advierte o corrige cuando el vehículo se sale del carril sin señalizar."
+  },
+  {
+    "acronym": "FCW",
+    "full_name": "Forward Collision Warning",
+    "description_pt": "Alerta de colisão frontal iminente. Avisa o motorista de obstáculos à frente.",
+    "description_es": "Aviso de colisión frontal inminente. Advierte al conductor de obstáculos delante."
+  },
+  {
+    "acronym": "EBS",
+    "full_name": "Electronic Braking System",
+    "description_pt": "Sistema de frenagem eletrônico. Distribui a força de frenagem entre os eixos de forma ótima.",
+    "description_es": "Sistema de frenado electrónico. Distribuye la fuerza de frenado entre los ejes de forma óptima."
+  },
+  {
+    "acronym": "LDWS",
+    "full_name": "Lane Departure Warning System",
+    "description_pt": "Sistema de alerta de saída de faixa. Semelhante ao LKA, mas apenas alerta sem intervir.",
+    "description_es": "Sistema de advertencia de salida de carril. Similar al LKA, pero solo advierte sin intervenir."
+  },
+  {
+    "acronym": "AEBS",
+    "full_name": "Advanced Emergency Braking System",
+    "description_pt": "Frenagem de emergência autônoma. Freia automaticamente para evitar ou reduzir colisões.",
+    "description_es": "Frenado de emergencia autónomo. Frena automáticamente para evitar o reducir colisiones."
+  },
+  {
+    "acronym": "TPMS",
+    "full_name": "Tire Pressure Monitoring System",
+    "description_pt": "Monitoramento da pressão dos pneus em tempo real.",
+    "description_es": "Sistema de control de la presión de los neumáticos en tiempo real."
+  },
+  {
+    "acronym": "CMR",
+    "full_name": "Convention Marchandises Routières",
+    "description_pt": "Convenção internacional que regula o contrato de transporte de mercadorias por estrada.",
+    "description_es": "Convenio internacional que regula el contrato de transporte de mercancías por carretera."
+  },
+  {
+    "acronym": "ADR",
+    "full_name": "Accord Dangereux Routier",
+    "description_pt": "Regulamento europeu para transporte de mercadorias perigosas por estrada.",
+    "description_es": "Reglamento europeo para el transporte de mercancías peligrosas por carretera."
+  },
+  {
+    "acronym": "CEMT",
+    "full_name": "Conférence Européenne des Ministres des Transports",
+    "description_pt": "Autorização multilateral para transporte internacional entre países membros.",
+    "description_es": "Autorización multilateral para el transporte internacional entre países miembros."
+  },
+  {
+    "acronym": "CAP",
+    "full_name": "Certificado de Aptitud Profesional",
+    "description_pt": "Qualificação obrigatória para motoristas profissionais. Válido por 5 anos.",
+    "description_es": "Cualificación obligatoria para conductores profesionales. Válido por 5 años."
+  },
+  {
+    "acronym": "OEA",
+    "full_name": "Operador Económico Autorizado",
+    "description_pt": "Estatuto aduaneiro que facilita o comércio internacional para empresas confiáveis.",
+    "description_es": "Estatuto aduanero que facilita el comercio internacional para empresas confiables."
+  },
+  {
+    "acronym": "PAS",
+    "full_name": "Proteger, Avisar, Socorrer",
+    "description_pt": "Protocolo de atuação em emergências: Proteger a cena, Avisar os serviços e Socorrer as vítimas.",
+    "description_es": "Protocolo de actuación en emergencias: Proteger la escena, Avisar a los servicios y Socorrer a las víctimas."
+  },
+  {
+    "acronym": "ITV",
+    "full_name": "Inspección Técnica de Vehículos",
+    "description_pt": "Inspeção técnica obrigatória periódica do veículo.",
+    "description_es": "Inspección técnica obligatoria periódica del vehículo."
+  }
+]

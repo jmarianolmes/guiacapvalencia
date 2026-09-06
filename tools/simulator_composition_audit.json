@@ -1,0 +1,374 @@
+{
+  "pool_models": [
+    {
+      "label": "A",
+      "records": 100,
+      "unique_equivalence_keys": 98,
+      "duplicate_groups": 2,
+      "duplicate_records_beyond_first": 2,
+      "max_repetitions": 2
+    },
+    {
+      "label": "B",
+      "records": 100,
+      "unique_equivalence_keys": 97,
+      "duplicate_groups": 3,
+      "duplicate_records_beyond_first": 3,
+      "max_repetitions": 2
+    },
+    {
+      "label": "C",
+      "records": 100,
+      "unique_equivalence_keys": 99,
+      "duplicate_groups": 1,
+      "duplicate_records_beyond_first": 1,
+      "max_repetitions": 2
+    },
+    {
+      "label": "D",
+      "records": 100,
+      "unique_equivalence_keys": 99,
+      "duplicate_groups": 1,
+      "duplicate_records_beyond_first": 1,
+      "max_repetitions": 2
+    },
+    {
+      "label": "E",
+      "records": 100,
+      "unique_equivalence_keys": 97,
+      "duplicate_groups": 3,
+      "duplicate_records_beyond_first": 3,
+      "max_repetitions": 2
+    },
+    {
+      "label": "F",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "G",
+      "records": 100,
+      "unique_equivalence_keys": 97,
+      "duplicate_groups": 3,
+      "duplicate_records_beyond_first": 3,
+      "max_repetitions": 2
+    },
+    {
+      "label": "H",
+      "records": 100,
+      "unique_equivalence_keys": 99,
+      "duplicate_groups": 1,
+      "duplicate_records_beyond_first": 1,
+      "max_repetitions": 2
+    },
+    {
+      "label": "I",
+      "records": 100,
+      "unique_equivalence_keys": 97,
+      "duplicate_groups": 3,
+      "duplicate_records_beyond_first": 3,
+      "max_repetitions": 2
+    },
+    {
+      "label": "J",
+      "records": 100,
+      "unique_equivalence_keys": 98,
+      "duplicate_groups": 2,
+      "duplicate_records_beyond_first": 2,
+      "max_repetitions": 2
+    }
+  ],
+  "official_exams": [
+    {
+      "label": "01/02/2025",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "05/04/2025",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "31/05/2025",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "19/07/2025",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "27/09/2025",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "29/11/2025",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "07/02/2026",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "28/03/2026",
+      "records": 100,
+      "unique_equivalence_keys": 99,
+      "duplicate_groups": 1,
+      "duplicate_records_beyond_first": 1,
+      "max_repetitions": 2
+    },
+    {
+      "label": "30/05/2026",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "18/07/2026",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "21/11/2020",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "13/03/2021",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "29/05/2021",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "24/07/2021",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "25/09/2021",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "27/11/2021",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "29/01/2022",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "02/04/2022",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "28/05/2022",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "23/07/2022",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "24/09/2022",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "26/11/2022",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "28/01/2023",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "25/03/2023",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "27/05/2023",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "15/07/2023",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "23/09/2023",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "25/11/2023",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "27/01/2024",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "23/03/2024",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "25/05/2024",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "13/07/2024",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "28/09/2024",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    },
+    {
+      "label": "30/11/2024",
+      "records": 100,
+      "unique_equivalence_keys": 100,
+      "duplicate_groups": 0,
+      "duplicate_records_beyond_first": 0,
+      "max_repetitions": 1
+    }
+  ],
+  "pool_summary": {
+    "label": "A-J total",
+    "records": 1000,
+    "unique_equivalence_keys": 547,
+    "duplicate_groups": 273,
+    "duplicate_records_beyond_first": 453,
+    "max_repetitions": 8
+  },
+  "official_summary": {
+    "label": "34 official exams total",
+    "records": 3400,
+    "unique_equivalence_keys": 2829,
+    "duplicate_groups": 473,
+    "duplicate_records_beyond_first": 571,
+    "max_repetitions": 5
+  }
+}

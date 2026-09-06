@@ -1,0 +1,122 @@
+{
+  "models": 10,
+  "questionsPerModel": 100,
+  "replacements": 19,
+  "replacementDetails": [
+    {
+      "model": "A",
+      "position": 13,
+      "from": "(reserva 5º) ¿cómo se debe señalizar un vehículo que transporta mercancías peligrosas durante la noche?",
+      "to": "¿la carencia de autorización de transporte puede dar lugar a la inmovilización de un autobús?"
+    },
+    {
+      "model": "A",
+      "position": 85,
+      "from": "el dispositivo de seguridad bas, ¿qué acción lleva a cabo?",
+      "to": "en un contrato de transporte sujeto al convenio cmr, ¿qué indicaciones debe contener la carta de porte?"
+    },
+    {
+      "model": "B",
+      "position": 73,
+      "from": "el instituto nacional de seguridad e higiene en el trabajo recomienda que, para el levantamiento de pesos manualmente en posición sentado, no se superen:",
+      "to": "¿cuántos vocales debe tener una junta arbitral de transporte?"
+    },
+    {
+      "model": "B",
+      "position": 79,
+      "from": "¿qué zapatos son adecuados para trabajar de pie?",
+      "to": "el convenio cmr se aplicará a los contratos de transporte de mercancías por carretera en los que:"
+    },
+    {
+      "model": "B",
+      "position": 85,
+      "from": "¿cuántos puntos pierde en el permiso de conducir un conductor que haya colaborado en la manipulación del tacógrafo?",
+      "to": "en el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:"
+    },
+    {
+      "model": "C",
+      "position": 76,
+      "from": "según la ley de responsabilidad civil y seguro en la circulación de vehículos a motor, ¿a qué dará lugar el incumplimiento de la obligación de asegurarse?",
+      "to": "en el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:"
+    },
+    {
+      "model": "D",
+      "position": 93,
+      "from": "¿qué haremos para prevenir la aparición de sueño durante la conducción?",
+      "to": "el convenio cmr se aplicará a los contratos de transporte de mercancías por carretera en los que:"
+    },
+    {
+      "model": "E",
+      "position": 70,
+      "from": "¿cómo se denomina también el método de las preferencias declaradas, utilizado para valorar económicamente los costes humanos de los accidentes de tráfico?",
+      "to": "¿cuántos vocales debe tener una junta arbitral de transporte?"
+    },
+    {
+      "model": "E",
+      "position": 83,
+      "from": "el dispositivo de seguridad bas, ¿qué acción lleva a cabo?",
+      "to": "el convenio cmr se aplicará a los contratos de transporte de mercancías por carretera en los que:"
+    },
+    {
+      "model": "E",
+      "position": 99,
+      "from": "¿qué requisitos deben cumplir los extranjeros que quieran entrar en españa?",
+      "to": "en el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:"
+    },
+    {
+      "model": "G",
+      "position": 77,
+      "from": "¿qué se entiende por grupos de riesgo en seguridad vial?",
+      "to": "¿cuántos vocales debe tener una junta arbitral de transporte?"
+    },
+    {
+      "model": "G",
+      "position": 90,
+      "from": "(reserva 10º) ¿qué son los indicadores de fatiga?",
+      "to": "el convenio cmr se aplicará a los contratos de transporte de mercancías por carretera en los que:"
+    },
+    {
+      "model": "G",
+      "position": 96,
+      "from": "el exceso superior a dos horas sobre los tiempos máximos de conducción diaria, ¿qué tipo de infracción se considera?",
+      "to": "en el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:"
+    },
+    {
+      "model": "H",
+      "position": 88,
+      "from": "¿cuándo se incurre en la infracción consistente en carencia significativa de datos registrados en el tacógrafo?",
+      "to": "¿cuántos vocales debe tener una junta arbitral de transporte?"
+    },
+    {
+      "model": "I",
+      "position": 39,
+      "from": "(reserva 12º) ¿cómo debe ser el alumbrado en caso de lluvia intensa?",
+      "to": "¿cuántos vocales debe tener una junta arbitral de transporte?"
+    },
+    {
+      "model": "I",
+      "position": 90,
+      "from": "el instituto nacional de seguridad e higiene en el trabajo recomienda que, para el levantamiento de pesos manualmente en posición sentado, no se superen:",
+      "to": "el convenio cmr se aplicará a los contratos de transporte de mercancías por carretera en los que:"
+    },
+    {
+      "model": "I",
+      "position": 92,
+      "from": "(reserva 2º) ¿en qué se basa el funcionamiento del dispositivo denominado bas?",
+      "to": "en el transporte de paquetería, la colocación y estiba de las mercancías en el vehículo serán por cuenta:"
+    },
+    {
+      "model": "J",
+      "position": 62,
+      "from": "salvo pacto previo de sumisión a una junta concreta, ¿qué junta arbitral puede elegir el demandante para la resolución de una controversia?",
+      "to": "¿cuántos vocales debe tener una junta arbitral de transporte?"
+    },
+    {
+      "model": "J",
+      "position": 90,
+      "from": "¿cuál es el objetivo principal de los sistemas de contención de vehículos de una carretera?",
+      "to": "el convenio cmr se aplicará a los contratos de transporte de mercancías por carretera en los que:"
+    }
+  ],
+  "orderPolicy": "positions without equivalence duplicates are preserved; only duplicate positions are replaced deterministically"
+}

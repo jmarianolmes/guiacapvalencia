@@ -1,0 +1,413 @@
+{
+  "complete": [
+    {
+      "date": "21/11/2020",
+      "questionnaire": {
+        "date": "21/11/2020",
+        "url": "https://mediambient.gva.es/documents/20081096/172640783/EXAMEN+MERCANCIAS+CAP+21-11-2020.pdf/4cde2abd-18a7-4969-ba45-475a721d0e9d",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/21-11-2020_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "21/11/2020",
+        "url": "https://mediambient.gva.es/documents/20081096/172640783/MERCANCIAS_21_11.pdf/33c37eab-1085-496f-8582-dd2156ebc777",
+        "sourceText": "CAP-Mercancías (plantilla respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/21-11-2020_answer_key.pdf"
+      }
+    },
+    {
+      "date": "13/03/2021",
+      "questionnaire": {
+        "date": "13/03/2021",
+        "url": "https://mediambient.gva.es/documents/20081096/172988502/EXAMEN+MERCANCIAS+13-03-21.pdf/67fc9f17-26aa-4773-8c50-c8fcbc3c90a1",
+        "sourceText": "CAP-Mercancias (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/13-03-2021_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "13/03/2021",
+        "url": "https://mediambient.gva.es/documents/20081096/172988502/PLANTILLA+CAP+MERCANCIAS+13-03-2021.pdf/8ec92d4a-ef76-4ecb-965d-aa3b2b4ae5f7",
+        "sourceText": "CAP-Mercancias (plantilla respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/13-03-2021_answer_key.pdf"
+      }
+    },
+    {
+      "date": "29/05/2021",
+      "questionnaire": {
+        "date": "29/05/2021",
+        "url": "https://mediambient.gva.es/documents/20081096/173590982/EXAMEN+MERCANCIAS+CAP+29-05.pdf/79db84d5-409c-4206-88b9-4e4701207897",
+        "sourceText": "CAP-Mercancias (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/29-05-2021_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "29/05/2021",
+        "url": "https://mediambient.gva.es/documents/20081096/173590982/PLANTILLA+CAP+MERCANCIAS+29-05-21.pdf/af872ff4-cf3a-4496-8718-4aea135c17e4",
+        "sourceText": "CAP-Mercancias (plantilla respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/29-05-2021_answer_key.pdf"
+      }
+    },
+    {
+      "date": "24/07/2021",
+      "questionnaire": {
+        "date": "24/07/2021",
+        "url": "https://mediambient.gva.es/documents/20081096/174104735/EXAMEN+CAP+MERCANCIAS+24-07-21.pdf/4f887578-d07d-41e0-8129-ed5c8e20734c",
+        "sourceText": "CAP-Mercancias (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/24-07-2021_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "24/07/2021",
+        "url": "https://mediambient.gva.es/documents/20081096/174104735/PLANTILLA+MERCANCIAS+24-07.pdf/ad268f81-b6df-4928-b9d9-cbeba9ea3674",
+        "sourceText": "CAP-Mercancias (plantilla respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/24-07-2021_answer_key.pdf"
+      }
+    },
+    {
+      "date": "25/09/2021",
+      "questionnaire": {
+        "date": "25/09/2021",
+        "url": "https://mediambient.gva.es/documents/20081096/174397828/EXAMEN+CAP+MERCANCIAS+25-09-2021.pdf/8e82f045-4c4a-4e39-baa8-f2bbaabbc998",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/25-09-2021_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "25/09/2021",
+        "url": "https://mediambient.gva.es/documents/20081096/174397828/PLANTILLA+MERCANCIAS+25-09.pdf/2ba90867-452c-4a05-b895-9b6462a40d04",
+        "sourceText": "CAP-Mercancías (plantilla respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/25-09-2021_answer_key.pdf"
+      }
+    },
+    {
+      "date": "27/11/2021",
+      "questionnaire": {
+        "date": "27/11/2021",
+        "url": "https://mediambient.gva.es/documents/20081096/174818521/EXAMEN+MERCANCIAS+CAP++27-11-2021.pdf/ee65ea63-a0fb-4221-9133-ae3078bbe5c9",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/27-11-2021_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "27/11/2021",
+        "url": "https://mediambient.gva.es/documents/20081096/174818521/PLANTILLA+MERCANCIAS+27-11-21.pdf/c8d1ac5a-21aa-48b0-b4df-48677722569d",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/27-11-2021_answer_key.pdf"
+      }
+    },
+    {
+      "date": "29/01/2022",
+      "questionnaire": {
+        "date": "29/01/2022",
+        "url": "https://mediambient.gva.es/documents/20081096/175162173/EXAMEN+CAP+MERCANCIAS+29-01-2022.pdf/e30c1ed2-8e3f-4d4b-b4b0-0f3fcdbdfb63",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/29-01-2022_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "29/01/2022",
+        "url": "https://mediambient.gva.es/documents/20081096/175162173/PLANTILLA+MERCANCIAS+01_22.pdf/d9458224-28c6-4b88-9e73-2b238f36d93d",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/29-01-2022_answer_key.pdf"
+      }
+    },
+    {
+      "date": "02/04/2022",
+      "questionnaire": {
+        "date": "02/04/2022",
+        "url": "https://mediambient.gva.es/documents/20081096/355642943/EXAMEN+CAP+MERCANCIAS+02-04-2022+%282%29.pdf/21325eba-7185-8ca4-31d0-e8d4e948b19f?t=1649070945388",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/02-04-2022_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "02/04/2022",
+        "url": "https://mediambient.gva.es/documents/20081096/355642943/PLANTILLA+CAP+MERCANCIAS+04-2022.pdf/436dbb3b-7b07-8d66-fbe7-ce66888e2282?t=1649070982692",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/02-04-2022_answer_key.pdf"
+      }
+    },
+    {
+      "date": "28/05/2022",
+      "questionnaire": {
+        "date": "28/05/2022",
+        "url": "https://mediambient.gva.es/documents/20081096/358395968/EXAMEN+CAP+MERCANCIAS.pdf/0b491927-bc7c-d133-11dd-17b9b695fe46?t=1653981639915",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/28-05-2022_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "28/05/2022",
+        "url": "https://mediambient.gva.es/documents/20081096/358395968/PLANTILLA+MERCANCIAS.pdf/5e34f2bb-8eea-6d0d-e7ae-6487cdcc0e27?t=1653981669311",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/28-05-2022_answer_key.pdf"
+      }
+    },
+    {
+      "date": "23/07/2022",
+      "questionnaire": {
+        "date": "23/07/2022",
+        "url": "https://mediambient.gva.es/documents/20081096/362078376/MERCANCIAS+23-07-2022.pdf/299ce352-7a66-0df1-c535-0155c77c1a27?t=1658740195007",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/23-07-2022_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "23/07/2022",
+        "url": "https://mediambient.gva.es/documents/20081096/362078376/PLANTILLA+MERCANCIAS+23-07-2022.pdf/5a5e6021-df94-b6fd-a70a-de2aec14cd50?t=1658740134662",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/23-07-2022_answer_key.pdf"
+      }
+    },
+    {
+      "date": "24/09/2022",
+      "questionnaire": {
+        "date": "24/09/2022",
+        "url": "https://mediambient.gva.es/documents/20081096/363693352/EXAMEN+CAP+MERCANCIAS+24-09-2022.pdf/8915b70b-0a10-168e-4ec0-41f4d35c4a23?t=1664170994572",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/24-09-2022_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "24/09/2022",
+        "url": "https://mediambient.gva.es/documents/20081096/363693352/PLANTILLA+CAP+MERCANCIAS+24-09.pdf/c18f94f4-1227-00bc-b475-af9c3a92a61b?t=1664170996043",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/24-09-2022_answer_key.pdf"
+      }
+    },
+    {
+      "date": "26/11/2022",
+      "questionnaire": {
+        "date": "26/11/2022",
+        "url": "https://mediambient.gva.es/documents/20081096/366737248/EXAMEN+CAP+MERCANCIAS+26-11-2022.pdf/337db3a1-ffe1-100d-58c1-7b0b9e94ba2b?t=1669635927027",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/26-11-2022_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "26/11/2022",
+        "url": "https://mediambient.gva.es/documents/20081096/366737248/PLANTILLA+CAP+MERCANCIAS+26-11-2022.pdf/8476605b-5e7b-760b-5b3f-d22ad9aa63d7?t=1669635743095",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/26-11-2022_answer_key.pdf"
+      }
+    },
+    {
+      "date": "28/01/2023",
+      "questionnaire": {
+        "date": "28/01/2023",
+        "url": "https://mediambient.gva.es/documents/20081096/369137954/EXAMEN+CAP+MERCANCIAS+28-01-2023.pdf/949cd1e7-2916-4ee1-7799-cb2e9e014fe7?t=1675148475143",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/28-01-2023_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "28/01/2023",
+        "url": "https://mediambient.gva.es/documents/20081096/369137954/PLANTILLA+MERCANCIAS+28-01-2023.pdf/5c9bae5f-22cd-c774-ca1e-142ea44c9406?t=1675148476398",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/28-01-2023_answer_key.pdf"
+      }
+    },
+    {
+      "date": "25/03/2023",
+      "questionnaire": {
+        "date": "25/03/2023",
+        "url": "https://mediambient.gva.es/documents/20081096/370384677/EXAMEN+OBTENCI%C3%93N+DEL+CAP+MERCANCIAS+25-03-2023.pdf/33db590b-d169-4161-2510-e1b420f9793c?t=1679898270210",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/25-03-2023_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "25/03/2023",
+        "url": "https://mediambient.gva.es/documents/20081096/370384677/PLANTILLA+MERCANCIAS+25-03-2023.pdf/f56b955b-8030-f7df-b3db-35e554aaf107?t=1679898272281",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/25-03-2023_answer_key.pdf"
+      }
+    },
+    {
+      "date": "27/05/2023",
+      "questionnaire": {
+        "date": "27/05/2023",
+        "url": "https://mediambient.gva.es/documents/20081096/371650414/EXAMEN+OBTENCI%C3%93N+DEL+CAP+MERCANCIAS.pdf/8a5e27ea-5288-4b38-4b4f-2bf7c6673fff?t=1685340896830",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/27-05-2023_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "27/05/2023",
+        "url": "https://mediambient.gva.es/documents/20081096/371650414/MERCANCIAS+05-23.pdf/3f83bdaa-adcd-3f2a-303b-c1f49c8e6f84?t=1685340897588",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/27-05-2023_answer_key.pdf"
+      }
+    },
+    {
+      "date": "15/07/2023",
+      "questionnaire": {
+        "date": "15/07/2023",
+        "url": "https://mediambient.gva.es/documents/20081096/373086341/EXAMEN+OBTENCI%C3%93N+DEL+CAP+MERCANCIAS+15-07-2023.pdf/c57bbc9e-6f55-2364-fd80-0f25883a8ba0?t=1689574495365",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/15-07-2023_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "15/07/2023",
+        "url": "https://mediambient.gva.es/documents/20081096/373086341/PLANTILLA+MERCANCIAS+15-07-23.pdf/a0adf60b-87ac-9210-8945-78c5e3178505?t=1689574497226",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/15-07-2023_answer_key.pdf"
+      }
+    },
+    {
+      "date": "23/09/2023",
+      "questionnaire": {
+        "date": "23/09/2023",
+        "url": "https://mediambient.gva.es/documents/20081096/374349405/EXAMEN+OBTENCI%C3%93N+DEL+CAP+MERCANCIAS+23-09-2023.pdf/7b8e7fd3-b79b-19e5-72cd-b3a5f7e47e5d?t=1695623898600",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/23-09-2023_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "23/09/2023",
+        "url": "https://mediambient.gva.es/documents/20081096/374349405/PLANTILLA+CAP+MERCANCIAS+23-09-2023.pdf/2685fb69-8097-c73f-bc15-b369bddac3fa?t=1695623900349",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/23-09-2023_answer_key.pdf"
+      }
+    },
+    {
+      "date": "25/11/2023",
+      "questionnaire": {
+        "date": "25/11/2023",
+        "url": "https://mediambient.gva.es/documents/20081096/376196237/EXAMEN+OBTENCI%C3%93N+DEL+CAP+MERCANCIAS+25_11_2023.pdf/83fa226f-67df-2b24-735d-cc924e7497ed?t=1701072657840",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/25-11-2023_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "25/11/2023",
+        "url": "https://mediambient.gva.es/documents/20081096/376196237/PLANTILLA+CAP+MERCANCIAS+25-11-2023.pdf/b8571aa5-647f-f2e9-7d52-cd6b4ccaf031?t=1701072659840",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/25-11-2023_answer_key.pdf"
+      }
+    },
+    {
+      "date": "27/01/2024",
+      "questionnaire": {
+        "date": "27/01/2024",
+        "url": "https://mediambient.gva.es/documents/20081096/378177901/EXAMEN+OBTENCION+CAP+MERCANCIAS+27-01-2024.pdf/052db19f-2bc1-c423-1bd6-1f058335b522?t=1706516359921",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/27-01-2024_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "27/01/2024",
+        "url": "https://mediambient.gva.es/documents/20081096/378177901/PLANTILLA+CAP+MERCANCIAS+27-01-2024.pdf/55336520-21bf-3946-c66d-01e93a4114b7?t=1706516361809",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/27-01-2024_answer_key.pdf"
+      }
+    },
+    {
+      "date": "23/03/2024",
+      "questionnaire": {
+        "date": "23/03/2024",
+        "url": "https://mediambient.gva.es/documents/20081096/379954630/EXAMEN+OBTENCI%C3%93N+DEL+CAP+MERCANCIAS+23-03-2024.pdf/67b01cd2-cd7d-acf1-73be-0941952c25c7?t=1711363466301",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/23-03-2024_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "23/03/2024",
+        "url": "https://mediambient.gva.es/documents/20081096/379954630/PLANTILLA+CAP+MERCANCIAS+23-03-2024.pdf/fb273d94-b060-d401-8047-e36acf602778?t=1711363467873",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/23-03-2024_answer_key.pdf"
+      }
+    },
+    {
+      "date": "25/05/2024",
+      "questionnaire": {
+        "date": "25/05/2024",
+        "url": "https://mediambient.gva.es/documents/20081096/382475707/EXAMEN+CAP+MERCANCIAS+25-05-2024+%28A%29.pdf/d9fc26e6-8ab8-816f-14fe-0a188cadb0b2?t=1716883455989",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/25-05-2024_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "25/05/2024",
+        "url": "https://mediambient.gva.es/documents/20081096/382475707/PLANTILLA+MERCANCIAS+25_05_2024.pdf/8ea13bda-d8e1-f6a1-dd3b-a235d5affed0?t=1716883457038",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/25-05-2024_answer_key.pdf"
+      }
+    },
+    {
+      "date": "13/07/2024",
+      "questionnaire": {
+        "date": "13/07/2024",
+        "url": "https://mediambient.gva.es/documents/20081096/384370580/EXAMEN+OBTENCION+DEL+CAP+MERCANCIAS+13-07-2024.pdf/42a516a7-2692-1aff-05a0-c4bcd65b6c12?t=1721034903984",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/13-07-2024_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "13/07/2024",
+        "url": "https://mediambient.gva.es/documents/20081096/384370580/PLANTILLA+MERCANCIAS+13-07-2024.pdf/0e68e3db-35fa-0b5d-9553-210f258b2960?t=1721034905993",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/13-07-2024_answer_key.pdf"
+      }
+    },
+    {
+      "date": "28/09/2024",
+      "questionnaire": {
+        "date": "28/09/2024",
+        "url": "https://mediambient.gva.es/documents/20081096/385877796/EXAMEN+OBTENCI%C3%93N+DEL+CAP+MERCANCIAS+28-09-2024.pdf/b311a137-80a9-3e58-3685-6c40ba590836?t=1727676076854",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/28-09-2024_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "28/09/2024",
+        "url": "https://mediambient.gva.es/documents/20081096/385877796/PLANTILLA+MERCANCIAS+28-09-2024.pdf/5851f5be-9ee8-0272-6a25-57c0d402db3d?t=1727676078506",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/28-09-2024_answer_key.pdf"
+      }
+    },
+    {
+      "date": "30/11/2024",
+      "questionnaire": {
+        "date": "30/11/2024",
+        "url": "https://mediambient.gva.es/documents/20081096/387674942/EXAMEN+OBTENCI%C3%93N+DEL+CAP+MERCANCIAS+30-11-2024.pdf/41d18746-b7b2-eb42-a09a-24819019ac4e?t=1733124971868",
+        "sourceText": "CAP-Mercancías (cuadernillo)",
+        "documentType": "questionnaire",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/30-11-2024_questionnaire.pdf"
+      },
+      "answer_key": {
+        "date": "30/11/2024",
+        "url": "https://mediambient.gva.es/documents/20081096/387674942/PLANTILLA+MERCANCIAS+30-11-2024.pdf/bb72c422-cdc4-105e-7456-9c3fca965ba2?t=1733124974181",
+        "sourceText": "CAP-Mercancías (plantilla de respuestas)",
+        "documentType": "answer_key",
+        "localPath": "/home/ubuntu/gva_cap_official_documents/30-11-2024_answer_key.pdf"
+      }
+    }
+  ],
+  "failures": []
+}

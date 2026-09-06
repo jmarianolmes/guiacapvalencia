@@ -1,0 +1,28 @@
+{
+  "uniqueQuestions": 525,
+  "assignedQuestions": 525,
+  "coverageRate": 1.0,
+  "lowConfidenceCount": 4,
+  "lowConfidence": [
+    {
+      "id": "q0082",
+      "chapterId": "common-3-4",
+      "confidence": "low"
+    },
+    {
+      "id": "q0210",
+      "chapterId": "common-3-6",
+      "confidence": "low"
+    },
+    {
+      "id": "q0223",
+      "chapterId": "common-3-6",
+      "confidence": "low"
+    },
+    {
+      "id": "q0241",
+      "chapterId": "common-3-6",
+      "confidence": "low"
+    }
+  ]
+}
