@@ -1,0 +1,2 @@
+CREATE INDEX `simulator_questions_model_question_idx` ON `simulator_questions` (`model`,`questionNumber`);--> statement-breakpoint
+CREATE INDEX `simulator_questions_official_date_question_idx` ON `simulator_questions` (`model`,`provaDate`,`questionNumber`);

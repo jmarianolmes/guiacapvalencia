@@ -1,0 +1,104 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1783634079633,
+      "tag": "0000_minor_blazing_skull",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1783634539292,
+      "tag": "0001_low_storm",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1783635426366,
+      "tag": "0002_magical_ikaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1786457773846,
+      "tag": "0003_fantastic_trish_tilby",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1786472239305,
+      "tag": "0004_shocking_the_phantom",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1786472961767,
+      "tag": "0005_empty_loki",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1786716490100,
+      "tag": "0006_normal_paper_doll",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1786717065631,
+      "tag": "0007_even_fenris",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1787130109553,
+      "tag": "0008_user_study_profiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1787133888655,
+      "tag": "0009_simulator_study_mode",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1787137967086,
+      "tag": "0010_certain_frank_castle",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1787139652739,
+      "tag": "0011_serious_exiles",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1787150497966,
+      "tag": "0012_woozy_toro",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "5",
+      "when": 1787912010647,
+      "tag": "0013_common_titania",
+      "breakpoints": true
+    }
+  ]
+}

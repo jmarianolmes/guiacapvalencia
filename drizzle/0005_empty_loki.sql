@@ -1,0 +1,1 @@
+ALTER TABLE `simulator_questions` ADD CONSTRAINT `simulator_questions_model_date_position_unique` UNIQUE(`model`,`provaDate`,`questionNumber`);

@@ -1,0 +1,47 @@
+{
+  "simulator_total": 1000,
+  "original_exams_records": 10,
+  "provas_dates_records": 9,
+  "simulator_top_level_shape": {
+    "top_level": 10,
+    "flattened": 1000
+  },
+  "by_materia": {
+    "Mercancias": 749,
+    "Materiales Comunes": 251
+  },
+  "by_year": {
+    "2025": 652,
+    "2026": 348
+  },
+  "by_source_model": {
+    "pool": 1000
+  },
+  "unique_exam_dates": 9,
+  "exam_dates": [
+    "01/02/2025",
+    "05/04/2025",
+    "07/02/2026",
+    "19/07/2025",
+    "27/09/2025",
+    "28/03/2026",
+    "29/11/2025",
+    "30/05/2026",
+    "31/05/2025"
+  ],
+  "duplicate_normalized_question_groups": 271,
+  "duplicate_records_beyond_first": 475,
+  "max_same_normalized_question_count": 8,
+  "question_keys": [
+    "answer",
+    "materia",
+    "normalized",
+    "options",
+    "prova",
+    "q_num",
+    "question",
+    "stem"
+  ],
+  "chapter_keys": [],
+  "origin_keys": []
+}
