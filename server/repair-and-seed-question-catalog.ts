@@ -18,24 +18,37 @@ type CatalogEntry = {
 
 type Catalog = { entries: CatalogEntry[] };
 
+type ColumnRow = { COLUMN_NAME?: string; column_name?: string };
+
 async function repairAndSeedQuestionCatalog() {
   const db = await getDb();
   if (!db) throw new Error('Falha de conexão com o banco de dados.');
 
-  // O histórico de migrações da produção contém versões antigas que tentam
-  // recriar tabelas existentes. Estas alterações são deliberadamente isoladas
-  // e idempotentes para reparar somente o schema do catálogo.
-  const columns = [
-    'internalCode varchar(24)',
-    'equivalenceKey text',
-    'chapterId varchar(50)',
-    'chapterCode varchar(12)',
-    "origin varchar(20) DEFAULT 'official' NOT NULL",
-    "reviewStatus varchar(20) DEFAULT 'pending_review' NOT NULL",
-    'isVariant boolean DEFAULT false NOT NULL',
-  ];
-  for (const definition of columns) {
-    await db.execute(sql.raw(`ALTER TABLE \`simulator_questions\` ADD COLUMN IF NOT EXISTS \`${definition.split(' ')[0]}\` ${definition.slice(definition.indexOf(' ') + 1)}`));
+  const definitions = [
+    ['internalCode', 'varchar(24)'],
+    ['equivalenceKey', 'text'],
+    ['chapterId', 'varchar(50)'],
+    ['chapterCode', 'varchar(12)'],
+    ['origin', "varchar(20) DEFAULT 'official' NOT NULL"],
+    ['reviewStatus', "varchar(20) DEFAULT 'pending_review' NOT NULL"],
+    ['isVariant', 'boolean DEFAULT false NOT NULL'],
+  ] as const;
+
+  const columnResult = await db.execute(sql`
+    SELECT COLUMN_NAME
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'simulator_questions'
+  `) as unknown as [ColumnRow[], unknown];
+  const existingColumns = new Set(
+    (columnResult[0] ?? []).map((row) => row.COLUMN_NAME ?? row.column_name),
+  );
+
+  for (const [name, definition] of definitions) {
+    if (existingColumns.has(name)) continue;
+    await db.execute(sql.raw(
+      `ALTER TABLE \`simulator_questions\` ADD COLUMN \`${name}\` ${definition}`,
+    ));
   }
 
   const catalogPath = path.join(process.cwd(), 'server/data/question_catalog.json');
@@ -69,6 +82,7 @@ async function repairAndSeedQuestionCatalog() {
         eq(simulatorQuestions.questionNumber, row.questionNumber),
       ));
     updated += 1;
+    if (updated % 250 === 0) console.log(`catalog_progress=${updated}/${rows.length}`);
   }
 
   console.log(JSON.stringify({
