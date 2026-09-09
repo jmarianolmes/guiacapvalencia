@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Search } from 'lucide-react';
 import { useAuth } from '@/_core/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { trpc } from '@/lib/trpc';
@@ -188,7 +189,7 @@ export default function Guide() {
                 {texts.repeated}
               </TabsTrigger>
               <TabsTrigger value="question-search" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
-                {language === 'pt' ? 'Pesquisa de questões' : 'Búsqueda de preguntas'}
+                <span className="inline-flex items-center justify-center gap-1.5"><Search className="h-3.5 w-3.5" aria-hidden="true" />{language === 'pt' ? 'Pesquisa de questões' : 'Búsqueda de preguntas'}</span>
               </TabsTrigger>
               <TabsTrigger value="tricks" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.tricks}

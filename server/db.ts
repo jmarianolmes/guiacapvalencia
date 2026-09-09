@@ -270,11 +270,15 @@ export async function searchAllSimulatorQuestions(search: string) {
       })
         .from(simulatorQuestions)
         .where(or(
-          sql`${simulatorQuestions.question} LIKE ${term}`,
-          sql`${simulatorQuestions.optionA} LIKE ${term}`,
-          sql`${simulatorQuestions.optionB} LIKE ${term}`,
-          sql`${simulatorQuestions.optionC} LIKE ${term}`,
-          sql`${simulatorQuestions.optionD} LIKE ${term}`,
+          sql`LOWER(COALESCE(${simulatorQuestions.question}, '')) LIKE LOWER(${term})`,
+          sql`LOWER(COALESCE(${simulatorQuestions.optionA}, '')) LIKE LOWER(${term})`,
+          sql`LOWER(COALESCE(${simulatorQuestions.optionB}, '')) LIKE LOWER(${term})`,
+          sql`LOWER(COALESCE(${simulatorQuestions.optionC}, '')) LIKE LOWER(${term})`,
+          sql`LOWER(COALESCE(${simulatorQuestions.optionD}, '')) LIKE LOWER(${term})`,
+          sql`LOWER(COALESCE(${simulatorQuestions.normalized}, '')) LIKE LOWER(${term})`,
+          sql`LOWER(COALESCE(${simulatorQuestions.internalCode}, '')) LIKE LOWER(${term})`,
+          sql`LOWER(COALESCE(${simulatorQuestions.chapterCode}, '')) LIKE LOWER(${term})`,
+          sql`LOWER(COALESCE(${simulatorQuestions.model}, '')) LIKE LOWER(${term})`,
         ))
         .orderBy(asc(simulatorQuestions.questionNumber))
         .limit(50)
