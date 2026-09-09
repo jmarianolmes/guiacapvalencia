@@ -9,6 +9,12 @@ interface TricksTabProps {
   language: 'pt' | 'es';
 }
 
+function cleanDisplayedOption(option: string, letter: string) {
+  const value = String(option ?? '').trim();
+  const prefix = new RegExp(`^${letter}\\s*[)\\.\\-:]\\s*`, 'i');
+  return value.replace(prefix, '').trim();
+}
+
 export default function TricksTab({ language }: TricksTabProps) {
   const [expandedTitle, setExpandedTitle] = useState<string | null>(null);
   const [visibleQuestions, setVisibleQuestions] = useState<Record<string, number>>({});
@@ -120,7 +126,7 @@ export default function TricksTab({ language }: TricksTabProps) {
                             const text = question[`option${option}`];
                             return (
                               <div key={option} className={`rounded-md border px-3 py-2 text-sm ${correct ? 'border-green-300 bg-green-50 text-green-950' : 'border-red-100 bg-red-50 text-red-950'}`}>
-                                <span className="font-bold">{option})</span> {text}
+                                <span className="font-bold">{option})</span> {cleanDisplayedOption(text, option)}
                                 <span className={`ml-2 text-xs font-semibold ${correct ? 'text-green-700' : 'text-red-700'}`}>— {correct ? texts.correct : texts.trap}</span>
                               </div>
                             );

@@ -4,6 +4,12 @@ interface StudyTabProps {
   language: 'pt' | 'es';
 }
 
+function cleanDisplayedOption(option: string, letter: string) {
+  const value = String(option ?? '').trim();
+  const prefix = new RegExp(`^${letter}\\s*[)\\.\\-:]\\s*`, 'i');
+  return value.replace(prefix, '').trim();
+}
+
 export default function StudyTab({ language }: StudyTabProps) {
   const analysisQuery = trpc.guide.getOfficialExamAnalysis.useQuery(undefined, { staleTime: 5 * 60 * 1000, retry: 1 });
   const content = {
@@ -298,7 +304,7 @@ export default function StudyTab({ language }: StudyTabProps) {
                     <span className="text-xs text-slate-600">{question.occurrences} {data.officialOccurrences} · {question.exams.length} {data.officialExams}</span>
                   </div>
                   <p className="text-sm font-semibold text-slate-900">{question.question}</p>
-                  <p className="mt-3 rounded bg-green-50 px-3 py-2 text-sm text-green-900"><strong>{data.officialAnswer}:</strong> {question.correctAnswer}) {answerText}</p>
+                  <p className="mt-3 rounded bg-green-50 px-3 py-2 text-sm text-green-900"><strong>{data.officialAnswer}:</strong> {question.correctAnswer}) {cleanDisplayedOption(answerText, question.correctAnswer)}</p>
                 </article>
               );
             })}
@@ -314,7 +320,7 @@ export default function StudyTab({ language }: StudyTabProps) {
                   <ul className="mt-3 space-y-2 text-sm text-slate-800">
                     {group.questions.map((question) => {
                       const answerText = { A: question.optionA, B: question.optionB, C: question.optionC, D: question.optionD }[question.correctAnswer];
-                      return <li key={question.question} className="rounded border-l-4 border-green-400 bg-green-50 p-2"><p className="font-medium text-slate-900">{question.question}</p><span className="mt-1 block font-semibold text-green-950">{question.correctAnswer}) {answerText}</span><span className="block pt-1 text-xs text-slate-600">{question.occurrences} {data.officialOccurrences} · {question.exams.length} {data.officialExams}</span></li>;
+                      return <li key={question.question} className="rounded border-l-4 border-green-400 bg-green-50 p-2"><p className="font-medium text-slate-900">{question.question}</p><span className="mt-1 block font-semibold text-green-950">{question.correctAnswer}) {cleanDisplayedOption(answerText, question.correctAnswer)}</span><span className="block pt-1 text-xs text-slate-600">{question.occurrences} {data.officialOccurrences} · {question.exams.length} {data.officialExams}</span></li>;
                     })}
                   </ul>
                 </article>
