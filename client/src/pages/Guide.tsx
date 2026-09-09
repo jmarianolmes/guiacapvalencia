@@ -9,6 +9,7 @@ import { Spinner } from '@/components/ui/spinner';
 import OverviewTab from './guide/OverviewTab';
 import StrategyTab from './guide/StrategyTab';
 import RepeatedQuestionsTab from './guide/RepeatedQuestionsTab';
+import QuestionSearchTab from './guide/QuestionSearchTab';
 import TricksTab from './guide/TricksTab';
 import StudyTab from './guide/StudyTab';
 import SiglasTab from './guide/SiglasTab';
@@ -176,7 +177,7 @@ export default function Guide() {
       <main className="max-w-6xl mx-auto px-4 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="mb-8 overflow-x-auto pb-2 [scrollbar-width:thin] lg:overflow-visible">
-            <TabsList className="inline-flex h-auto min-w-max w-max gap-1 bg-transparent p-0 lg:grid lg:min-w-0 lg:w-full lg:grid-cols-10">
+            <TabsList className="inline-flex h-auto min-w-max w-max gap-1 bg-transparent p-0 lg:grid lg:min-w-0 lg:w-full lg:grid-cols-11">
               <TabsTrigger value="overview" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.overview}
               </TabsTrigger>
@@ -185,6 +186,9 @@ export default function Guide() {
               </TabsTrigger>
               <TabsTrigger value="repeated" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.repeated}
+              </TabsTrigger>
+              <TabsTrigger value="question-search" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
+                {language === 'pt' ? 'Pesquisa de questões' : 'Búsqueda de preguntas'}
               </TabsTrigger>
               <TabsTrigger value="tricks" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.tricks}
@@ -222,6 +226,9 @@ export default function Guide() {
             {user ? <RepeatedQuestionsTab language={language} /> : <LoginRequiredCard message={texts.login_required} />}
           </TabsContent>
 
+          <TabsContent value="question-search">
+            {user ? <QuestionSearchTab language={language} /> : <LoginRequiredCard message={texts.login_required} />}
+          </TabsContent>
           <TabsContent value="tricks">
             {user ? <TricksTab language={language} /> : <LoginRequiredCard message={texts.login_required} />}
           </TabsContent>

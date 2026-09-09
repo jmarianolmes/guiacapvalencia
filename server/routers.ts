@@ -191,6 +191,12 @@ export const appRouter = router({
         return await db.getSimulatorQuestionsByChapter(input.chapterId, input.attemptNumber);
       }),
     
+    searchQuestions: protectedProcedure
+      .input(z.object({ search: z.string().trim().min(2).max(120) }))
+      .query(async ({ input }) => {
+        return await db.searchAllSimulatorQuestions(input.search);
+      }),
+
     getRepeatedQuestions: protectedProcedure.query(async () => {
       return await db.getRepeatedQuestions();
     }),

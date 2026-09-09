@@ -1,4 +1,4 @@
-import { and, asc, count, eq, inArray, ne, sql } from "drizzle-orm";
+import { and, asc, count, eq, inArray, ne, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool, type Pool } from "mysql2";
 import { desc } from 'drizzle-orm';
@@ -245,6 +245,45 @@ export async function getUserByOpenId(openId: string) {
 }
 
 // TODO: add feature queries here as your schema grows.
+
+export async function searchAllSimulatorQuestions(search: string) {
+  if (isDemoMode()) return [];
+  const normalizedSearch = search.trim();
+  if (normalizedSearch.length < 2) return [];
+  try {
+    const term = `%${normalizedSearch}%`;
+    return await withSimulatorDbRetry((db) =>
+      db.select({
+        id: simulatorQuestions.id,
+        questionNumber: simulatorQuestions.questionNumber,
+        model: simulatorQuestions.model,
+        provaDate: simulatorQuestions.provaDate,
+        question: simulatorQuestions.question,
+        optionA: simulatorQuestions.optionA,
+        optionB: simulatorQuestions.optionB,
+        optionC: simulatorQuestions.optionC,
+        optionD: simulatorQuestions.optionD,
+        correctAnswer: simulatorQuestions.correctAnswer,
+        internalCode: simulatorQuestions.internalCode,
+        chapterCode: simulatorQuestions.chapterCode,
+        origin: simulatorQuestions.origin,
+      })
+        .from(simulatorQuestions)
+        .where(or(
+          sql`${simulatorQuestions.question} LIKE ${term}`,
+          sql`${simulatorQuestions.optionA} LIKE ${term}`,
+          sql`${simulatorQuestions.optionB} LIKE ${term}`,
+          sql`${simulatorQuestions.optionC} LIKE ${term}`,
+          sql`${simulatorQuestions.optionD} LIKE ${term}`,
+        ))
+        .orderBy(asc(simulatorQuestions.questionNumber))
+        .limit(50)
+    );
+  } catch (error) {
+    console.error('[Database] Failed to search simulator questions:', error);
+    return [];
+  }
+}
 
 // Guide data queries
 
