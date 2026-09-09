@@ -34,7 +34,7 @@ const quickGlossary = [
 
 export default function SimulatorTab({ language }: SimulatorTabProps) {
   const [simulatorMode, setSimulatorMode] = useState<'statistical' | 'byDate' | 'byChapter'>('statistical');
-  const [studyMode, setStudyMode] = useState<'exam' | 'learning'>('exam');
+  const [studyMode, setStudyMode] = useState<'exam' | 'learning'>('learning');
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<string | null>(null);

@@ -89,7 +89,6 @@ export default function ErrorNotebookTab({ language }: ErrorNotebookTabProps) {
     reviewMutation.mutate({ itemId: currentItem.id, selectedAnswer: answer }, {
       onSuccess: (result) => {
         setFeedback(result);
-        utils.guide.getErrorNotebook.invalidate();
       },
     });
   };
@@ -98,6 +97,7 @@ export default function ErrorNotebookTab({ language }: ErrorNotebookTabProps) {
     setSelectedAnswer(null);
     setFeedback(null);
     setCurrentIndex(0);
+    void utils.guide.getErrorNotebook.invalidate();
   };
 
   if (notebookQuery.isLoading) {
