@@ -321,6 +321,8 @@ export const appRouter = router({
       .mutation(({ input }) => db.setPublicAccessEnabled(input.enabled)),
     importObjective32: adminProcedure
       .mutation(() => importOfQuestionBank('of_cap_objetivo_3_2.json')),
+    importObjective35: adminProcedure
+      .mutation(() => importOfQuestionBank('of_cap_objetivo_3_5.json')),
 
     getStats: protectedProcedure.query(async ({ ctx }) => {
       if (ctx.user?.role !== 'admin') {
