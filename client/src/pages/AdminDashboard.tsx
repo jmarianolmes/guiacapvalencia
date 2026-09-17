@@ -60,7 +60,6 @@ export default function AdminDashboard() {
   const dismissReviewMutation = trpc.admin.dismissQuestionReview.useMutation();
   const publicAccessQuery = trpc.admin.getPublicAccess.useQuery();
   const publicAccessMutation = trpc.admin.setPublicAccess.useMutation();
-  const importObjective21Mutation = trpc.admin.importObjective21.useMutation();
   const [reviewAnswers, setReviewAnswers] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
 
   useEffect(() => {
@@ -180,17 +179,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleImportObjective21 = async () => {
-    setFormError('');
-    setSuccessMessage('');
-    try {
-      const result = await importObjective21Mutation.mutateAsync({ fileName: 'of_cap_objetivo_2_1.json' });
-      setSuccessMessage(`Importação concluída: ${result.imported} questões em ${result.chapters.join(', ')}.`);
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível importar o objetivo 2.1.');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <nav className="bg-white shadow-sm">
@@ -232,16 +220,6 @@ export default function AdminDashboard() {
               <div className="space-y-2"><Label htmlFor="access-days">Período de acesso</Label><Input id="access-days" type="number" min={1} max={3650} value={accessDurationDays} onChange={event => setAccessDurationDays(event.target.value)} disabled={createUserMutation.isPending} required /><div className="flex gap-2"><Button type="button" size="sm" variant={accessDurationDays === '90' ? 'default' : 'outline'} onClick={() => setAccessDurationDays('90')}>3 meses</Button><Button type="button" size="sm" variant={accessDurationDays === '365' ? 'default' : 'outline'} onClick={() => setAccessDurationDays('365')}>1 ano</Button></div><p className="text-xs text-slate-500">Apague o valor se quiser digitar outro período; use 90 dias para acesso intensivo ou 365 para acesso estendido.</p></div>
               <div className="md:col-span-4"><Button type="submit" disabled={createUserMutation.isPending}>{createUserMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}{createUserMutation.isPending ? text.creating : text.create}</Button></div>
             </form>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle>Carga temporária OF</CardTitle></CardHeader>
-          <CardContent className="flex flex-wrap items-center gap-3">
-            <Button type="button" variant="outline" onClick={handleImportObjective21} disabled={importObjective21Mutation.isPending}>
-              {importObjective21Mutation.isPending ? 'Importando objetivo 2.1…' : 'Importar objetivo 2.1 (306 questões)'}
-            </Button>
-            <span className="text-sm text-slate-600">Executar uma única vez; a rota será removida após a confirmação.</span>
           </CardContent>
         </Card>
 
