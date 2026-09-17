@@ -8,6 +8,8 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { createRateLimit, cleanupRateLimitBuckets } from './rateLimit';
+import { sdk } from './sdk';
+import { importOfQuestionBank } from '../ofQuestionBank';
 
 async function startServer() {
   const app = express();
@@ -37,6 +39,18 @@ async function startServer() {
   if (process.env.OAUTH_SERVER_URL && process.env.VITE_APP_ID) {
     registerOAuthRoutes(app);
   }
+  app.get('/api/admin/refresh-official-question-ids', async (req, res) => {
+    let user = null;
+    try { user = await sdk.authenticateRequest(req); } catch { user = null; }
+    if (user?.role !== 'admin') { res.status(403).json({ error: 'Forbidden' }); return; }
+    try {
+      const first = await importOfQuestionBank('of_cap_objetivo_1_1.json');
+      const second = await importOfQuestionBank('of_cap_objetivo_1_2.json');
+      res.json({ success: true, imports: [first, second] });
+    } catch (error) {
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Import failed' });
+    }
+  });
   // tRPC API
   app.use(
     "/api/trpc",

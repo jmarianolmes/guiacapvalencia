@@ -750,7 +750,12 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       {/* Question */}
       <Card>
         <CardContent className="pt-6">
-          <p className="text-base md:text-lg font-semibold mb-6">{question.question}</p>
+          <p className="text-base md:text-lg font-semibold mb-6">
+            {(question.model === 'OF' || question.model === 'ORIGINAL') && question.internalCode?.match(/-(\d+)$/)?.[1] && (
+              <span className="mr-2 inline-block rounded bg-slate-100 px-2 py-0.5 align-middle text-xs font-semibold text-slate-600">ID: {question.internalCode.match(/-(\d+)$/)?.[1]}</span>
+            )}
+            {question.question}
+          </p>
           <label className="mb-5 flex min-h-9 cursor-pointer items-center gap-2 text-xs text-slate-500 hover:text-slate-700">
             <Checkbox
               checked={reportedQuestionIds.has(question.id)}
