@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { trpc } from '@/lib/trpc';
 import {
   Select,
@@ -40,6 +41,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const [selectedChapter, setSelectedChapter] = useState<string | null>(null);
   const [chapterToStart, setChapterToStart] = useState<string | null>(null);
   const [chapterAttempt, setChapterAttempt] = useState(1);
+  const [chapterDialogOpen, setChapterDialogOpen] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
@@ -76,6 +78,29 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const activeQuestionsQuery = selectedChapter ? chapterQuestionsQuery : questionsQuery;
   const chapterAttemptData = chapterQuestionsQuery.data;
   const questions = selectedChapter ? (chapterAttemptData?.questions || []) : (questionsQuery.data || []);
+
+  type SimulatorStatus = 'passed' | 'failed' | null;
+  const getSimulatorStatus = (matches: (result: NonNullable<typeof historyQuery.data>[number]) => boolean): SimulatorStatus => {
+    const result = (historyQuery.data || []).find(matches);
+    if (!result) return null;
+    return result.score >= 50 ? 'passed' : 'failed';
+  };
+  const statusClass = (status: SimulatorStatus) => status === 'passed'
+    ? 'border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+    : status === 'failed'
+      ? 'border-red-300 bg-red-50 text-red-800 hover:bg-red-100'
+      : '';
+  const startChapter = (chapterId: string, attempt: number) => {
+    setSelectedChapter(chapterId);
+    setSelectedModel(null);
+    setSelectedDate(null);
+    setChapterAttempt(attempt);
+    setCurrentQuestion(0);
+    setAnswers({});
+    setShowResults(false);
+    setTimeLeft(7200);
+    setChapterDialogOpen(false);
+  };
 
   const getResultStats = () => {
     const correct = Object.entries(answers).filter(([idx, answer]) => questions[Number(idx)]?.correctAnswer === answer).length;
@@ -435,7 +460,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                               setShowResults(false);
                               setTimeLeft(7200);
                             }}
-                            className="w-full text-sm"
+                            className={`w-full text-sm ${statusClass(getSimulatorStatus((result) => result.mode === 'statistical' && result.model === model))}`}
                             variant="outline"
                           >
                             {model}
@@ -479,7 +504,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {(officialExamDatesQuery.data || []).map((date) => (
-                    <SelectItem key={date} value={date}>{date}</SelectItem>
+                    <SelectItem key={date} value={date} className={statusClass(getSimulatorStatus((result) => result.mode === 'official' && result.model === date))}>{date}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -518,6 +543,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                               onClick={() => {
                                 setChapterToStart(chapter.id);
                                 setChapterAttempt(1);
+                                setChapterDialogOpen(true);
                               }}
                             >
                               <span><Badge variant="secondary" className="mr-2">{chapter.code}</Badge>{language === 'pt' ? chapter.titlePt : chapter.titleEs}<span className="mt-1 block text-xs font-normal text-slate-500">{chapter.count > 0 ? `${chapter.count} ${texts.available_questions}${chapter.availableAttempts > 1 ? ` · ${chapter.availableAttempts} ${texts.chapter_versions}` : ''}` : texts.no_questions}</span></span>
@@ -527,33 +553,40 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                       </div>
                     );
                   })}
-                  {chapterToStart && (() => {
-                    const chapter = (chaptersQuery.data || []).find((item) => item.id === chapterToStart);
-                    if (!chapter) return null;
-                    return <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-4">
-                      <p className="mb-3 font-semibold text-slate-900">{texts.choose_attempt}: {chapter.code}</p>
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <Select value={String(chapterAttempt)} onValueChange={(value) => setChapterAttempt(Number(value))}>
-                          <SelectTrigger className="bg-white sm:w-64"><SelectValue /></SelectTrigger>
-                          <SelectContent>{Array.from({ length: Math.max(1, chapter.availableAttempts) }, (_, index) => <SelectItem key={index + 1} value={String(index + 1)}>{texts.attempt} {index + 1}</SelectItem>)}</SelectContent>
-                        </Select>
-                        <Button onClick={() => {
-                          setSelectedChapter(chapterToStart);
-                          setSelectedModel(null);
-                          setSelectedDate(null);
-                          setCurrentQuestion(0);
-                          setAnswers({});
-                          setShowResults(false);
-                          setTimeLeft(7200);
-                        }}>{texts.start_chapter}</Button>
-                      </div>
-                    </div>;
-                  })()}
                 </div>
               )}
             </CardContent>
           </Card>
         )}
+        <Dialog open={chapterDialogOpen} onOpenChange={setChapterDialogOpen}>
+          <DialogContent className="max-w-lg">
+            {chapterToStart && (() => {
+              const chapter = (chaptersQuery.data || []).find((item) => item.id === chapterToStart);
+              if (!chapter) return null;
+              return <>
+                <DialogHeader>
+                  <DialogTitle>{texts.choose_attempt}: {chapter.code}</DialogTitle>
+                  <DialogDescription>{language === 'pt' ? 'Verde: aprovado · vermelho: reprovado · normal: ainda não realizado.' : 'Verde: aprobado · rojo: suspendido · normal: aún no realizado.'}</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-2 pt-2">
+                  {Array.from({ length: Math.max(1, chapter.availableAttempts) }, (_, index) => {
+                    const attempt = index + 1;
+                    const status = getSimulatorStatus((result) => result.mode === 'chapter' && result.chapterId === chapter.id && result.attemptNumber === attempt);
+                    return <Button
+                      key={attempt}
+                      variant="outline"
+                      className={`h-auto justify-between py-3 ${statusClass(status)}`}
+                      onClick={() => startChapter(chapter.id, attempt)}
+                    >
+                      <span>{texts.attempt} {attempt}</span>
+                      <span className="text-xs font-normal">{status === 'passed' ? '✓' : status === 'failed' ? '×' : '·'}</span>
+                    </Button>;
+                  })}
+                </div>
+              </>;
+            })()}
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
