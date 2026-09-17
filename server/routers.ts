@@ -1,7 +1,7 @@
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
+import { publicProcedure, router, protectedProcedure, adminProcedure } from "./_core/trpc";
 import { sdk } from "./_core/sdk";
 import { z } from "zod";
 import * as authService from "./auth";
@@ -244,6 +244,10 @@ export const appRouter = router({
       return await db.getUserSimulatorResults(ctx.user.id);
     }),
 
+    reportQuestionForReview: protectedProcedure
+      .input(z.object({ questionId: z.number().int().positive() }))
+      .mutation(async ({ input, ctx }) => db.reportQuestionForReview(ctx.user.id, input.questionId)),
+
     getErrorNotebook: protectedProcedure.query(async ({ ctx }) => {
       if (!ctx.user?.id) throw new TRPCError({ code: 'UNAUTHORIZED' });
       return await db.getUserErrorNotebook(ctx.user.id);
@@ -291,6 +295,15 @@ export const appRouter = router({
   }),
 
   admin: router({
+    getQuestionReviewReports: adminProcedure.query(() => db.getQuestionReviewReports()),
+    resolveQuestionReview: adminProcedure
+      .input(z.object({ reportId: z.number().int().positive(), correctAnswer: z.enum(['A', 'B', 'C', 'D']) }))
+      .mutation(({ input }) => db.resolveQuestionReview(input.reportId, input.correctAnswer)),
+    getPublicAccess: adminProcedure.query(() => db.getPublicAccessEnabled()),
+    setPublicAccess: adminProcedure
+      .input(z.object({ enabled: z.boolean() }))
+      .mutation(({ input }) => db.setPublicAccessEnabled(input.enabled)),
+
     getStats: protectedProcedure.query(async ({ ctx }) => {
       if (ctx.user?.role !== 'admin') {
         throw new TRPCError({ code: 'FORBIDDEN' });

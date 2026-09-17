@@ -2,7 +2,7 @@ import { and, asc, count, eq, inArray, ne, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool, type Pool } from "mysql2";
 import { desc } from 'drizzle-orm';
-import { InsertUser, users, passwordResets, userAccessLogs, simulatorQuestions, repeatedQuestions, tricks, siglas, userSimulatorResults, userStudyProfiles, userErrorNotebookItems } from "../drizzle/schema";
+import { InsertUser, users, passwordResets, userAccessLogs, simulatorQuestions, repeatedQuestions, tricks, siglas, userSimulatorResults, userStudyProfiles, userErrorNotebookItems, questionReviewReports, siteSettings } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { simulatorChapters } from '../shared/simulatorChapters';
 import { classifySimulatorQuestion } from './chapterClassifier';
@@ -24,6 +24,47 @@ export function isOfficialChapterQuestion(question: Pick<SimulatorQuestion, 'mod
 export function preferOfficialBankQuestions(questions: SimulatorQuestion[]) {
   const officialBankQuestions = questions.filter((question) => question.model === 'OF');
   return officialBankQuestions.length > 0 ? officialBankQuestions : questions;
+}
+
+export async function reportQuestionForReview(userId: number, questionId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database connection unavailable');
+  await db.insert(questionReviewReports).values({ userId, questionId, status: 'open' }).onDuplicateKeyUpdate({ set: { status: 'open', resolvedAt: null } });
+  return { success: true };
+}
+
+export async function getQuestionReviewReports() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({ report: questionReviewReports, question: simulatorQuestions })
+    .from(questionReviewReports)
+    .innerJoin(simulatorQuestions, eq(questionReviewReports.questionId, simulatorQuestions.id))
+    .where(eq(questionReviewReports.status, 'open'))
+    .orderBy(asc(questionReviewReports.createdAt));
+}
+
+export async function resolveQuestionReview(reportId: number, correctAnswer: 'A' | 'B' | 'C' | 'D') {
+  const db = await getDb();
+  if (!db) throw new Error('Database connection unavailable');
+  const [report] = await db.select().from(questionReviewReports).where(eq(questionReviewReports.id, reportId)).limit(1);
+  if (!report) throw new Error('Averiguação não encontrada');
+  await db.update(simulatorQuestions).set({ correctAnswer, reviewStatus: 'reviewed' }).where(eq(simulatorQuestions.id, report.questionId));
+  await db.update(questionReviewReports).set({ status: 'resolved', resolvedAt: new Date() }).where(eq(questionReviewReports.id, reportId));
+  return { success: true };
+}
+
+export async function getPublicAccessEnabled() {
+  const db = await getDb();
+  if (!db) return false;
+  const [setting] = await db.select().from(siteSettings).where(eq(siteSettings.key, 'public_access_enabled')).limit(1);
+  return setting?.value === 'true';
+}
+
+export async function setPublicAccessEnabled(enabled: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error('Database connection unavailable');
+  await db.insert(siteSettings).values({ key: 'public_access_enabled', value: String(enabled) }).onDuplicateKeyUpdate({ set: { value: String(enabled), updatedAt: new Date() } });
+  return { enabled };
 }
 
 const CHAPTER_CACHE_TTL_MS = 5 * 60 * 1000;

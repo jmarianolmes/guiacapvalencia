@@ -94,6 +94,28 @@ export const simulatorQuestions = mysqlTable("simulator_questions", {
 export type SimulatorQuestion = typeof simulatorQuestions.$inferSelect;
 export type InsertSimulatorQuestion = typeof simulatorQuestions.$inferInsert;
 
+export const questionReviewReports = mysqlTable("question_review_reports", {
+  id: int("id").autoincrement().primaryKey(),
+  questionId: int("questionId").notNull(),
+  userId: int("userId").notNull(),
+  status: mysqlEnum("status", ["open", "resolved"]).default("open").notNull(),
+  note: text("note"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+}, (table) => [
+  uniqueIndex("question_review_reports_user_question_unique").on(table.userId, table.questionId),
+  index("question_review_reports_status_created_idx").on(table.status, table.createdAt),
+]);
+
+export type QuestionReviewReport = typeof questionReviewReports.$inferSelect;
+export type InsertQuestionReviewReport = typeof questionReviewReports.$inferInsert;
+
+export const siteSettings = mysqlTable("site_settings", {
+  key: varchar("key", { length: 64 }).primaryKey(),
+  value: varchar("value", { length: 255 }).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 // Repeated questions table
 export const repeatedQuestions = mysqlTable("repeated_questions", {
   id: int("id").autoincrement().primaryKey(),

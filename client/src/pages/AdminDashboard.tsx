@@ -35,7 +35,7 @@ export default function AdminDashboard() {
         manager: 'Gestión de usuarios', noUsers: 'No hay usuarios registrados', status: 'Estado', actions: 'Acciones', account: 'Cuenta',
         approve: 'Aprobar', block: 'Bloquear', unblock: 'Desbloquear', approvedStatus: 'Aprobado', blockedStatus: 'Bloqueado', pendingStatus: 'Pendiente', temporary: 'Cambio de contraseña pendiente', master: 'Cuenta maestra',
         resetPassword: 'Nueva contraseña temporal', savePassword: 'Guardar contraseña', showPassword: 'Mostrar', hidePassword: 'Ocultar', delete: 'Eliminar', confirmDelete: 'Confirmar eliminación', cancel: 'Cancelar', resetDone: 'Contraseña temporal actualizada. La persona deberá cambiarla en su próximo acceso.', deleted: 'Cuenta eliminada correctamente.',
-        created: 'Cuenta creada y aprobada. Comparta la contraseña temporal con la persona usuaria por un canal seguro.',
+        created: 'Cuenta creada y aprobada. Comparta la contraseña temporal con la persona usuaria por un canal seguro.', reviewTitle: 'Averiguaciones de conformidad', reviewEmpty: 'No hay cuestiones pendientes.', reviewResolve: 'Corregir y resolver', publicTitle: 'Acceso público', publicDescription: 'Permite acceder al guía sin iniciar sesión. El login administrativo permanece disponible.', publicOn: 'Desactivar login para visitantes', publicOff: 'Mantener login obligatorio',
       }
     : {
         title: 'Painel administrativo', back: 'Voltar', total: 'Total de Usuários', pending: 'Pendentes de Aprovação', approved: 'Usuários Aprovados', blocked: 'Usuários Bloqueados',
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
         manager: 'Gerenciamento de usuários', noUsers: 'Nenhum usuário cadastrado', status: 'Status', actions: 'Ações', account: 'Conta',
         approve: 'Aprovar', block: 'Bloquear', unblock: 'Desbloquear', approvedStatus: 'Aprovado', blockedStatus: 'Bloqueado', pendingStatus: 'Pendente', temporary: 'Troca de senha pendente', master: 'Conta mestre',
         resetPassword: 'Nova senha temporária', savePassword: 'Salvar senha', showPassword: 'Mostrar', hidePassword: 'Ocultar', delete: 'Excluir', confirmDelete: 'Confirmar exclusão', cancel: 'Cancelar', resetDone: 'Senha temporária atualizada. A pessoa deverá alterá-la no próximo acesso.', deleted: 'Conta excluída com sucesso.',
-        created: 'Conta criada e aprovada. Compartilhe a senha temporária com a pessoa usuária por um canal seguro.',
+        created: 'Conta criada e aprovada. Compartilhe a senha temporária com a pessoa usuária por um canal seguro.', reviewTitle: 'Averiguações de conformidade', reviewEmpty: 'Nenhuma questão pendente.', reviewResolve: 'Corrigir e resolver', publicTitle: 'Acesso público', publicDescription: 'Permite acessar o guia sem login. O login administrativo continua disponível.', publicOn: 'Desligar login para visitantes', publicOff: 'Manter login obrigatório',
       };
 
   const statsQuery = trpc.admin.getStats.useQuery();
@@ -55,6 +55,11 @@ export default function AdminDashboard() {
   const resetPasswordMutation = trpc.admin.resetUserPassword.useMutation();
   const deleteUserMutation = trpc.admin.deleteUser.useMutation();
   const renewAccessMutation = trpc.admin.renewUserAccess.useMutation();
+  const reviewReportsQuery = trpc.admin.getQuestionReviewReports.useQuery();
+  const resolveReviewMutation = trpc.admin.resolveQuestionReview.useMutation();
+  const publicAccessQuery = trpc.admin.getPublicAccess.useQuery();
+  const publicAccessMutation = trpc.admin.setPublicAccess.useMutation();
+  const [reviewAnswers, setReviewAnswers] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
 
   useEffect(() => {
     if (user && user.role !== 'admin') {
@@ -214,6 +219,30 @@ export default function AdminDashboard() {
               <div className="space-y-2"><Label htmlFor="access-days">Período de acesso</Label><Input id="access-days" type="number" min={1} max={3650} value={accessDurationDays} onChange={event => setAccessDurationDays(event.target.value)} disabled={createUserMutation.isPending} required /><div className="flex gap-2"><Button type="button" size="sm" variant={accessDurationDays === '90' ? 'default' : 'outline'} onClick={() => setAccessDurationDays('90')}>3 meses</Button><Button type="button" size="sm" variant={accessDurationDays === '365' ? 'default' : 'outline'} onClick={() => setAccessDurationDays('365')}>1 ano</Button></div><p className="text-xs text-slate-500">Apague o valor se quiser digitar outro período; use 90 dias para acesso intensivo ou 365 para acesso estendido.</p></div>
               <div className="md:col-span-4"><Button type="submit" disabled={createUserMutation.isPending}>{createUserMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}{createUserMutation.isPending ? text.creating : text.create}</Button></div>
             </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>{text.publicTitle}</CardTitle><CardDescription>{text.publicDescription}</CardDescription></CardHeader>
+          <CardContent className="flex flex-wrap items-center justify-between gap-4">
+            <Badge className={publicAccessQuery.data ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}>{publicAccessQuery.data ? text.publicOn : text.publicOff}</Badge>
+            <Button variant={publicAccessQuery.data ? 'destructive' : 'outline'} disabled={publicAccessMutation.isPending} onClick={() => publicAccessMutation.mutate({ enabled: !publicAccessQuery.data }, { onSuccess: () => publicAccessQuery.refetch() })}>{publicAccessQuery.data ? text.publicOff : text.publicOn}</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>{text.reviewTitle}</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            {(reviewReportsQuery.data || []).length === 0 ? <p className="text-sm text-slate-500">{text.reviewEmpty}</p> : (reviewReportsQuery.data || []).map(({ report, question }) => (
+              <div key={report.id} className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <p className="font-semibold">{question.model} · {question.provaDate} · questão {question.questionNumber}</p>
+                <p className="mt-2 text-sm text-slate-700">{question.question}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {(['A', 'B', 'C', 'D'] as const).map((answer) => <Button key={answer} size="sm" variant={reviewAnswers[report.id] === answer ? 'default' : 'outline'} onClick={() => setReviewAnswers((current) => ({ ...current, [report.id]: answer }))}>{answer}</Button>)}
+                  <Button size="sm" disabled={!reviewAnswers[report.id] || resolveReviewMutation.isPending} onClick={() => resolveReviewMutation.mutate({ reportId: report.id, correctAnswer: reviewAnswers[report.id] }, { onSuccess: () => reviewReportsQuery.refetch() })}>{text.reviewResolve}</Button>
+                </div>
+              </div>
+            ))}
           </CardContent>
         </Card>
 

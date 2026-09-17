@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { trpc } from '@/lib/trpc';
 import {
   Select,
@@ -46,6 +47,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
   const [timeLeft, setTimeLeft] = useState(7200);
+  const [reportedQuestionIds, setReportedQuestionIds] = useState<Set<number>>(new Set());
 
   const modelQueryInput = useMemo(() => ({ model: selectedModel || '' }), [selectedModel]);
   const chapterQueryInput = useMemo(() => ({ chapterId: selectedChapter || '', attemptNumber: chapterAttempt }), [selectedChapter, chapterAttempt]);
@@ -73,6 +75,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
     { enabled: !!selectedChapter, staleTime: 5 * 60 * 1000, retry: 1 }
   );
   const saveResultMutation = trpc.guide.saveSimulatorResult.useMutation();
+  const reportQuestionMutation = trpc.guide.reportQuestionForReview.useMutation();
   const simulatorUtils = trpc.useUtils();
   const historyQuery = trpc.guide.getUserResults.useQuery(undefined, { staleTime: 60 * 1000, retry: 1 });
   const activeQuestionsQuery = selectedChapter ? chapterQuestionsQuery : questionsQuery;
@@ -203,6 +206,8 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       newSimulator: 'Novo Simulado',
       back: 'Voltar',
       exitToSimulatorMenu: 'Voltar ao menu',
+      conformity: 'Averiguação de conformidade',
+      markedForReview: 'Marcada para revisão administrativa',
     },
     es: {
       title: 'Simulacro CAP',
@@ -269,7 +274,9 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       answerKey: 'Respuesta correcta:',
       newSimulator: 'Nuevo Simulacro',
       back: 'Volver',
-      exitToSimulatorMenu: 'Volver al menú',
+      exitToSimulatorMenu: 'Voltar al menú',
+      conformity: 'Verificación de conformidad',
+      markedForReview: 'Marcada para revisión administrativa',
     },
   };
 
@@ -743,6 +750,20 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       <Card>
         <CardContent className="pt-6">
           <p className="text-base md:text-lg font-semibold mb-6">{question.question}</p>
+          <label className="mb-5 flex min-h-9 cursor-pointer items-center gap-2 text-xs text-slate-500 hover:text-slate-700">
+            <Checkbox
+              checked={reportedQuestionIds.has(question.id)}
+              aria-label={texts.conformity}
+              onCheckedChange={(checked) => {
+                if (!checked || reportedQuestionIds.has(question.id)) return;
+                reportQuestionMutation.mutate({ questionId: question.id }, {
+                  onSuccess: () => setReportedQuestionIds((current) => new Set(current).add(question.id)),
+                });
+              }}
+              disabled={reportQuestionMutation.isPending || reportedQuestionIds.has(question.id)}
+            />
+            <span>{reportedQuestionIds.has(question.id) ? texts.markedForReview : texts.conformity}</span>
+          </label>
 
           <div className="space-y-3">
             {(['A', 'B', 'C', 'D'] as const).map(option => {

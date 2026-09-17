@@ -8,6 +8,9 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { createRateLimit, cleanupRateLimitBuckets } from './rateLimit';
+import { sdk } from './sdk';
+import { getDb } from '../db';
+import { sql } from 'drizzle-orm';
 
 async function startServer() {
   const app = express();
@@ -37,6 +40,16 @@ async function startServer() {
   if (process.env.OAUTH_SERVER_URL && process.env.VITE_APP_ID) {
     registerOAuthRoutes(app);
   }
+  app.get('/api/admin/migrate-review-feature', async (req, res) => {
+    let user = null;
+    try { user = await sdk.authenticateRequest(req); } catch { user = null; }
+    if (user?.role !== 'admin') { res.status(403).json({ error: 'Forbidden' }); return; }
+    const db = await getDb();
+    if (!db) { res.status(500).json({ error: 'Database unavailable' }); return; }
+    await db.execute(sql.raw('CREATE TABLE IF NOT EXISTS `question_review_reports` (`id` int NOT NULL AUTO_INCREMENT, `questionId` int NOT NULL, `userId` int NOT NULL, `status` enum(\'open\',\'resolved\') NOT NULL DEFAULT \'open\', `note` text, `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, `resolvedAt` timestamp NULL, PRIMARY KEY (`id`), UNIQUE KEY `question_review_reports_user_question_unique` (`userId`,`questionId`), KEY `question_review_reports_status_created_idx` (`status`,`createdAt`))'));
+    await db.execute(sql.raw('CREATE TABLE IF NOT EXISTS `site_settings` (`key` varchar(64) NOT NULL, `value` varchar(255) NOT NULL, `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (`key`))'));
+    res.json({ success: true });
+  });
   // tRPC API
   app.use(
     "/api/trpc",

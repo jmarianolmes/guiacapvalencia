@@ -2,6 +2,7 @@ import type { CreateExpressContextOptions } from "@trpc/server/adapters/express"
 import type { User } from "../../drizzle/schema";
 import { sdk } from "./sdk";
 import { getDemoUser, isDemoMode } from "../demoData";
+import { getPublicAccessEnabled } from "../db";
 
 export type TrpcContext = {
   req: CreateExpressContextOptions["req"];
@@ -23,6 +24,9 @@ export async function createContext(
 
   if (!user && isDemoMode()) {
     user = getDemoUser();
+  }
+  if (!user && await getPublicAccessEnabled()) {
+    user = { ...getDemoUser(), openId: 'public-guest', name: 'Visitante' };
   }
 
   return {
