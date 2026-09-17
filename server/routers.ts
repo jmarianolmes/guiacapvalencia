@@ -22,6 +22,7 @@ export const appRouter = router({
         isApproved: user.isApproved,
         isBlocked: user.isBlocked,
         isMaster: user.isMaster,
+        isPublicGuest: user.openId === 'public-guest',
         mustChangePassword: user.mustChangePassword,
         accessExpiresAt: user.accessExpiresAt,
         accessExpired: authService.isAccessExpired(user),

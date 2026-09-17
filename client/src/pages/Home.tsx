@@ -71,7 +71,7 @@ export default function Home() {
               </button>
             </div>
             <div className="flex gap-4">
-            {isAuthenticated ? (
+            {isAuthenticated && !user?.isPublicGuest ? (
               <>
                 <span className="text-sm text-slate-600">
                   {copy.welcome} <strong>{user?.name || user?.email}</strong>
@@ -102,12 +102,7 @@ export default function Home() {
                 >
                   {copy.login}
                 </Button>
-                <Button
-                  onClick={() => setLocation("/register")}
-                  size="sm"
-                >
-                  {copy.register}
-                </Button>
+                {!user?.isPublicGuest && <Button onClick={() => setLocation("/register")} size="sm">{copy.register}</Button>}
               </>
             )}
             </div>
