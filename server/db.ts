@@ -33,6 +33,13 @@ export async function reportQuestionForReview(userId: number, questionId: number
   return { success: true };
 }
 
+export async function cancelQuestionReview(userId: number, questionId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database connection unavailable');
+  await db.delete(questionReviewReports).where(and(eq(questionReviewReports.userId, userId), eq(questionReviewReports.questionId, questionId), eq(questionReviewReports.status, 'open')));
+  return { success: true };
+}
+
 export async function getQuestionReviewReports() {
   const db = await getDb();
   if (!db) return [];

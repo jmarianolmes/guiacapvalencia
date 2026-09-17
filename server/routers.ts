@@ -235,6 +235,7 @@ export const appRouter = router({
         if (!ctx.user?.id) {
           throw new TRPCError({ code: "UNAUTHORIZED" });
         }
+        if (ctx.user.openId === 'public-guest') return null;
         return await db.saveSimulatorResult(ctx.user.id, input);
       }),
     
@@ -242,12 +243,22 @@ export const appRouter = router({
       if (!ctx.user?.id) {
         throw new TRPCError({ code: "UNAUTHORIZED" });
       }
+      if (ctx.user.openId === 'public-guest') return [];
       return await db.getUserSimulatorResults(ctx.user.id);
     }),
 
     reportQuestionForReview: protectedProcedure
       .input(z.object({ questionId: z.number().int().positive() }))
-      .mutation(async ({ input, ctx }) => db.reportQuestionForReview(ctx.user.id, input.questionId)),
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.openId === 'public-guest') return { success: false };
+        return db.reportQuestionForReview(ctx.user.id, input.questionId);
+      }),
+    cancelQuestionReview: protectedProcedure
+      .input(z.object({ questionId: z.number().int().positive() }))
+      .mutation(async ({ input, ctx }) => {
+        if (ctx.user.openId === 'public-guest') return { success: false };
+        return db.cancelQuestionReview(ctx.user.id, input.questionId);
+      }),
 
     getErrorNotebook: protectedProcedure.query(async ({ ctx }) => {
       if (!ctx.user?.id) throw new TRPCError({ code: 'UNAUTHORIZED' });

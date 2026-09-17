@@ -76,6 +76,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   );
   const saveResultMutation = trpc.guide.saveSimulatorResult.useMutation();
   const reportQuestionMutation = trpc.guide.reportQuestionForReview.useMutation();
+  const cancelQuestionReviewMutation = trpc.guide.cancelQuestionReview.useMutation();
   const simulatorUtils = trpc.useUtils();
   const historyQuery = trpc.guide.getUserResults.useQuery(undefined, { staleTime: 60 * 1000, retry: 1 });
   const activeQuestionsQuery = selectedChapter ? chapterQuestionsQuery : questionsQuery;
@@ -755,12 +756,17 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
               checked={reportedQuestionIds.has(question.id)}
               aria-label={texts.conformity}
               onCheckedChange={(checked) => {
-                if (!checked || reportedQuestionIds.has(question.id)) return;
-                reportQuestionMutation.mutate({ questionId: question.id }, {
-                  onSuccess: () => setReportedQuestionIds((current) => new Set(current).add(question.id)),
-                });
+                if (checked) {
+                  reportQuestionMutation.mutate({ questionId: question.id }, {
+                    onSuccess: (result) => result.success && setReportedQuestionIds((current) => new Set(current).add(question.id)),
+                  });
+                } else {
+                  cancelQuestionReviewMutation.mutate({ questionId: question.id }, {
+                    onSuccess: (result) => result.success && setReportedQuestionIds((current) => { const next = new Set(current); next.delete(question.id); return next; }),
+                  });
+                }
               }}
-              disabled={reportQuestionMutation.isPending || reportedQuestionIds.has(question.id)}
+              disabled={reportQuestionMutation.isPending || cancelQuestionReviewMutation.isPending}
             />
             <span>{reportedQuestionIds.has(question.id) ? texts.markedForReview : texts.conformity}</span>
           </label>
