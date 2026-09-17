@@ -35,7 +35,7 @@ export default function AdminDashboard() {
         manager: 'Gestión de usuarios', noUsers: 'No hay usuarios registrados', status: 'Estado', actions: 'Acciones', account: 'Cuenta',
         approve: 'Aprobar', block: 'Bloquear', unblock: 'Desbloquear', approvedStatus: 'Aprobado', blockedStatus: 'Bloqueado', pendingStatus: 'Pendiente', temporary: 'Cambio de contraseña pendiente', master: 'Cuenta maestra',
         resetPassword: 'Nueva contraseña temporal', savePassword: 'Guardar contraseña', showPassword: 'Mostrar', hidePassword: 'Ocultar', delete: 'Eliminar', confirmDelete: 'Confirmar eliminación', cancel: 'Cancelar', resetDone: 'Contraseña temporal actualizada. La persona deberá cambiarla en su próximo acceso.', deleted: 'Cuenta eliminada correctamente.',
-        created: 'Cuenta creada y aprobada. Comparta la contraseña temporal con la persona usuaria por un canal seguro.', reviewTitle: 'Averiguaciones de conformidad', reviewEmpty: 'No hay cuestiones pendientes.', reviewResolve: 'Corregir y resolver', publicTitle: 'Acceso público', publicDescription: 'Permite acceder al guía sin iniciar sesión. El login administrativo permanece disponible.', publicOn: 'Desactivar login para visitantes', publicOff: 'Mantener login obligatorio',
+        created: 'Cuenta creada y aprobada. Comparta la contraseña temporal con la persona usuaria por un canal seguro.', reviewTitle: 'Averiguaciones de conformidad', reviewEmpty: 'No hay cuestiones pendientes.', reviewResolve: 'Corregir y resolver', reviewCancel: 'Cancelar averiguación', publicTitle: 'Acceso público', publicDescription: 'Permite acceder al guía sin iniciar sesión. El login administrativo permanece disponible.', publicOn: 'Desactivar login para visitantes', publicOff: 'Mantener login obligatorio',
       }
     : {
         title: 'Painel administrativo', back: 'Voltar', total: 'Total de Usuários', pending: 'Pendentes de Aprovação', approved: 'Usuários Aprovados', blocked: 'Usuários Bloqueados',
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
         manager: 'Gerenciamento de usuários', noUsers: 'Nenhum usuário cadastrado', status: 'Status', actions: 'Ações', account: 'Conta',
         approve: 'Aprovar', block: 'Bloquear', unblock: 'Desbloquear', approvedStatus: 'Aprovado', blockedStatus: 'Bloqueado', pendingStatus: 'Pendente', temporary: 'Troca de senha pendente', master: 'Conta mestre',
         resetPassword: 'Nova senha temporária', savePassword: 'Salvar senha', showPassword: 'Mostrar', hidePassword: 'Ocultar', delete: 'Excluir', confirmDelete: 'Confirmar exclusão', cancel: 'Cancelar', resetDone: 'Senha temporária atualizada. A pessoa deverá alterá-la no próximo acesso.', deleted: 'Conta excluída com sucesso.',
-        created: 'Conta criada e aprovada. Compartilhe a senha temporária com a pessoa usuária por um canal seguro.', reviewTitle: 'Averiguações de conformidade', reviewEmpty: 'Nenhuma questão pendente.', reviewResolve: 'Corrigir e resolver', publicTitle: 'Acesso público', publicDescription: 'Permite acessar o guia sem login. O login administrativo continua disponível.', publicOn: 'Desligar login para visitantes', publicOff: 'Manter login obrigatório',
+        created: 'Conta criada e aprovada. Compartilhe a senha temporária com a pessoa usuária por um canal seguro.', reviewTitle: 'Averiguações de conformidade', reviewEmpty: 'Nenhuma questão pendente.', reviewResolve: 'Corrigir e resolver', reviewCancel: 'Cancelar averiguação', publicTitle: 'Acesso público', publicDescription: 'Permite acessar o guia sem login. O login administrativo continua disponível.', publicOn: 'Desligar login para visitantes', publicOff: 'Manter login obrigatório',
       };
 
   const statsQuery = trpc.admin.getStats.useQuery();
@@ -57,6 +57,7 @@ export default function AdminDashboard() {
   const renewAccessMutation = trpc.admin.renewUserAccess.useMutation();
   const reviewReportsQuery = trpc.admin.getQuestionReviewReports.useQuery();
   const resolveReviewMutation = trpc.admin.resolveQuestionReview.useMutation();
+  const dismissReviewMutation = trpc.admin.dismissQuestionReview.useMutation();
   const publicAccessQuery = trpc.admin.getPublicAccess.useQuery();
   const publicAccessMutation = trpc.admin.setPublicAccess.useMutation();
   const [reviewAnswers, setReviewAnswers] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
@@ -240,6 +241,7 @@ export default function AdminDashboard() {
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {(['A', 'B', 'C', 'D'] as const).map((answer) => <Button key={answer} size="sm" variant={reviewAnswers[report.id] === answer ? 'default' : 'outline'} onClick={() => setReviewAnswers((current) => ({ ...current, [report.id]: answer }))}>{answer}</Button>)}
                   <Button size="sm" disabled={!reviewAnswers[report.id] || resolveReviewMutation.isPending} onClick={() => resolveReviewMutation.mutate({ reportId: report.id, correctAnswer: reviewAnswers[report.id] }, { onSuccess: () => reviewReportsQuery.refetch() })}>{text.reviewResolve}</Button>
+                  <Button size="sm" variant="outline" disabled={dismissReviewMutation.isPending} onClick={() => dismissReviewMutation.mutate({ reportId: report.id }, { onSuccess: () => reviewReportsQuery.refetch() })}>{text.reviewCancel}</Button>
                 </div>
               </div>
             ))}

@@ -60,6 +60,13 @@ export async function resolveQuestionReview(reportId: number, correctAnswer: 'A'
   return { success: true };
 }
 
+export async function dismissQuestionReview(reportId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database connection unavailable');
+  await db.update(questionReviewReports).set({ status: 'resolved', resolvedAt: new Date() }).where(eq(questionReviewReports.id, reportId));
+  return { success: true };
+}
+
 export async function getPublicAccessEnabled() {
   const db = await getDb();
   if (!db) return false;

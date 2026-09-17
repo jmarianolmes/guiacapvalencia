@@ -311,6 +311,9 @@ export const appRouter = router({
     resolveQuestionReview: adminProcedure
       .input(z.object({ reportId: z.number().int().positive(), correctAnswer: z.enum(['A', 'B', 'C', 'D']) }))
       .mutation(({ input }) => db.resolveQuestionReview(input.reportId, input.correctAnswer)),
+    dismissQuestionReview: adminProcedure
+      .input(z.object({ reportId: z.number().int().positive() }))
+      .mutation(({ input }) => db.dismissQuestionReview(input.reportId)),
     getPublicAccess: adminProcedure.query(() => db.getPublicAccessEnabled()),
     setPublicAccess: adminProcedure
       .input(z.object({ enabled: z.boolean() }))
