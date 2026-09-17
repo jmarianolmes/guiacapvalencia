@@ -6,7 +6,6 @@ import { sdk } from "./_core/sdk";
 import { z } from "zod";
 import * as authService from "./auth";
 import * as db from "./db";
-import { importOfQuestionBank } from './ofQuestionBank';
 import { TRPCError } from "@trpc/server";
 
 export const appRouter = router({
@@ -292,11 +291,6 @@ export const appRouter = router({
   }),
 
   admin: router({
-    importOfObjective11: protectedProcedure.mutation(async ({ ctx }) => {
-      if (ctx.user?.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN' });
-      return importOfQuestionBank('of_cap_objetivo_1_1.json');
-    }),
-
     getStats: protectedProcedure.query(async ({ ctx }) => {
       if (ctx.user?.role !== 'admin') {
         throw new TRPCError({ code: 'FORBIDDEN' });
