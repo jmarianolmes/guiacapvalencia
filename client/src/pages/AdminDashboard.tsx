@@ -60,7 +60,6 @@ export default function AdminDashboard() {
   const dismissReviewMutation = trpc.admin.dismissQuestionReview.useMutation();
   const publicAccessQuery = trpc.admin.getPublicAccess.useQuery();
   const publicAccessMutation = trpc.admin.setPublicAccess.useMutation();
-  const importObjective22Mutation = trpc.admin.importObjective22.useMutation();
   const [reviewAnswers, setReviewAnswers] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
 
   useEffect(() => {
@@ -180,16 +179,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleImportObjective22 = async () => {
-    setFormError('');
-    setSuccessMessage('');
-    try {
-      const result = await importObjective22Mutation.mutateAsync();
-      setSuccessMessage(`Importação concluída: ${result.imported} questões em ${result.chapters.join(', ')}.`);
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível importar o objetivo 2.2.');
-    }
-  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -243,10 +232,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader><CardTitle>Objetivo 2.2</CardTitle><CardDescription>Conocer la reglamentación en materia de transporte de mercancías — 209 questões conferidas.</CardDescription></CardHeader>
-          <CardContent><Button onClick={handleImportObjective22} disabled={importObjective22Mutation.isPending}>{importObjective22Mutation.isPending && <Spinner className="mr-2 h-4 w-4" />}Importar objetivo 2.2 (209 questões)</Button></CardContent>
-        </Card>
 
         <Card>
           <CardHeader><CardTitle>{text.reviewTitle}</CardTitle></CardHeader>
