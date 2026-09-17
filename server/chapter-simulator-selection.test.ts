@@ -1,4 +1,4 @@
-import { buildChapterAttempt, getNextChapterAttemptNumber, selectUniqueChapterQuestions, simulatorQuestionSignature } from './db';
+import { buildChapterAttempt, getNextChapterAttemptNumber, isOfficialChapterQuestion, preferOfficialBankQuestions, selectUniqueChapterQuestions, simulatorQuestionSignature } from './db';
 import { describe, expect, it } from 'vitest';
 
 type ChapterQuestion = Parameters<typeof selectUniqueChapterQuestions>[0][number];
@@ -30,6 +30,23 @@ describe('seleção de simulados por capítulo', () => {
 
     expect(unique).toHaveLength(1);
     expect(unique[0]?.model).toBe('ORIGINAL');
+  });
+
+  it('trata o banco OF como oficial sem confundi-lo com uma cópia estatística', () => {
+    const officialOf = makeQuestion(1, 'OF', 'questão oficial dgt');
+    const copiedPoolQuestion = makeQuestion(2, 'S01', 'outra questão');
+
+    expect(isOfficialChapterQuestion(officialOf)).toBe(true);
+    expect(selectUniqueChapterQuestions([copiedPoolQuestion, officialOf])[0]?.model).toBe('OF');
+  });
+
+  it('usa o banco OF do capítulo sem apagar o pool antigo', () => {
+    const officialOf = makeQuestion(1, 'OF', 'banco oficial');
+    const historicalPool = makeQuestion(2, 'A', 'banco antigo');
+    const selected = preferOfficialBankQuestions([historicalPool, officialOf]);
+
+    expect(selected.map((question) => question.model)).toEqual(['OF']);
+    expect(historicalPool.model).toBe('A');
   });
 
   it('separa versões sem sobreposição de perguntas enquanto houver acervo', () => {

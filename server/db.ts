@@ -17,6 +17,15 @@ type SimulatorQuestion = typeof simulatorQuestions.$inferSelect;
 type ChapterQuestionIndex = Map<string, SimulatorQuestion[]>;
 const CHAPTER_ATTEMPT_SIZE = 50;
 
+export function isOfficialChapterQuestion(question: Pick<SimulatorQuestion, 'model'>) {
+  return question.model === 'ORIGINAL' || question.model === 'OF';
+}
+
+export function preferOfficialBankQuestions(questions: SimulatorQuestion[]) {
+  const officialBankQuestions = questions.filter((question) => question.model === 'OF');
+  return officialBankQuestions.length > 0 ? officialBankQuestions : questions;
+}
+
 const CHAPTER_CACHE_TTL_MS = 5 * 60 * 1000;
 let chapterQuestionIndexCache: { createdAt: number; value: ChapterQuestionIndex } | null = null;
 let chapterQuestionIndexPromise: Promise<ChapterQuestionIndex> | null = null;
@@ -108,8 +117,8 @@ export function simulatorQuestionSignature(question: SimulatorQuestion) {
 }
 
 export function compareChapterQuestionPriority(left: SimulatorQuestion, right: SimulatorQuestion) {
-  const leftOfficial = left.model === 'ORIGINAL' ? 0 : 1;
-  const rightOfficial = right.model === 'ORIGINAL' ? 0 : 1;
+  const leftOfficial = isOfficialChapterQuestion(left) ? 0 : 1;
+  const rightOfficial = isOfficialChapterQuestion(right) ? 0 : 1;
   if (leftOfficial !== rightOfficial) return leftOfficial - rightOfficial;
   if (left.provaDate !== right.provaDate) return left.provaDate.localeCompare(right.provaDate, 'es');
   if (left.model !== right.model) return left.model.localeCompare(right.model, 'es');
@@ -161,7 +170,7 @@ async function getChapterQuestionIndex() {
     }
 
     for (const [chapterId, questions] of Array.from(indexed.entries())) {
-      indexed.set(chapterId, selectUniqueChapterQuestions(questions));
+      indexed.set(chapterId, selectUniqueChapterQuestions(preferOfficialBankQuestions(questions)));
     }
 
     chapterQuestionIndexCache = { createdAt: Date.now(), value: indexed };
@@ -322,7 +331,10 @@ export async function getAllSimulatorModels() {
     const result = await withSimulatorDbRetry((db) =>
       db.selectDistinct({ model: simulatorQuestions.model })
         .from(simulatorQuestions)
-        .where(ne(simulatorQuestions.model, 'ORIGINAL'))
+        .where(and(
+          ne(simulatorQuestions.model, 'ORIGINAL'),
+          ne(simulatorQuestions.model, 'OF'),
+        ))
     );
     return result.map(r => r.model).sort();
   } catch (error) {
@@ -380,10 +392,10 @@ export async function getSimulatorChapters() {
     const index = await getChapterQuestionIndex();
     return simulatorChapters
       .map((chapter) => ({
-      ...chapter,
+        ...chapter,
         count: index.get(chapter.id)?.length ?? 0,
         availableAttempts: Math.max(1, Math.ceil((index.get(chapter.id)?.length ?? 0) / CHAPTER_ATTEMPT_SIZE)),
-        officialCount: (index.get(chapter.id) ?? []).filter((question) => question.model === 'ORIGINAL').length,
+        officialCount: (index.get(chapter.id) ?? []).filter(isOfficialChapterQuestion).length,
       }));
   } catch (error) {
     console.error('[Database] Failed to get simulator chapters:', error);
@@ -402,8 +414,8 @@ export async function getSimulatorQuestionsByChapter(chapterId: string, requeste
       attemptNumber,
       availableAttempts,
       totalUnique: availableQuestions.length,
-      officialCount: availableQuestions.filter((question) => question.model === 'ORIGINAL').length,
-      officialQuestionsInAttempt: questions.filter((question) => question.model === 'ORIGINAL').length,
+      officialCount: availableQuestions.filter(isOfficialChapterQuestion).length,
+      officialQuestionsInAttempt: questions.filter(isOfficialChapterQuestion).length,
     };
   } catch (error) {
     console.error('[Database] Failed to get simulator questions by chapter:', error);

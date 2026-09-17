@@ -12,6 +12,7 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
+    "db:seed-of": "tsx server/seed-of-question-bank.ts",
     "catalog:build": "tsx tools/build_question_catalog.ts",
     "catalog:seed": "tsx server/seed-question-catalog.ts"
   },
