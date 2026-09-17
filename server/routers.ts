@@ -6,7 +6,6 @@ import { sdk } from "./_core/sdk";
 import { z } from "zod";
 import * as authService from "./auth";
 import * as db from "./db";
-import { importOfQuestionBank } from "./ofQuestionBank";
 import { TRPCError } from "@trpc/server";
 
 export const appRouter = router({
@@ -308,9 +307,6 @@ export const appRouter = router({
   }),
 
   admin: router({
-    importObjective14: adminProcedure
-      .input(z.object({ fileName: z.literal('of_cap_objetivo_1_4.json') }))
-      .mutation(({ input }) => importOfQuestionBank(input.fileName)),
     getQuestionReviewReports: adminProcedure.query(() => db.getQuestionReviewReports()),
     resolveQuestionReview: adminProcedure
       .input(z.object({ reportId: z.number().int().positive(), correctAnswer: z.enum(['A', 'B', 'C', 'D']) }))
