@@ -470,9 +470,9 @@ export async function getSimulatorStats() {
       db.select({
         totalQuestions: count(),
         officialQuestions: sql<number>`sum(case when ${simulatorQuestions.model} = 'ORIGINAL' then 1 else 0 end)`,
-        statisticalQuestions: sql<number>`sum(case when ${simulatorQuestions.model} <> 'ORIGINAL' then 1 else 0 end)`,
+        statisticalQuestions: sql<number>`sum(case when ${simulatorQuestions.model} <> 'ORIGINAL' and ${simulatorQuestions.model} <> 'OF' then 1 else 0 end)`,
         officialExams: sql<number>`count(distinct case when ${simulatorQuestions.model} = 'ORIGINAL' then ${simulatorQuestions.provaDate} end)`,
-        statisticalModels: sql<number>`count(distinct case when ${simulatorQuestions.model} <> 'ORIGINAL' then ${simulatorQuestions.model} end)`,
+        statisticalModels: sql<number>`count(distinct case when ${simulatorQuestions.model} <> 'ORIGINAL' and ${simulatorQuestions.model} <> 'OF' then ${simulatorQuestions.model} end)`,
         repeatedQuestions: sql<number>`(select count(*) from ${repeatedQuestions})`,
         catalogUniqueEntries: sql<number>`count(distinct ${simulatorQuestions.equivalenceKey})`,
         catalogOfficialUniqueEntries: sql<number>`count(distinct case when ${simulatorQuestions.origin} = 'official' then ${simulatorQuestions.equivalenceKey} end)`,
