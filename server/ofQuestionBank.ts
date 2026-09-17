@@ -57,7 +57,7 @@ function assertOfFile(rows: OfQuestion[]) {
 export async function importOfQuestionBank(fileName = 'of_cap_objetivo_1_1.json') {
   const db = await getDb();
   if (!db) throw new Error('Falha de conexão com o banco de dados.');
-  if (!['of_cap_objetivo_1_1.json', 'of_cap_objetivo_1_2.json', 'of_cap_objetivo_1_3.json', 'of_cap_objetivo_1_3_bis.json', 'of_cap_objetivo_1_4.json', 'of_cap_objetivo_2_1.json', 'of_cap_objetivo_2_2.json'].includes(fileName)) throw new Error('Arquivo OF não autorizado nesta carga.');
+  if (!['of_cap_objetivo_1_1.json', 'of_cap_objetivo_1_2.json', 'of_cap_objetivo_1_3.json', 'of_cap_objetivo_1_3_bis.json', 'of_cap_objetivo_1_4.json', 'of_cap_objetivo_2_1.json', 'of_cap_objetivo_2_2.json', 'of_cap_objetivo_3_7.json'].includes(fileName)) throw new Error('Arquivo OF não autorizado nesta carga.');
 
   const dataPath = path.join(process.cwd(), 'server/data', fileName);
   const rows = JSON.parse(fs.readFileSync(dataPath, 'utf8')) as OfQuestion[];

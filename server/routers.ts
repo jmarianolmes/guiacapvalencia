@@ -6,6 +6,7 @@ import { sdk } from "./_core/sdk";
 import { z } from "zod";
 import * as authService from "./auth";
 import * as db from "./db";
+import { importOfQuestionBank } from "./ofQuestionBank";
 import { TRPCError } from "@trpc/server";
 
 export const appRouter = router({
@@ -318,6 +319,8 @@ export const appRouter = router({
     setPublicAccess: adminProcedure
       .input(z.object({ enabled: z.boolean() }))
       .mutation(({ input }) => db.setPublicAccessEnabled(input.enabled)),
+    importObjective37: adminProcedure
+      .mutation(() => importOfQuestionBank('of_cap_objetivo_3_7.json')),
 
     getStats: protectedProcedure.query(async ({ ctx }) => {
       if (ctx.user?.role !== 'admin') {
