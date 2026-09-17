@@ -61,7 +61,6 @@ export default function AdminDashboard() {
   const publicAccessQuery = trpc.admin.getPublicAccess.useQuery();
   const publicAccessMutation = trpc.admin.setPublicAccess.useMutation();
   const importObjective32Mutation = trpc.admin.importObjective32.useMutation();
-  const importObjective33Mutation = trpc.admin.importObjective33.useMutation();
   const [reviewAnswers, setReviewAnswers] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
 
   useEffect(() => {
@@ -191,16 +190,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleImportObjective33 = async () => {
-    setFormError(''); setSuccessMessage('');
-    try {
-      const result = await importObjective33Mutation.mutateAsync();
-      setSuccessMessage(`Importação concluída: ${result.imported} questões em ${result.chapters.join(', ')}.`);
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível importar o objetivo 3.3.');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <nav className="bg-white shadow-sm">
@@ -256,11 +245,6 @@ export default function AdminDashboard() {
         <Card>
           <CardHeader><CardTitle>Objetivo 3.2</CardTitle><CardDescription>Ser capaz de prevenir la delincuencia y el tráfico de inmigrantes clandestinos — 40 questões conferidas.</CardDescription></CardHeader>
           <CardContent><Button onClick={handleImportObjective32} disabled={importObjective32Mutation.isPending}>{importObjective32Mutation.isPending && <Spinner className="mr-2 h-4 w-4" />}Importar objetivo 3.2 (40 questões)</Button></CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle>Objetivo 3.3</CardTitle><CardDescription>Ser capaz de prevenir los riesgos físicos — 58 questões conferidas.</CardDescription></CardHeader>
-          <CardContent><Button onClick={handleImportObjective33} disabled={importObjective33Mutation.isPending}>{importObjective33Mutation.isPending && <Spinner className="mr-2 h-4 w-4" />}Importar objetivo 3.3 (58 questões)</Button></CardContent>
         </Card>
 
         <Card>
