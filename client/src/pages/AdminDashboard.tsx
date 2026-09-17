@@ -60,6 +60,7 @@ export default function AdminDashboard() {
   const dismissReviewMutation = trpc.admin.dismissQuestionReview.useMutation();
   const publicAccessQuery = trpc.admin.getPublicAccess.useQuery();
   const publicAccessMutation = trpc.admin.setPublicAccess.useMutation();
+  const importObjective32Mutation = trpc.admin.importObjective32.useMutation();
   const [reviewAnswers, setReviewAnswers] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
 
   useEffect(() => {
@@ -179,6 +180,16 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleImportObjective32 = async () => {
+    setFormError(''); setSuccessMessage('');
+    try {
+      const result = await importObjective32Mutation.mutateAsync();
+      setSuccessMessage(`Importação concluída: ${result.imported} questões em ${result.chapters.join(', ')}.`);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Não foi possível importar o objetivo 3.2.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <nav className="bg-white shadow-sm">
@@ -229,6 +240,11 @@ export default function AdminDashboard() {
             <Badge className={publicAccessQuery.data ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}>{publicAccessQuery.data ? text.publicOn : text.publicOff}</Badge>
             <Button variant={publicAccessQuery.data ? 'destructive' : 'outline'} disabled={publicAccessMutation.isPending} onClick={() => publicAccessMutation.mutate({ enabled: !publicAccessQuery.data }, { onSuccess: () => publicAccessQuery.refetch() })}>{publicAccessQuery.data ? text.publicOff : text.publicOn}</Button>
           </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle>Objetivo 3.2</CardTitle><CardDescription>Ser capaz de prevenir la delincuencia y el tráfico de inmigrantes clandestinos — 40 questões conferidas.</CardDescription></CardHeader>
+          <CardContent><Button onClick={handleImportObjective32} disabled={importObjective32Mutation.isPending}>{importObjective32Mutation.isPending && <Spinner className="mr-2 h-4 w-4" />}Importar objetivo 3.2 (40 questões)</Button></CardContent>
         </Card>
 
         <Card>
