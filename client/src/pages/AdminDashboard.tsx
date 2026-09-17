@@ -60,7 +60,6 @@ export default function AdminDashboard() {
   const dismissReviewMutation = trpc.admin.dismissQuestionReview.useMutation();
   const publicAccessQuery = trpc.admin.getPublicAccess.useQuery();
   const publicAccessMutation = trpc.admin.setPublicAccess.useMutation();
-  const importObjective37Mutation = trpc.admin.importObjective37.useMutation();
   const [reviewAnswers, setReviewAnswers] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
 
   useEffect(() => {
@@ -180,17 +179,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleImportObjective37 = async () => {
-    setFormError('');
-    setSuccessMessage('');
-    try {
-      const result = await importObjective37Mutation.mutateAsync();
-      setSuccessMessage(`Importação concluída: ${result.imported} questões em ${result.chapters.join(', ')}.`);
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível importar o objetivo 3.7.');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <nav className="bg-white shadow-sm">
@@ -242,12 +230,6 @@ export default function AdminDashboard() {
             <Button variant={publicAccessQuery.data ? 'destructive' : 'outline'} disabled={publicAccessMutation.isPending} onClick={() => publicAccessMutation.mutate({ enabled: !publicAccessQuery.data }, { onSuccess: () => publicAccessQuery.refetch() })}>{publicAccessQuery.data ? text.publicOff : text.publicOn}</Button>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader><CardTitle>Objetivo 3.7</CardTitle><CardDescription>Conocer el entorno económico del transporte por carretera de mercancías y la organización del mercado — 330 questões conferidas.</CardDescription></CardHeader>
-          <CardContent><Button onClick={handleImportObjective37} disabled={importObjective37Mutation.isPending}>{importObjective37Mutation.isPending && <Spinner className="mr-2 h-4 w-4" />}Importar objetivo 3.7 (330 questões)</Button></CardContent>
-        </Card>
-
 
         <Card>
           <CardHeader><CardTitle>{text.reviewTitle}</CardTitle></CardHeader>
