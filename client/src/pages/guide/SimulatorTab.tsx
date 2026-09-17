@@ -38,6 +38,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<string | null>(null);
+  const [chapterToStart, setChapterToStart] = useState<string | null>(null);
   const [chapterAttempt, setChapterAttempt] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -152,6 +153,9 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       model: 'Modelo',
       date: 'Data',
       question: 'Questão',
+      choose_attempt: 'Escolha a prova/versão deste capítulo',
+      start_chapter: 'Iniciar esta prova',
+      keyboard_hint: 'Computador: teclas A–D respondem · setas navegam',
       of: 'de',
       time: 'Tempo',
       next: 'Próxima',
@@ -216,6 +220,9 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       model: 'Modelo',
       date: 'Fecha',
       question: 'Pregunta',
+      choose_attempt: 'Elige el examen/versión de este capítulo',
+      start_chapter: 'Iniciar este examen',
+      keyboard_hint: 'Ordenador: teclas A–D responden · flechas navegan',
       of: 'de',
       time: 'Tiempo',
       next: 'Siguiente',
@@ -242,6 +249,44 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   };
 
   const texts = t[language];
+
+  const resetSimulatorState = () => {
+    setSelectedModel(null);
+    setSelectedDate(null);
+    setSelectedChapter(null);
+    setChapterToStart(null);
+    setChapterAttempt(1);
+    setCurrentQuestion(0);
+    setAnswers({});
+    setShowResults(false);
+    setTimeLeft(7200);
+  };
+
+  // Atalhos apenas para desktop; o fluxo e o teclado virtual do celular não mudam.
+  useEffect(() => {
+    if (!selectedModel && !selectedChapter) return;
+    const handleKeyboard = (event: KeyboardEvent) => {
+      if (window.matchMedia('(max-width: 767px)').matches) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(target?.tagName || '')) return;
+      const key = event.key.toUpperCase();
+      const current = questions[currentQuestion];
+      if (['A', 'B', 'C', 'D'].includes(key) && !showResults && current) {
+        if (!(studyMode === 'learning' && answers[currentQuestion])) {
+          event.preventDefault();
+          setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: key }));
+        }
+      } else if (event.key === 'ArrowLeft' && currentQuestion > 0) {
+        event.preventDefault();
+        setCurrentQuestion((index) => index - 1);
+      } else if (event.key === 'ArrowRight' && currentQuestion < questions.length - 1) {
+        event.preventDefault();
+        setCurrentQuestion((index) => index + 1);
+      }
+    };
+    window.addEventListener('keydown', handleKeyboard);
+    return () => window.removeEventListener('keydown', handleKeyboard);
+  }, [selectedModel, selectedChapter, showResults, studyMode, answers, currentQuestion, questions]);
 
   // Timer
   useEffect(() => {
@@ -471,14 +516,8 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                               className="h-auto justify-start whitespace-normal px-3 py-3 text-left"
                               disabled={chapter.count === 0}
                               onClick={() => {
-                                setSelectedChapter(chapter.id);
+                                setChapterToStart(chapter.id);
                                 setChapterAttempt(1);
-                                setSelectedModel(null);
-                                setSelectedDate(null);
-                                setCurrentQuestion(0);
-                                setAnswers({});
-                                setShowResults(false);
-                                setTimeLeft(7200);
                               }}
                             >
                               <span><Badge variant="secondary" className="mr-2">{chapter.code}</Badge>{language === 'pt' ? chapter.titlePt : chapter.titleEs}<span className="mt-1 block text-xs font-normal text-slate-500">{chapter.count > 0 ? `${chapter.count} ${texts.available_questions}${chapter.availableAttempts > 1 ? ` · ${chapter.availableAttempts} ${texts.chapter_versions}` : ''}` : texts.no_questions}</span></span>
@@ -488,6 +527,28 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                       </div>
                     );
                   })}
+                  {chapterToStart && (() => {
+                    const chapter = (chaptersQuery.data || []).find((item) => item.id === chapterToStart);
+                    if (!chapter) return null;
+                    return <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-4">
+                      <p className="mb-3 font-semibold text-slate-900">{texts.choose_attempt}: {chapter.code}</p>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <Select value={String(chapterAttempt)} onValueChange={(value) => setChapterAttempt(Number(value))}>
+                          <SelectTrigger className="bg-white sm:w-64"><SelectValue /></SelectTrigger>
+                          <SelectContent>{Array.from({ length: Math.max(1, chapter.availableAttempts) }, (_, index) => <SelectItem key={index + 1} value={String(index + 1)}>{texts.attempt} {index + 1}</SelectItem>)}</SelectContent>
+                        </Select>
+                        <Button onClick={() => {
+                          setSelectedChapter(chapterToStart);
+                          setSelectedModel(null);
+                          setSelectedDate(null);
+                          setCurrentQuestion(0);
+                          setAnswers({});
+                          setShowResults(false);
+                          setTimeLeft(7200);
+                        }}>{texts.start_chapter}</Button>
+                      </div>
+                    </div>;
+                  })()}
                 </div>
               )}
             </CardContent>
@@ -639,7 +700,10 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
             {texts.question} {currentQuestion + 1}/{questions.length}
           </Badge>
         </div>
-        {studyMode === 'exam' && <div className="font-semibold text-sm md:text-base">{texts.time}: {formatTime(timeLeft)}</div>}
+        <div className="flex flex-col items-start gap-1 md:items-end">
+          {studyMode === 'exam' && <div className="font-semibold text-sm md:text-base">{texts.time}: {formatTime(timeLeft)}</div>}
+          <span className="hidden text-xs text-slate-500 md:block">{texts.keyboard_hint}</span>
+        </div>
       </div>
 
       {/* Question */}
@@ -750,14 +814,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
           <Button
             variant="outline"
             onClick={() => {
-              setSelectedModel(null);
-              setSelectedDate(null);
-              setSelectedChapter(null);
-              setChapterAttempt(1);
-              setCurrentQuestion(0);
-              setAnswers({});
-              setShowResults(false);
-              setTimeLeft(7200);
+              resetSimulatorState();
             }}
             className="text-xs md:text-sm"
           >
