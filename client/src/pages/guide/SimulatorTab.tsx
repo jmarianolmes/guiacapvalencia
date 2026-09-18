@@ -417,8 +417,15 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const texts = t[language];
   const resumableProgress = Object.values(readAllProgress())
     .filter((progress) => Object.keys(progress.answers || {}).length > 0)
-    .sort((left, right) => right.savedAt - left.savedAt)
-    .slice(0, 3);
+    .sort((left, right) => right.savedAt - left.savedAt);
+  const discardSavedProgress = (saved: SimulatorProgress) => {
+    removeProgress(progressKey(saved));
+    setProgressVersion((version) => version + 1);
+  };
+  const hasChapterProgress = (chapterId: string) => {
+    void progressVersion;
+    return Object.values(readAllProgress()).some((progress) => progress.chapterId === chapterId && Object.keys(progress.answers || {}).length > 0);
+  };
 
   const resetSimulatorState = () => {
     setSelectedModel(null);
@@ -497,7 +504,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
             <CardContent className="space-y-2">
               {resumableProgress.map((saved) => {
                 const label = saved.mode === 'official' ? `${texts.date} ${saved.date || saved.model}` : saved.mode === 'chapter' ? `${texts.chapter} ${saved.chapterId} · ${texts.attempt} ${saved.attemptNumber || 1}` : `${texts.model} ${saved.model}`;
-                return <Button key={progressKey(saved)} type="button" variant="outline" className="h-auto w-full justify-between border-amber-300 bg-white py-3 text-left hover:bg-amber-100" onClick={() => resumeSavedProgress(saved)}><span><span className="block font-semibold">{label}</span><span className="text-xs font-normal text-slate-600">{texts.continue}</span></span><span>→</span></Button>;
+                return <div key={progressKey(saved)} className="flex items-stretch gap-2"><Button type="button" variant="outline" className="h-auto min-w-0 flex-1 justify-between border-amber-300 bg-white py-3 text-left hover:bg-amber-100" onClick={() => resumeSavedProgress(saved)}><span><span className="block font-semibold">{label}</span><span className="text-xs font-normal text-slate-600">{texts.continue}</span></span><span>→</span></Button><Button type="button" variant="outline" aria-label={language === 'pt' ? 'Excluir progresso' : 'Eliminar progreso'} title={language === 'pt' ? 'Excluir progresso' : 'Eliminar progreso'} className="w-11 border-red-200 bg-red-50 px-0 text-red-700 hover:bg-red-100" onClick={() => discardSavedProgress(saved)}>×</Button></div>;
               })}
             </CardContent>
           </Card>
@@ -608,7 +615,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                           <Button
                             key={model}
                             onClick={() => startStatisticalModel(model)}
-                            className={`w-full text-sm ${statusClass(getSimulatorStatus((result) => result.mode === 'statistical' && result.model === model))}`}
+                            className={`w-full text-sm ${statusClass(getSimulatorStatus((result) => result.mode === 'statistical' && result.model === model))} ${getProgress(progressKey({ mode: 'statistical', model })) ? 'ring-2 ring-red-300 ring-offset-1' : ''}`}
                             variant="outline"
                           >
                             <span>{model}{getProgress(progressKey({ mode: 'statistical', model })) && <span className="ml-1 text-xs">↻</span>}</span>
@@ -665,7 +672,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                               key={date}
                               type="button"
                               variant="outline"
-                              className={`h-auto justify-between py-3 ${statusClass(status)}`}
+                              className={`h-auto justify-between py-3 ${statusClass(status)} ${getProgress(progressKey({ mode: 'official', date })) ? 'ring-2 ring-red-300 ring-offset-1' : ''}`}
                               onClick={() => startOfficialExam(date)}
                             >
                               <span>{date}{getProgress(progressKey({ mode: 'official', date })) && <span className="ml-1 text-xs">↻</span>}</span>
@@ -707,7 +714,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                             <Button
                               key={chapter.id}
                               variant="outline"
-                              className="h-auto justify-start whitespace-normal px-3 py-3 text-left"
+                              className={`h-auto justify-start whitespace-normal px-3 py-3 text-left ${hasChapterProgress(chapter.id) ? 'ring-2 ring-red-300 ring-offset-1' : ''}`}
                               disabled={chapter.count === 0}
                               onClick={() => {
                                 setChapterToStart(chapter.id);
@@ -744,7 +751,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                     return <Button
                       key={attempt}
                       variant="outline"
-                      className={`h-auto justify-between py-3 ${statusClass(status)}`}
+                      className={`h-auto justify-between py-3 ${statusClass(status)} ${getProgress(progressKey({ mode: 'chapter', chapterId: chapter.id, attemptNumber: attempt })) ? 'border-red-300 bg-red-50/70 text-red-900 hover:bg-red-100' : ''}`}
                       onClick={() => startChapter(chapter.id, attempt)}
                     >
                       <span>{texts.attempt} {attempt}{getProgress(progressKey({ mode: 'chapter', chapterId: chapter.id, attemptNumber: attempt })) && <span className="ml-1 text-xs">↻ {texts.continue}</span>}</span>
