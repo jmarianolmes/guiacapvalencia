@@ -125,7 +125,7 @@ export default function Home() {
         </div>
 
         {/* CTA superior */}
-        <div className="mb-6 text-center">
+        <div className="mb-6 text-center md:hidden">
           <Button
             onClick={() => setLocation("/guide")}
             size="lg"
