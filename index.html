@@ -95,16 +95,6 @@
         .sim-option { cursor: pointer; padding: 15px; margin: 10px 0; border: 1px solid var(--border); border-radius: 8px; background: white; transition: 0.2s; }
         .sim-option:hover { background: #f8fafc; border-color: var(--primary); }
         .sim-option.selected { background: #eff6ff; border-color: var(--primary); border-width: 2px; font-weight: 700; }
-        body.simulator-active { overflow: hidden; }
-        body.simulator-active .sim-exam { position: fixed !important; inset: 0; z-index: 1000; width: 100vw; height: 100dvh; overflow-y: auto; margin: 0 !important; padding: 12px max(12px, 3vw) 24px; background: #f8fafc; }
-        body.simulator-active .sim-header { margin-bottom: 12px !important; padding-bottom: 10px !important; }
-        body.simulator-active #sim-question-container > div { padding: 16px !important; margin-bottom: 12px !important; }
-        body.simulator-active #sim-question-container > div > div:nth-child(2) { font-size: clamp(1.05rem, 2vw, 1.3rem) !important; line-height: 1.35; margin-bottom: 12px !important; }
-        body.simulator-active .sim-option { padding: 9px 11px; margin: 6px 0; font-size: clamp(0.95rem, 1.7vw, 1.08rem); line-height: 1.35; }
-        body.simulator-active .sim-nav { margin-bottom: 12px !important; }
-        body.simulator-active .sim-grid { grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; margin-top: 8px; }
-        body.simulator-active .sim-grid-btn { padding: 4px 2px; min-height: 28px; font-size: 0.75rem; }
-        @media (max-width: 600px) { body.simulator-active .sim-header { gap: 8px; } body.simulator-active .sim-timer { font-size: 1rem !important; } body.simulator-active .sim-nav { flex-wrap: wrap; } body.simulator-active .sim-nav-btn, body.simulator-active .sim-finish-btn { padding: 8px 12px !important; } }
 </style>
 </head>
 <body>
@@ -2602,9 +2592,7 @@
             document.getElementById('sim-intro').style.display = 'none';
             document.getElementById('sim-exam').style.display = 'block';
             document.getElementById('sim-results').style.display = 'none';
-            document.body.classList.add('simulator-active');
             updateSimHeader(); renderSimQ(); renderSimGrid(); startSimTimer();
-            requestAnimationFrame(() => document.getElementById('sim-exam').scrollTo({ top: 0, behavior: 'auto' }));
         }
 
         function updateSimHeader() {
@@ -2675,7 +2663,7 @@
                 </div>`;
             });
             document.getElementById('results-errors-list').innerHTML = errH || `<p>${t.res_none}</p>`;
-            document.getElementById('sim-exam').style.display = 'none'; document.getElementById('sim-results').style.display = 'block'; document.body.classList.remove('simulator-active');
+            document.getElementById('sim-exam').style.display = 'none'; document.getElementById('sim-results').style.display = 'block';
         }
 
         function backToIntro() { document.getElementById('sim-intro').style.display = 'block'; document.getElementById('sim-results').style.display = 'none'; }
