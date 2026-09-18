@@ -98,13 +98,24 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const isSimulatorSessionActive = Boolean(selectedModel || selectedChapter);
 
   useEffect(() => {
-    document.body.classList.toggle('simulator-session-active', isSimulatorSessionActive);
-    document.documentElement.classList.toggle('simulator-session-active', isSimulatorSessionActive);
-
     if (isSimulatorSessionActive) {
+      document.body.classList.remove('simulator-session-active');
+      document.documentElement.classList.remove('simulator-session-active');
+
       requestAnimationFrame(() => {
-        simulatorSessionRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
+        const session = simulatorSessionRef.current;
+        if (session) {
+          window.scrollTo({ top: session.getBoundingClientRect().top + window.scrollY, behavior: 'auto' });
+        }
+
+        requestAnimationFrame(() => {
+          document.body.classList.add('simulator-session-active');
+          document.documentElement.classList.add('simulator-session-active');
+        });
       });
+    } else {
+      document.body.classList.remove('simulator-session-active');
+      document.documentElement.classList.remove('simulator-session-active');
     }
 
     return () => {
