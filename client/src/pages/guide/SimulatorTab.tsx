@@ -1052,7 +1052,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                   ? wasCorrect ? 'bg-green-100 text-green-800 ring-green-300' : 'bg-red-100 text-red-800 ring-red-300'
                   : 'bg-green-100 text-green-800 ring-green-300'
                 : isCurrent ? 'bg-blue-600 text-white ring-blue-300' : 'bg-slate-200 text-slate-700 ring-slate-300';
-              return <button type="button" key={idx} onClick={() => setCurrentQuestion(idx)} aria-label={`${texts.question} ${idx + 1}`} className={`h-6 w-6 rounded text-[0.68rem] font-semibold transition-all md:h-7 md:w-7 md:text-xs ${colorClass} ${isCurrent ? 'ring-2 ring-offset-1' : ''}`}>{idx + 1}</button>;
+              return <button type="button" key={idx} onClick={() => setCurrentQuestion(idx)} aria-label={`${texts.question} ${idx + 1}`} className={`h-8 w-8 rounded text-xs font-semibold transition-all md:h-10 md:w-10 ${colorClass} ${isCurrent ? 'ring-2 ring-offset-1' : ''}`}>{idx + 1}</button>;
             })}
           </div>
 
@@ -1079,7 +1079,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                   ? wasCorrect ? 'bg-green-100 text-green-800 ring-green-300' : 'bg-red-100 text-red-800 ring-red-300'
                   : 'bg-green-100 text-green-800 ring-green-300'
                 : isCurrent ? 'bg-blue-600 text-white ring-blue-300' : 'bg-slate-200 text-slate-700 ring-slate-300';
-              return <button type="button" key={idx} onClick={() => setCurrentQuestion(idx)} aria-label={`${texts.question} ${idx + 1}`} className={`h-6 w-6 rounded text-[0.68rem] font-semibold transition-all md:h-7 md:w-7 md:text-xs ${colorClass} ${isCurrent ? 'ring-2 ring-offset-1' : ''}`}>{idx + 1}</button>;
+              return <button type="button" key={idx} onClick={() => setCurrentQuestion(idx)} aria-label={`${texts.question} ${idx + 1}`} className={`h-8 w-8 rounded text-xs font-semibold transition-all md:h-10 md:w-10 ${colorClass} ${isCurrent ? 'ring-2 ring-offset-1' : ''}`}>{idx + 1}</button>;
             })}
           </div>
         )}

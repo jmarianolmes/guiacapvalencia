@@ -145,15 +145,13 @@ body.simulator-session-active .simulator-session {
   inset: 0;
   z-index: 40;
   width: 100%;
-  max-width: 1152px;
-  left: 50%;
-  right: auto;
-  transform: translateX(-50%);
+  max-width: none;
+  box-sizing: border-box;
   height: 100dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
   background: oklch(0.98 0.005 250);
-  padding: 0.5rem 1rem 1rem;
+  padding: 0.5rem max(1rem, calc((100vw - 1152px) / 2 + 1rem)) 1rem;
 }
 
 body.simulator-session-active .simulator-question-text {
