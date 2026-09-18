@@ -914,7 +914,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
     <div ref={simulatorSessionRef} className="simulator-session scroll-mt-0 space-y-1 text-[0.98rem] md:text-base">
       <Popover>
         <PopoverTrigger asChild>
-          <Button type="button" variant="secondary" className="fixed bottom-4 right-4 z-30 rounded-full border border-blue-200 bg-white px-4 shadow-lg hover:bg-blue-50">
+          <Button type="button" variant="secondary" className="fixed bottom-4 right-4 z-30 hidden rounded-full border border-blue-200 bg-white px-4 shadow-lg hover:bg-blue-50 md:flex">
             {texts.glossary}
           </Button>
         </PopoverTrigger>
@@ -926,7 +926,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
         </PopoverContent>
       </Popover>
       {/* Header */}
-      <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
+      <div className="simulator-session-header flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
         <div className="flex flex-wrap gap-1.5">
           <Badge className="text-xs md:text-sm">{selectedChapter ? texts.chapter : texts.model}: {selectedChapter ? (chaptersQuery.data || []).find((chapter) => chapter.id === selectedChapter)?.code : selectedModel}</Badge>
           <Badge variant="outline" className={`text-xs md:text-sm ${studyMode === 'learning' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-blue-200 bg-blue-50 text-blue-800'}`}>{studyMode === 'learning' ? texts.learning : texts.exam}</Badge>
@@ -943,7 +943,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       </div>
 
       {/* Question */}
-      <Card>
+      <Card className="simulator-question-card">
         <CardContent className="px-3 py-2.5 md:px-4 md:py-3">
           <p className="simulator-question-text mb-2.5 text-base font-semibold leading-5.5 md:text-lg md:leading-6">
             {(question.model === 'OF' || question.model === 'ORIGINAL') && question.internalCode?.match(/-(\d+)$/)?.[1] && (
@@ -1016,7 +1016,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       </Card>
 
       {/* Navigation */}
-      <div className="space-y-2">
+      <div className="simulator-navigation space-y-2">
         <div
           className="simulator-mobile-nav space-y-2 md:hidden"
           onTouchStart={(event) => { mobileTouchStart.current = event.touches[0]?.clientX ?? null; }}
@@ -1025,9 +1025,10 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
             const end = event.changedTouches[0]?.clientX;
             mobileTouchStart.current = null;
             if (start === null || end === undefined || Math.abs(end - start) < 40) return;
+            const steps = Math.max(1, Math.min(10, Math.round(Math.abs(end - start) / 40)));
             setCurrentQuestion((questionIndex) => Math.max(0, Math.min(
               questions.length - 1,
-              questionIndex + (end < start ? 1 : -1),
+              questionIndex + (end < start ? steps : -steps),
             )));
           }}
         >

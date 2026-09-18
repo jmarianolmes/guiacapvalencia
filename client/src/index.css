@@ -170,6 +170,46 @@ body.simulator-session-active .simulator-learning-feedback {
 }
 
 @media (max-width: 767px) {
+  body.simulator-session-active .simulator-session {
+    padding-bottom: 10rem;
+  }
+
+  body.simulator-session-active .simulator-navigation {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 50;
+    padding: 0.65rem 0.75rem calc(0.65rem + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, white 96%, #dbeafe);
+    border-top: 1px solid #cbd5e1;
+    box-shadow: 0 -4px 16px rgb(15 23 42 / 12%);
+  }
+
+  body.simulator-session-active .simulator-mobile-nav > div:first-child button {
+    min-width: 5.5rem;
+    min-height: 2.75rem;
+    font-size: 1rem;
+  }
+
+  body.simulator-session-active .simulator-mobile-nav > div:nth-child(2) {
+    transform: scale(1.04);
+    transform-origin: center;
+  }
+
+  body.simulator-session-active .simulator-mobile-nav > div:nth-child(2) button {
+    min-height: 2.25rem;
+    font-size: 0.85rem;
+  }
+
+  body.simulator-session-active .simulator-navigation > .hidden {
+    display: none;
+  }
+
+  body.simulator-session-active .simulator-question-card {
+    min-height: calc(100dvh - 15rem);
+  }
+
   body.simulator-session-active .simulator-mobile-nav {
     touch-action: pan-y;
   }
