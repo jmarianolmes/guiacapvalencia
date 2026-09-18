@@ -124,6 +124,17 @@ export default function Home() {
           </p>
         </div>
 
+        {/* CTA superior */}
+        <div className="mb-6 text-center">
+          <Button
+            onClick={() => setLocation("/guide")}
+            size="lg"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 text-white hover:from-blue-700 hover:to-purple-700"
+          >
+            {copy.accessGuide}
+          </Button>
+        </div>
+
         {/* Stats */}
         <div className="grid md:grid-cols-5 gap-6 mb-12">
           <Card className="hover:shadow-lg transition-shadow">
