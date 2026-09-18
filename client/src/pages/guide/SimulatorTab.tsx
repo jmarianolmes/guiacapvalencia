@@ -1032,9 +1032,12 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
             )));
           }}
         >
-          <div className="flex items-center justify-between gap-2">
-            <Button onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))} disabled={currentQuestion === 0} variant="outline" className="px-2 text-xs">←</Button>
-            <div className="grid flex-1 grid-cols-10 gap-1">
+          <div className="flex items-center justify-center gap-3">
+            <Button onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))} disabled={currentQuestion === 0} variant="outline" className="px-2 text-xs">← {texts.previous}</Button>
+            <Button onClick={() => setCurrentQuestion(Math.min(questions.length - 1, currentQuestion + 1))} disabled={currentQuestion === questions.length - 1} variant="outline" className="px-2 text-xs">{texts.next} →</Button>
+          </div>
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="grid min-w-0 flex-1 grid-cols-10 gap-1">
               {mobileNavigationQuestions.map((navigationQuestion, offset) => {
                 const idx = mobileNavigationStart + offset;
                 const answer = answers[idx];
@@ -1048,7 +1051,6 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                 return <button type="button" key={idx} onClick={() => setCurrentQuestion(idx)} aria-label={`${texts.question} ${idx + 1}`} className={`h-8 w-full rounded text-xs font-semibold ${colorClass} ${isCurrent ? 'ring-2 ring-offset-1' : ''}`}>{idx + 1}</button>;
               })}
             </div>
-            <Button onClick={() => setCurrentQuestion(Math.min(questions.length - 1, currentQuestion + 1))} disabled={currentQuestion === questions.length - 1} variant="outline" className="px-2 text-xs">→</Button>
           </div>
           <div className="flex justify-center gap-1.5 border-t border-slate-200 pt-2">
             <Button variant="outline" onClick={resetSimulatorState} className="text-xs">{texts.exitToSimulatorMenu}</Button>
