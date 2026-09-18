@@ -169,6 +169,20 @@ body.simulator-session-active .simulator-learning-feedback {
   line-height: 1.45;
 }
 
+@media (max-width: 767px) {
+  body.simulator-session-active .simulator-mobile-nav {
+    touch-action: pan-y;
+  }
+
+  body.simulator-session-active .simulator-question-text {
+    font-size: 1.18rem;
+  }
+
+  body.simulator-session-active .simulator-option-text {
+    font-size: 1.04rem;
+  }
+}
+
 @layer components {
   /**
    * Custom container utility that centers content and adds responsive padding.

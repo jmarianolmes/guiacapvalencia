@@ -146,6 +146,12 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const activeQuestionsQuery = selectedChapter ? chapterQuestionsQuery : questionsQuery;
   const chapterAttemptData = chapterQuestionsQuery.data;
   const questions = selectedChapter ? (chapterAttemptData?.questions || []) : (questionsQuery.data || []);
+  const mobileNavigationStart = Math.min(
+    Math.max(currentQuestion - 4, 0),
+    Math.max(questions.length - 10, 0),
+  );
+  const mobileNavigationQuestions = questions.slice(mobileNavigationStart, mobileNavigationStart + 10);
+  const mobileTouchStart = useRef<number | null>(null);
 
   type SimulatorStatus = 'passed' | 'failed' | null;
   const getSimulatorStatus = (matches: (result: NonNullable<typeof historyQuery.data>[number]) => boolean): SimulatorStatus => {
@@ -1011,7 +1017,45 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
 
       {/* Navigation */}
       <div className="space-y-2">
-        <div className="flex flex-wrap items-center justify-center gap-1.5">
+        <div
+          className="simulator-mobile-nav space-y-2 md:hidden"
+          onTouchStart={(event) => { mobileTouchStart.current = event.touches[0]?.clientX ?? null; }}
+          onTouchEnd={(event) => {
+            const start = mobileTouchStart.current;
+            const end = event.changedTouches[0]?.clientX;
+            mobileTouchStart.current = null;
+            if (start === null || end === undefined || Math.abs(end - start) < 40) return;
+            setCurrentQuestion((questionIndex) => Math.max(0, Math.min(
+              questions.length - 1,
+              questionIndex + (end < start ? 1 : -1),
+            )));
+          }}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <Button onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))} disabled={currentQuestion === 0} variant="outline" className="px-2 text-xs">←</Button>
+            <div className="grid flex-1 grid-cols-10 gap-1">
+              {mobileNavigationQuestions.map((navigationQuestion, offset) => {
+                const idx = mobileNavigationStart + offset;
+                const answer = answers[idx];
+                const isCurrent = currentQuestion === idx;
+                const wasCorrect = answer === navigationQuestion.correctAnswer;
+                const colorClass = answer
+                  ? studyMode === 'learning'
+                    ? wasCorrect ? 'bg-green-100 text-green-800 ring-green-300' : 'bg-red-100 text-red-800 ring-red-300'
+                    : 'bg-green-100 text-green-800 ring-green-300'
+                  : isCurrent ? 'bg-blue-600 text-white ring-blue-300' : 'bg-slate-200 text-slate-700 ring-slate-300';
+                return <button type="button" key={idx} onClick={() => setCurrentQuestion(idx)} aria-label={`${texts.question} ${idx + 1}`} className={`h-8 w-full rounded text-xs font-semibold ${colorClass} ${isCurrent ? 'ring-2 ring-offset-1' : ''}`}>{idx + 1}</button>;
+              })}
+            </div>
+            <Button onClick={() => setCurrentQuestion(Math.min(questions.length - 1, currentQuestion + 1))} disabled={currentQuestion === questions.length - 1} variant="outline" className="px-2 text-xs">→</Button>
+          </div>
+          <div className="flex justify-center gap-1.5 border-t border-slate-200 pt-2">
+            <Button variant="outline" onClick={resetSimulatorState} className="text-xs">{texts.exitToSimulatorMenu}</Button>
+            <Button onClick={finishSimulator} className="bg-red-600 text-xs text-white hover:bg-red-700">{texts.finish}</Button>
+          </div>
+        </div>
+
+        <div className="hidden flex-wrap items-center justify-center gap-1.5 md:flex">
           <Button
             onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
             disabled={currentQuestion === 0}
@@ -1047,7 +1091,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
         </div>
 
         {questions.length > 20 && (
-          <div className="flex flex-wrap justify-center gap-0.5">
+          <div className="hidden flex-wrap justify-center gap-0.5 md:flex">
             {questions.slice(20).map((navigationQuestion, offset) => {
               const idx = offset + 20;
               const answer = answers[idx];
@@ -1064,7 +1108,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
           </div>
         )}
 
-        <div className="flex flex-wrap justify-center gap-1.5 border-t border-slate-200 pt-2">
+        <div className="hidden flex-wrap justify-center gap-1.5 border-t border-slate-200 pt-2 md:flex">
           <Button
             variant="outline"
             onClick={() => {
