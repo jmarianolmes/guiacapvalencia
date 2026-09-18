@@ -886,7 +886,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 text-[0.94rem] md:text-[0.96rem]">
       <Popover>
         <PopoverTrigger asChild>
           <Button type="button" variant="secondary" className="fixed bottom-4 right-4 z-30 rounded-full border border-blue-200 bg-white px-4 shadow-lg hover:bg-blue-50">
@@ -901,8 +901,8 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
         </PopoverContent>
       </Popover>
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
+        <div className="flex flex-wrap gap-1.5">
           <Badge className="text-xs md:text-sm">{selectedChapter ? texts.chapter : texts.model}: {selectedChapter ? (chaptersQuery.data || []).find((chapter) => chapter.id === selectedChapter)?.code : selectedModel}</Badge>
           <Badge variant="outline" className={`text-xs md:text-sm ${studyMode === 'learning' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-blue-200 bg-blue-50 text-blue-800'}`}>{studyMode === 'learning' ? texts.learning : texts.exam}</Badge>
           {selectedChapter && chapterAttemptData && <Badge variant="outline" className="text-xs md:text-sm">{texts.attempt} {chapterAttemptData.attemptNumber}/{chapterAttemptData.availableAttempts}</Badge>}
@@ -911,7 +911,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
             {texts.question} {currentQuestion + 1}/{questions.length}
           </Badge>
         </div>
-        <div className="flex flex-col items-start gap-1 md:items-end">
+        <div className="flex flex-col items-start gap-0 md:items-end">
           {questions.length === 100 && <div className={`font-semibold text-sm md:text-base ${timeLeft <= 600 ? 'text-red-700' : 'text-slate-800'}`}>{texts.time}: {formatTime(timeLeft)}</div>}
           <span className="hidden text-xs text-slate-500 md:block">{texts.keyboard_hint}</span>
         </div>
@@ -919,14 +919,14 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
 
       {/* Question */}
       <Card>
-        <CardContent className="pt-6">
-          <p className="text-base md:text-lg font-semibold mb-6">
+        <CardContent className="px-4 py-3 md:px-5 md:py-4">
+          <p className="mb-3 text-sm font-semibold leading-5 md:text-base md:leading-6">
             {(question.model === 'OF' || question.model === 'ORIGINAL') && question.internalCode?.match(/-(\d+)$/)?.[1] && (
               <span className="mr-2 inline-block rounded bg-slate-100 px-2 py-0.5 align-middle text-xs font-semibold text-slate-600">ID: {question.internalCode.match(/-(\d+)$/)?.[1]}</span>
             )}
             {question.question}
           </p>
-          <label className="mb-5 flex min-h-9 cursor-pointer items-center gap-2 text-xs text-slate-500 hover:text-slate-700">
+          <label className="mb-2 flex min-h-7 cursor-pointer items-center gap-2 text-[0.7rem] text-slate-500 hover:text-slate-700 md:text-xs">
             <Checkbox
               checked={reportedQuestionIds.has(question.id)}
               aria-label={texts.conformity}
@@ -946,7 +946,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
             <span>{reportedQuestionIds.has(question.id) ? texts.markedForReview : texts.conformity}</span>
           </label>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             {(['A', 'B', 'C', 'D'] as const).map(option => {
               const selectedAnswer = answers[currentQuestion];
               const isLearningFeedback = Boolean(studyMode === 'learning' && selectedAnswer);
@@ -969,7 +969,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                   onClick={() => setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: option }))}
                   disabled={isLearningFeedback}
                   aria-pressed={isSelectedOption}
-                  className={`w-full rounded-lg border-2 p-3 text-left text-sm transition-all disabled:cursor-default md:p-4 md:text-base ${optionClass}`}
+                  className={`w-full rounded-lg border-2 px-3 py-2 text-left text-[0.8rem] leading-5 transition-all disabled:cursor-default md:px-3 md:py-2.5 md:text-sm ${optionClass}`}
                 >
                   <span className="font-semibold">{option})</span> {String(question[`option${option}` as keyof typeof question])}
                 </button>
@@ -977,7 +977,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
             })}
           </div>
           {studyMode === 'learning' && answers[currentQuestion] && (
-            <div className={`mt-4 rounded-lg border px-4 py-3 text-sm font-medium ${
+            <div className={`mt-2 rounded-lg border px-3 py-2 text-xs font-medium ${
               answers[currentQuestion] === question.correctAnswer
                 ? 'border-green-200 bg-green-50 text-green-800'
                 : 'border-red-200 bg-red-50 text-red-800'
@@ -991,8 +991,8 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       </Card>
 
       {/* Navigation */}
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-center gap-1.5">
           <Button
             onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
             disabled={currentQuestion === 0}
@@ -1002,7 +1002,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
             ← {texts.previous}
           </Button>
 
-          <div className="flex flex-wrap justify-center gap-1">
+          <div className="flex flex-wrap justify-center gap-0.5">
             {questions.slice(0, 20).map((navigationQuestion, idx) => {
               const answer = answers[idx];
               const wasAnswered = Boolean(answer);
@@ -1028,7 +1028,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
         </div>
 
         {questions.length > 20 && (
-          <div className="flex flex-wrap justify-center gap-1">
+          <div className="flex flex-wrap justify-center gap-0.5">
             {questions.slice(20).map((navigationQuestion, offset) => {
               const idx = offset + 20;
               const answer = answers[idx];
@@ -1045,7 +1045,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
           </div>
         )}
 
-        <div className="flex flex-wrap justify-center gap-2 border-t border-slate-200 pt-4">
+        <div className="flex flex-wrap justify-center gap-1.5 border-t border-slate-200 pt-2">
           <Button
             variant="outline"
             onClick={() => {
