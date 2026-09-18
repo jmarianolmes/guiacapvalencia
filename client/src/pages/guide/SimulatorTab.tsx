@@ -790,7 +790,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
 
   if (activeQuestionsQuery.isLoading) {
     return (
-      <Card>
+      <Card ref={simulatorSessionRef} className="simulator-session">
         <CardContent className="flex justify-center items-center py-8">
           <Spinner />
           <span className="ml-2">{texts.loading}</span>
@@ -801,7 +801,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
 
   if (activeQuestionsQuery.isError) {
     return (
-      <Card>
+      <Card ref={simulatorSessionRef} className="simulator-session">
         <CardContent className="space-y-4 py-8 text-center">
           <p className="text-sm text-red-700">{texts.loadError}</p>
           <Button variant="outline" onClick={() => activeQuestionsQuery.refetch()}>{texts.retry}</Button>
@@ -818,7 +818,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
     const isPassed = score >= (selectedChapter ? questions.length / 2 : 50);
 
     return (
-      <Card>
+      <Card ref={simulatorSessionRef} className="simulator-session">
         <CardHeader>
           <CardTitle>{texts.results}</CardTitle>
         </CardHeader>
@@ -901,7 +901,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   }
 
   if (!question) {
-    return <Card><CardContent className="space-y-4 pt-6 text-center"><p>{texts.loadError}</p><Button variant="outline" onClick={() => activeQuestionsQuery.refetch()}>{texts.retry}</Button></CardContent></Card>;
+    return <Card ref={simulatorSessionRef} className="simulator-session"><CardContent className="space-y-4 pt-6 text-center"><p>{texts.loadError}</p><Button variant="outline" onClick={() => activeQuestionsQuery.refetch()}>{texts.retry}</Button></CardContent></Card>;
   }
 
   return (
