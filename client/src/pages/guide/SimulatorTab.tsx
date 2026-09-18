@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -93,12 +93,19 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const [timeLeft, setTimeLeft] = useState(7200);
   const [reportedQuestionIds, setReportedQuestionIds] = useState<Set<number>>(new Set());
   const [progressVersion, setProgressVersion] = useState(0);
+  const simulatorSessionRef = useRef<HTMLDivElement>(null);
 
   const isSimulatorSessionActive = Boolean(selectedModel || selectedChapter);
 
   useEffect(() => {
     document.body.classList.toggle('simulator-session-active', isSimulatorSessionActive);
     document.documentElement.classList.toggle('simulator-session-active', isSimulatorSessionActive);
+
+    if (isSimulatorSessionActive) {
+      requestAnimationFrame(() => {
+        simulatorSessionRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
+      });
+    }
 
     return () => {
       document.body.classList.remove('simulator-session-active');
@@ -898,7 +905,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   }
 
   return (
-    <div className="simulator-session space-y-1 text-[0.98rem] md:text-base">
+    <div ref={simulatorSessionRef} className="simulator-session scroll-mt-0 space-y-1 text-[0.98rem] md:text-base">
       <Popover>
         <PopoverTrigger asChild>
           <Button type="button" variant="secondary" className="fixed bottom-4 right-4 z-30 rounded-full border border-blue-200 bg-white px-4 shadow-lg hover:bg-blue-50">
