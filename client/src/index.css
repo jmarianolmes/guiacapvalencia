@@ -170,6 +170,68 @@ body.simulator-session-active .simulator-learning-feedback {
 }
 
 @media (max-width: 767px) {
+  body:not(.simulator-session-active) {
+    font-size: 0.95rem;
+  }
+
+  body:not(.simulator-session-active) header {
+    padding: 0.85rem 0.75rem;
+  }
+
+  body:not(.simulator-session-active) header h1 {
+    margin-bottom: 0.35rem;
+    font-size: 1.75rem;
+    line-height: 1.15;
+  }
+
+  body:not(.simulator-session-active) main {
+    padding: 1rem 0.75rem;
+  }
+
+  body:not(.simulator-session-active) footer {
+    margin-top: 1.5rem;
+    padding: 1.5rem 0.75rem;
+  }
+
+  body:not(.simulator-session-active) [data-slot="card"] {
+    gap: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  body:not(.simulator-session-active) [data-slot="card-header"] {
+    gap: 0.35rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+
+  body:not(.simulator-session-active) [data-slot="card-content"] {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+
+  body:not(.simulator-session-active) [data-slot="card-title"] {
+    font-size: 1rem;
+  }
+
+  body:not(.simulator-session-active) [data-slot="tabs-list"] {
+    gap: 0.25rem;
+  }
+
+  body:not(.simulator-session-active) [data-slot="tabs-trigger"] {
+    padding: 0.45rem 0.65rem;
+    font-size: 0.78rem;
+  }
+
+  body:not(.simulator-session-active) .mb-8 {
+    margin-bottom: 1rem;
+  }
+
+  body:not(.simulator-session-active) .gap-6 {
+    gap: 1rem;
+  }
+
   body.simulator-session-active .simulator-session {
     padding-bottom: 10rem;
   }
