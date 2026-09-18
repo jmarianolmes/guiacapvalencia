@@ -95,7 +95,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const [progressVersion, setProgressVersion] = useState(0);
   const simulatorSessionRef = useRef<HTMLDivElement>(null);
 
-  const isSimulatorSessionActive = Boolean(selectedModel || selectedChapter);
+  const isSimulatorSessionActive = Boolean(selectedModel || selectedDate || selectedChapter);
 
   useEffect(() => {
     if (isSimulatorSessionActive) {
