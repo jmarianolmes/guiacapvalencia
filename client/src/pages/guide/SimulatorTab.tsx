@@ -7,13 +7,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { trpc } from '@/lib/trpc';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 interface SimulatorTabProps {
   language: 'pt' | 'es';
@@ -43,6 +36,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const [chapterToStart, setChapterToStart] = useState<string | null>(null);
   const [chapterAttempt, setChapterAttempt] = useState(1);
   const [chapterDialogOpen, setChapterDialogOpen] = useState(false);
+  const [officialDialogOpen, setOfficialDialogOpen] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [showResults, setShowResults] = useState(false);
@@ -104,6 +98,18 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
     setShowResults(false);
     setTimeLeft(7200);
     setChapterDialogOpen(false);
+  };
+
+  const startOfficialExam = (date: string) => {
+    setSelectedDate(date);
+    setSelectedModel(date);
+    setSelectedChapter(null);
+    setChapterAttempt(1);
+    setCurrentQuestion(0);
+    setAnswers({});
+    setShowResults(false);
+    setTimeLeft(7200);
+    setOfficialDialogOpen(false);
   };
 
   const getResultStats = () => {
@@ -181,6 +187,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       exam: 'Exame',
       model: 'Modelo',
       date: 'Data',
+      officialExams: 'provas',
       question: 'Questão',
       choose_attempt: 'Escolha a prova/versão deste capítulo',
       start_chapter: 'Iniciar esta prova',
@@ -250,6 +257,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       exam: 'Examen',
       model: 'Modelo',
       date: 'Fecha',
+      officialExams: 'exámenes',
       question: 'Pregunta',
       choose_attempt: 'Elige el examen/versión de este capítulo',
       start_chapter: 'Iniciar este examen',
@@ -497,25 +505,46 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                   <Button variant="outline" onClick={() => officialExamDatesQuery.refetch()}>{texts.retry}</Button>
                 </div>
               ) : (
-              <Select onValueChange={(value) => {
-                setSelectedDate(value);
-                setSelectedModel(value);
-                setSelectedChapter(null);
-                setChapterAttempt(1);
-                setCurrentQuestion(0);
-                setAnswers({});
-                setShowResults(false);
-                setTimeLeft(7200);
-              }} disabled={(officialExamDatesQuery.data || []).length === 0}>
-                <SelectTrigger>
-                  <SelectValue placeholder={texts.select_date} />
-                </SelectTrigger>
-                <SelectContent>
-                  {(officialExamDatesQuery.data || []).map((date) => (
-                    <SelectItem key={date} value={date} className={statusClass(getSimulatorStatus((result) => result.mode === 'official' && result.model === date))}>{date}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-auto w-full justify-between rounded-xl border-2 px-4 py-4 text-left hover:border-blue-300 hover:bg-blue-50"
+                    disabled={(officialExamDatesQuery.data || []).length === 0}
+                    onClick={() => setOfficialDialogOpen(true)}
+                  >
+                    <span>
+                      <span className="block font-semibold">{texts.select_date}</span>
+                      <span className="mt-1 block text-sm font-normal text-slate-500">{(officialExamDatesQuery.data || []).length} {texts.officialExams}</span>
+                    </span>
+                    <span className="text-xl text-blue-600">→</span>
+                  </Button>
+                  <Dialog open={officialDialogOpen} onOpenChange={setOfficialDialogOpen}>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>{texts.select_date}</DialogTitle>
+                        <DialogDescription>{language === 'pt' ? 'Verde: aprovado · vermelho: reprovado · normal: ainda não realizado.' : 'Verde: aprobado · rojo: suspendido · normal: aún no realizado.'}</DialogDescription>
+                      </DialogHeader>
+                      <div className="grid max-h-[60vh] gap-2 overflow-y-auto pr-1 pt-2 sm:grid-cols-2">
+                        {(officialExamDatesQuery.data || []).map((date) => {
+                          const status = getSimulatorStatus((result) => result.mode === 'official' && result.model === date);
+                          return (
+                            <Button
+                              key={date}
+                              type="button"
+                              variant="outline"
+                              className={`h-auto justify-between py-3 ${statusClass(status)}`}
+                              onClick={() => startOfficialExam(date)}
+                            >
+                              <span>{date}</span>
+                              <span className="text-xs font-normal">{status === 'passed' ? '✓' : status === 'failed' ? '×' : '·'}</span>
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </>
               )}
             </CardContent>
           </Card>
