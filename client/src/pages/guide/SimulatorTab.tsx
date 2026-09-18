@@ -163,10 +163,8 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
 
   useEffect(() => {
     if (!isSimulatorSessionActive) return;
-    const session = simulatorSessionRef.current;
-    const contentFitsViewport = session ? session.scrollHeight <= window.innerHeight - 8 : false;
-    document.body.classList.toggle('simulator-session-active', contentFitsViewport);
-    document.documentElement.classList.toggle('simulator-session-active', contentFitsViewport);
+    document.body.classList.add('simulator-session-active');
+    document.documentElement.classList.add('simulator-session-active');
   }, [isSimulatorSessionActive, questions.length, showResults]);
 
   type SimulatorStatus = 'passed' | 'failed' | null;
