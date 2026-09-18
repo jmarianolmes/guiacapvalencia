@@ -98,27 +98,13 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const isSimulatorSessionActive = Boolean(selectedModel || selectedDate || selectedChapter);
 
   useEffect(() => {
+    document.body.classList.toggle('simulator-session-active', isSimulatorSessionActive);
+    document.documentElement.classList.toggle('simulator-session-active', isSimulatorSessionActive);
+
     if (isSimulatorSessionActive) {
-      document.body.classList.remove('simulator-session-active');
-      document.documentElement.classList.remove('simulator-session-active');
-
       requestAnimationFrame(() => {
-        const session = simulatorSessionRef.current;
-        if (session) {
-          window.scrollTo({ top: session.getBoundingClientRect().top + window.scrollY, behavior: 'auto' });
-        }
-
-        requestAnimationFrame(() => {
-          const contentFitsViewport = session
-            ? session.scrollHeight <= window.innerHeight - 8
-            : false;
-          document.body.classList.toggle('simulator-session-active', contentFitsViewport);
-          document.documentElement.classList.toggle('simulator-session-active', contentFitsViewport);
-        });
+        simulatorSessionRef.current?.scrollTo({ top: 0, behavior: 'auto' });
       });
-    } else {
-      document.body.classList.remove('simulator-session-active');
-      document.documentElement.classList.remove('simulator-session-active');
     }
 
     return () => {
@@ -160,12 +146,6 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const activeQuestionsQuery = selectedChapter ? chapterQuestionsQuery : questionsQuery;
   const chapterAttemptData = chapterQuestionsQuery.data;
   const questions = selectedChapter ? (chapterAttemptData?.questions || []) : (questionsQuery.data || []);
-
-  useEffect(() => {
-    if (!isSimulatorSessionActive) return;
-    document.body.classList.add('simulator-session-active');
-    document.documentElement.classList.add('simulator-session-active');
-  }, [isSimulatorSessionActive, questions.length, showResults]);
 
   type SimulatorStatus = 'passed' | 'failed' | null;
   const getSimulatorStatus = (matches: (result: NonNullable<typeof historyQuery.data>[number]) => boolean): SimulatorStatus => {
