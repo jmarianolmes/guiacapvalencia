@@ -27,6 +27,54 @@ const quickGlossary = [
   ['firme deslizante', 'pavimento escorregadio'],
 ] as const;
 
+type SimulatorProgress = {
+  mode: 'statistical' | 'official' | 'chapter';
+  model?: string;
+  date?: string;
+  chapterId?: string;
+  attemptNumber?: number;
+  studyMode: 'exam' | 'learning';
+  currentQuestion: number;
+  answers: Record<number, string>;
+  timeLeft: number;
+  savedAt: number;
+};
+
+const PROGRESS_STORAGE_KEY = 'cap-simulator-progress-v1';
+
+function progressKey(progress: Pick<SimulatorProgress, 'mode' | 'model' | 'date' | 'chapterId' | 'attemptNumber'>) {
+  if (progress.mode === 'chapter') return `chapter:${progress.chapterId}:${progress.attemptNumber || 1}`;
+  if (progress.mode === 'official') return `official:${progress.date || progress.model || ''}`;
+  return `statistical:${progress.model || ''}`;
+}
+
+function readAllProgress(): Record<string, SimulatorProgress> {
+  if (typeof window === 'undefined') return {};
+  try {
+    return JSON.parse(window.localStorage.getItem(PROGRESS_STORAGE_KEY) || '{}') as Record<string, SimulatorProgress>;
+  } catch {
+    return {};
+  }
+}
+
+function readProgress(key: string) {
+  return readAllProgress()[key];
+}
+
+function writeProgress(key: string, progress: SimulatorProgress) {
+  if (typeof window === 'undefined') return;
+  const all = readAllProgress();
+  all[key] = progress;
+  window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(all));
+}
+
+function removeProgress(key: string) {
+  if (typeof window === 'undefined') return;
+  const all = readAllProgress();
+  delete all[key];
+  window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(all));
+}
+
 export default function SimulatorTab({ language }: SimulatorTabProps) {
   const [simulatorMode, setSimulatorMode] = useState<'statistical' | 'byDate' | 'byChapter'>('statistical');
   const [studyMode, setStudyMode] = useState<'exam' | 'learning'>('learning');
@@ -42,6 +90,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const [showResults, setShowResults] = useState(false);
   const [timeLeft, setTimeLeft] = useState(7200);
   const [reportedQuestionIds, setReportedQuestionIds] = useState<Set<number>>(new Set());
+  const [progressVersion, setProgressVersion] = useState(0);
 
   const modelQueryInput = useMemo(() => ({ model: selectedModel || '' }), [selectedModel]);
   const chapterQueryInput = useMemo(() => ({ chapterId: selectedChapter || '', attemptNumber: chapterAttempt }), [selectedChapter, chapterAttempt]);
@@ -88,7 +137,24 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
     : status === 'failed'
       ? 'border-red-300 bg-red-50 text-red-800 hover:bg-red-100'
       : '';
+  const getProgress = (key: string) => {
+    void progressVersion;
+    return readProgress(key);
+  };
+  const restoreProgress = (progress: SimulatorProgress) => {
+    setStudyMode(progress.studyMode);
+    setCurrentQuestion(progress.currentQuestion);
+    setAnswers(progress.answers);
+    setShowResults(false);
+    setTimeLeft(progress.timeLeft);
+  };
+  const beginProgress = (progress: Pick<SimulatorProgress, 'mode' | 'model' | 'date' | 'chapterId' | 'attemptNumber'>, start: () => void) => {
+    const saved = getProgress(progressKey(progress));
+    start();
+    if (saved) restoreProgress(saved);
+  };
   const startChapter = (chapterId: string, attempt: number) => {
+    const saved = readProgress(progressKey({ mode: 'chapter', chapterId, attemptNumber: attempt }));
     setSelectedChapter(chapterId);
     setSelectedModel(null);
     setSelectedDate(null);
@@ -98,9 +164,11 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
     setShowResults(false);
     setTimeLeft(7200);
     setChapterDialogOpen(false);
+    if (saved) restoreProgress(saved);
   };
 
   const startOfficialExam = (date: string) => {
+    const saved = readProgress(progressKey({ mode: 'official', date }));
     setSelectedDate(date);
     setSelectedModel(date);
     setSelectedChapter(null);
@@ -110,7 +178,60 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
     setShowResults(false);
     setTimeLeft(7200);
     setOfficialDialogOpen(false);
+    if (saved) restoreProgress(saved);
   };
+
+  const startStatisticalModel = (model: string) => {
+    const saved = readProgress(progressKey({ mode: 'statistical', model }));
+    setSelectedModel(model);
+    setSelectedDate(null);
+    setSelectedChapter(null);
+    setChapterAttempt(1);
+    setCurrentQuestion(0);
+    setAnswers({});
+    setShowResults(false);
+    setTimeLeft(7200);
+    if (saved) restoreProgress(saved);
+  };
+
+  const resumeSavedProgress = (saved: SimulatorProgress) => {
+    if (saved.mode === 'chapter' && saved.chapterId) {
+      setSelectedChapter(saved.chapterId);
+      setSelectedModel(null);
+      setSelectedDate(null);
+      setChapterAttempt(saved.attemptNumber || 1);
+    } else if (saved.mode === 'official' && (saved.date || saved.model)) {
+      setSelectedDate(saved.date || saved.model || null);
+      setSelectedModel(saved.model || saved.date || null);
+      setSelectedChapter(null);
+      setChapterAttempt(1);
+    } else if (saved.model) {
+      setSelectedModel(saved.model);
+      setSelectedDate(null);
+      setSelectedChapter(null);
+      setChapterAttempt(1);
+    }
+    restoreProgress(saved);
+  };
+
+  useEffect(() => {
+    if (!questions.length || showResults || (!selectedModel && !selectedChapter)) return;
+    const mode = selectedChapter ? 'chapter' : selectedDate ? 'official' : 'statistical';
+    const key = progressKey({ mode, model: selectedModel || undefined, date: selectedDate || undefined, chapterId: selectedChapter || undefined, attemptNumber: selectedChapter ? chapterAttempt : undefined });
+    writeProgress(key, {
+      mode,
+      model: selectedModel || undefined,
+      date: selectedDate || undefined,
+      chapterId: selectedChapter || undefined,
+      attemptNumber: selectedChapter ? chapterAttempt : undefined,
+      studyMode,
+      currentQuestion: Math.min(currentQuestion, questions.length - 1),
+      answers,
+      timeLeft,
+      savedAt: Date.now(),
+    });
+    setProgressVersion((version) => version + 1);
+  }, [answers, chapterAttempt, currentQuestion, questions.length, selectedChapter, selectedDate, selectedModel, showResults, studyMode, timeLeft]);
 
   const getResultStats = () => {
     const correct = Object.entries(answers).filter(([idx, answer]) => questions[Number(idx)]?.correctAnswer === answer).length;
@@ -128,6 +249,8 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       return [{ questionId: question.id, selectedAnswer: selectedAnswer as 'A' | 'B' | 'C' | 'D' }];
     });
     setShowResults(true);
+    removeProgress(progressKey({ mode, model: selectedModel || undefined, date: selectedDate || undefined, chapterId: selectedChapter || undefined, attemptNumber: selectedChapter ? chapterAttempt : undefined }));
+    setProgressVersion((version) => version + 1);
     saveResultMutation.mutate({
       model,
       mode,
@@ -216,6 +339,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       exitToSimulatorMenu: 'Voltar ao menu',
       conformity: 'Averiguação de conformidade',
       markedForReview: 'Marcada para revisão administrativa',
+      continue: 'Continuar de onde parou',
     },
     es: {
       title: 'Simulacro CAP',
@@ -286,10 +410,15 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       exitToSimulatorMenu: 'Voltar al menú',
       conformity: 'Verificación de conformidad',
       markedForReview: 'Marcada para revisión administrativa',
+      continue: 'Continuar donde lo dejaste',
     },
   };
 
   const texts = t[language];
+  const resumableProgress = Object.values(readAllProgress())
+    .filter((progress) => Object.keys(progress.answers || {}).length > 0)
+    .sort((left, right) => right.savedAt - left.savedAt)
+    .slice(0, 3);
 
   const resetSimulatorState = () => {
     setSelectedModel(null);
@@ -361,6 +490,18 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
             <button type="button" onClick={() => setStudyMode('learning')} aria-pressed={studyMode === 'learning'} className={`rounded-xl border-2 p-4 text-left transition-all ${studyMode === 'learning' ? 'border-emerald-600 bg-white shadow-sm' : 'border-transparent bg-white/60 hover:border-emerald-200'}`}><span className="block text-base font-bold text-slate-900">{texts.learningMode}</span><span className="mt-1 block text-sm leading-5 text-slate-600">{texts.learningModeDesc}</span></button>
           </div></CardContent>
         </Card>
+
+        {resumableProgress.length > 0 && (
+          <Card className="border-amber-200 bg-amber-50">
+            <CardHeader className="pb-3"><CardTitle className="text-lg">{language === 'pt' ? 'Simulados em andamento' : 'Simulacros en curso'}</CardTitle></CardHeader>
+            <CardContent className="space-y-2">
+              {resumableProgress.map((saved) => {
+                const label = saved.mode === 'official' ? `${texts.date} ${saved.date || saved.model}` : saved.mode === 'chapter' ? `${texts.chapter} ${saved.chapterId} · ${texts.attempt} ${saved.attemptNumber || 1}` : `${texts.model} ${saved.model}`;
+                return <Button key={progressKey(saved)} type="button" variant="outline" className="h-auto w-full justify-between border-amber-300 bg-white py-3 text-left hover:bg-amber-100" onClick={() => resumeSavedProgress(saved)}><span><span className="block font-semibold">{label}</span><span className="text-xs font-normal text-slate-600">{texts.continue}</span></span><span>→</span></Button>;
+              })}
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid gap-6 md:grid-cols-3">
           {/* Modo Estatístico */}
@@ -466,20 +607,11 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                         {group.models.map(model => (
                           <Button
                             key={model}
-                            onClick={() => {
-                              setSelectedModel(model);
-                              setSelectedDate(null);
-                              setSelectedChapter(null);
-                              setChapterAttempt(1);
-                              setCurrentQuestion(0);
-                              setAnswers({});
-                              setShowResults(false);
-                              setTimeLeft(7200);
-                            }}
+                            onClick={() => startStatisticalModel(model)}
                             className={`w-full text-sm ${statusClass(getSimulatorStatus((result) => result.mode === 'statistical' && result.model === model))}`}
                             variant="outline"
                           >
-                            {model}
+                            <span>{model}{getProgress(progressKey({ mode: 'statistical', model })) && <span className="ml-1 text-xs">↻</span>}</span>
                           </Button>
                         ))}
                       </div>
@@ -536,7 +668,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                               className={`h-auto justify-between py-3 ${statusClass(status)}`}
                               onClick={() => startOfficialExam(date)}
                             >
-                              <span>{date}</span>
+                              <span>{date}{getProgress(progressKey({ mode: 'official', date })) && <span className="ml-1 text-xs">↻</span>}</span>
                               <span className="text-xs font-normal">{status === 'passed' ? '✓' : status === 'failed' ? '×' : '·'}</span>
                             </Button>
                           );
@@ -615,7 +747,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                       className={`h-auto justify-between py-3 ${statusClass(status)}`}
                       onClick={() => startChapter(chapter.id, attempt)}
                     >
-                      <span>{texts.attempt} {attempt}</span>
+                      <span>{texts.attempt} {attempt}{getProgress(progressKey({ mode: 'chapter', chapterId: chapter.id, attemptNumber: attempt })) && <span className="ml-1 text-xs">↻ {texts.continue}</span>}</span>
                       <span className="text-xs font-normal">{status === 'passed' ? '✓' : status === 'failed' ? '×' : '·'}</span>
                     </Button>;
                   })}
