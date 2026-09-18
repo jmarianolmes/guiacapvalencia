@@ -262,7 +262,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       ...stats,
       studyMode,
       wrongQuestions,
-      timeTaken: studyMode === 'exam' ? Math.max(0, 7200 - timeLeft) : 0,
+      timeTaken: questions.length === 100 ? Math.max(0, 7200 - timeLeft) : 0,
     }, {
       onSuccess: () => {
         simulatorUtils.guide.getUserResults.invalidate();
@@ -469,12 +469,12 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
 
   // Timer
   useEffect(() => {
-    if ((!selectedModel && !selectedChapter) || showResults || studyMode !== 'exam') return;
+    if ((!selectedModel && !selectedDate && !selectedChapter) || showResults || questions.length !== 100) return;
     const interval = setInterval(() => {
       setTimeLeft(prev => Math.max(0, prev - 1));
     }, 1000);
     return () => clearInterval(interval);
-  }, [selectedModel, selectedChapter, showResults]);
+  }, [selectedModel, selectedDate, selectedChapter, showResults, questions.length]);
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -912,7 +912,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
           </Badge>
         </div>
         <div className="flex flex-col items-start gap-1 md:items-end">
-          {studyMode === 'exam' && <div className="font-semibold text-sm md:text-base">{texts.time}: {formatTime(timeLeft)}</div>}
+          {questions.length === 100 && <div className={`font-semibold text-sm md:text-base ${timeLeft <= 600 ? 'text-red-700' : 'text-slate-800'}`}>{texts.time}: {formatTime(timeLeft)}</div>}
           <span className="hidden text-xs text-slate-500 md:block">{texts.keyboard_hint}</span>
         </div>
       </div>

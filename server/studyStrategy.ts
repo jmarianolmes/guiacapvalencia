@@ -28,7 +28,7 @@ type ResultInput = {
 type ErrorInput = { wrongCount: number };
 
 export function buildStudyStrategy(results: ResultInput[], errors: ErrorInput[] = []): StrategyResult {
-  const evidence = results.filter((result) => result.mode === 'official' || result.mode === 'chapter');
+  const evidence = results.filter((result) => result.mode === 'official' && result.questionCount === 100);
   const totalQuestions = evidence.reduce((sum, result) => sum + result.questionCount, 0);
   const totalCorrect = evidence.reduce((sum, result) => sum + result.correctAnswers, 0);
   const totalWrong = evidence.reduce((sum, result) => sum + result.wrongAnswers, 0);
@@ -45,8 +45,8 @@ export function buildStudyStrategy(results: ResultInput[], errors: ErrorInput[] 
     return {
       attempts, totalQuestions, totalCorrect, totalWrong, averageCorrect, accuracy, recurringWrongQuestions, safeShare, uncertainShare, unknownShare, recommendation: 'recovery',
       titlePt: 'Ainda não há histórico suficiente', titleEs: 'Todavía no hay historial suficiente',
-      summaryPt: 'Conclua provas oficiais ou práticas por capítulo para receber uma estratégia personalizada de prova.',
-      summaryEs: 'Completa exámenes oficiales o prácticas por capítulo para recibir una estrategia personalizada de examen.',
+      summaryPt: 'Conclua provas oficiais completas de 100 questões para receber uma estratégia personalizada de prova.',
+      summaryEs: 'Completa exámenes oficiales completos de 100 preguntas para recibir una estrategia personalizada de examen.',
       stepsPt: ['Responda primeiro as questões cujo conteúdo você domina.', 'Marque as dúvidas e volte a elas depois.', 'Use o caderno de erros para construir seu histórico.'],
       stepsEs: ['Responde primero las preguntas cuyo contenido dominas.', 'Marca las dudas y vuelve a ellas después.', 'Usa el cuaderno de errores para construir tu historial.'],
     };
@@ -58,8 +58,8 @@ export function buildStudyStrategy(results: ResultInput[], errors: ErrorInput[] 
     attempts, totalQuestions, totalCorrect, totalWrong, averageCorrect, accuracy, recurringWrongQuestions, safeShare, uncertainShare, unknownShare, recommendation,
     titlePt: conservative ? 'Proteja seus acertos e arrisque apenas com critério' : balanced ? 'Estratégia equilibrada para buscar os pontos que faltam' : 'Priorize recuperação de conhecimento antes de arriscar',
     titleEs: conservative ? 'Protege tus aciertos y arriesga solo con criterio' : balanced ? 'Estrategia equilibrada para buscar los puntos que faltan' : 'Prioriza recuperar conocimientos antes de arriesgar',
-    summaryPt: `Seu histórico mostra média de ${averageCorrect.toFixed(1)} acertos por prova e ${accuracy.toFixed(1)}% de acerto. A recomendação usa apenas ${attempts} resultado(s) oficial(is) ou por capítulo.`,
-    summaryEs: `Tu historial muestra una media de ${averageCorrect.toFixed(1)} aciertos por examen y ${accuracy.toFixed(1)}% de acierto. La recomendación usa solo ${attempts} resultado(s) oficial(es) o por capítulo.`,
+    summaryPt: `Seu histórico mostra média de ${averageCorrect.toFixed(1)} acertos por prova oficial completa e ${accuracy.toFixed(1)}% de acerto. A recomendação usa apenas ${attempts} prova(s) oficial(is) de 100 questões.`,
+    summaryEs: `Tu historial muestra una media de ${averageCorrect.toFixed(1)} aciertos por examen oficial completo y ${accuracy.toFixed(1)}% de acierto. La recomendación usa solo ${attempts} examen(es) oficial(es) de 100 preguntas.`,
     stepsPt: conservative
       ? ['Responda primeiro todas as questões que você sabe com segurança.', 'Depois responda as dúvidas em que consegue eliminar alternativas e ficar entre duas.', 'Deixe para o final as questões completamente desconhecidas; não arrisque nelas antes de garantir os pontos seguros.']
       : balanced

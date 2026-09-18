@@ -638,7 +638,14 @@ export async function getUserSimulatorResults(userId: number) {
 
 export async function getUserStudyStrategy(userId: number) {
   const results = await getUserSimulatorResults(userId);
-  const errorFocus = await getUserErrorFocus(userId);
+  const db = await getDb();
+  const errorFocus = db ? await (async () => {
+    const items = await db.select().from(userErrorNotebookItems).where(and(eq(userErrorNotebookItems.userId, userId), sql`${userErrorNotebookItems.resolvedAt} IS NULL`));
+    if (!items.length) return [];
+    const officialQuestions = await db.select({ id: simulatorQuestions.id }).from(simulatorQuestions).where(and(eq(simulatorQuestions.model, 'ORIGINAL'), inArray(simulatorQuestions.id, items.map((item) => item.questionId))));
+    const officialIds = new Set(officialQuestions.map((question) => question.id));
+    return items.filter((item) => officialIds.has(item.questionId)).map((item) => ({ wrongCount: item.wrongCount }));
+  })() : [];
   return buildStudyStrategy(results, errorFocus);
 }
 
