@@ -248,6 +248,12 @@ export const appRouter = router({
       return await db.getUserSimulatorResults(ctx.user.id);
     }),
 
+    getStudyStrategy: protectedProcedure.query(async ({ ctx }) => {
+      if (!ctx.user?.id) throw new TRPCError({ code: 'UNAUTHORIZED' });
+      if (ctx.user.openId === 'public-guest') return null;
+      return await db.getUserStudyStrategy(ctx.user.id);
+    }),
+
     reportQuestionForReview: protectedProcedure
       .input(z.object({ questionId: z.number().int().positive() }))
       .mutation(async ({ input, ctx }) => {

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { calculateStrategySummary, STRATEGY_TOTAL_QUESTIONS } from '@/lib/strategyScore';
+import { trpc } from '@/lib/trpc';
 
 interface StrategyTabProps {
   language: 'pt' | 'es';
@@ -12,6 +13,7 @@ export default function StrategyTab({ language }: StrategyTabProps) {
   const [correctInput, setCorrectInput] = useState(60);
   const [wrongInput, setWrongInput] = useState(0);
   const summary = calculateStrategySummary(correctInput, wrongInput);
+  const personalStrategyQuery = trpc.guide.getStudyStrategy.useQuery();
 
   const t = {
     pt: {
@@ -41,7 +43,7 @@ export default function StrategyTab({ language }: StrategyTabProps) {
       tip2_title: 'Elimine Alternativas',
       tip2_desc: 'Sempre comece eliminando as alternativas claramente erradas.',
       tip3_title: 'Gerencie o Tempo',
-      tip3_desc: 'Você tem 2 horas. Dedique 1h30 às questões e 30 min para revisar.',
+      tip3_desc: 'Você tem 2 horas. Dedique 1h30 às questões e 30 min para revisar.', personalTitle: 'Minha estratégia baseada no meu histórico', personalLoading: 'Analisando seu histórico...', personalEmpty: 'Entre na sua conta e conclua provas oficiais ou práticas por capítulo para receber uma recomendação personalizada.', accuracy: 'taxa de acerto', recurring: 'erros recorrentes', safe: 'conhecimento seguro estimado', rule: 'Regra usada: com +1 por acerto e −0,5 por erro, responder entre duas alternativas tende a ser vantajoso; chutar sem saber entre quatro tende a reduzir a pontuação.', basedOnly: 'A estratégia ignora simulados estatísticos.',
     },
     es: {
       title: 'Estrategia de Estudio',
@@ -70,7 +72,7 @@ export default function StrategyTab({ language }: StrategyTabProps) {
       tip2_title: 'Elimina Alternativas',
       tip2_desc: 'Empieza siempre eliminando las alternativas claramente incorrectas.',
       tip3_title: 'Gestiona el Tiempo',
-      tip3_desc: 'Tienes 2 horas. Dedica 1h30 a las preguntas y 30 min para revisar.',
+      tip3_desc: 'Tienes 2 horas. Dedica 1h30 a las preguntas y 30 min para revisar.', personalTitle: 'Mi estrategia basada en mi historial', personalLoading: 'Analizando tu historial...', personalEmpty: 'Inicia sesión y completa exámenes oficiales o prácticas por capítulo para recibir una recomendación personalizada.', accuracy: 'tasa de acierto', recurring: 'errores recurrentes', safe: 'conocimiento seguro estimado', rule: 'Regla usada: con +1 por acierto y −0,5 por error, responder entre dos alternativas suele ser ventajoso; adivinar entre cuatro sin saber suele reducir la puntuación.', basedOnly: 'La estrategia ignora los simulacros estadísticos.',
     },
   };
 
@@ -149,6 +151,13 @@ export default function StrategyTab({ language }: StrategyTabProps) {
             <div className={`mb-2 text-4xl font-bold ${isPassed ? 'text-emerald-700' : 'text-rose-700'}`}>{summary.score.toFixed(1)}</div>
             <div className="text-sm font-semibold">{texts.score}: {summary.score.toFixed(1)} | {texts.status}: {isPassed ? texts.passed : texts.failed}</div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-violet-200 bg-violet-50/60">
+        <CardHeader><CardTitle className="text-violet-900">{texts.personalTitle}</CardTitle></CardHeader>
+        <CardContent>
+          {personalStrategyQuery.isLoading ? <p className="text-sm text-slate-600">{texts.personalLoading}</p> : !personalStrategyQuery.data ? <p className="text-sm text-slate-600">{texts.personalEmpty}</p> : (() => { const strategy = personalStrategyQuery.data; return <div className="space-y-4"><div><h3 className="text-lg font-bold text-violet-950">{language === 'es' ? strategy.titleEs : strategy.titlePt}</h3><p className="mt-1 text-sm text-slate-700">{language === 'es' ? strategy.summaryEs : strategy.summaryPt}</p></div><div className="grid gap-2 sm:grid-cols-4"><div className="rounded-lg bg-white p-3"><div className="text-2xl font-bold text-violet-800">{strategy.averageCorrect.toFixed(1)}</div><div className="text-xs text-slate-600">{texts.correctLabel}</div></div><div className="rounded-lg bg-white p-3"><div className="text-2xl font-bold text-violet-800">{strategy.accuracy.toFixed(1)}%</div><div className="text-xs text-slate-600">{texts.accuracy}</div></div><div className="rounded-lg bg-white p-3"><div className="text-2xl font-bold text-emerald-700">{strategy.safeShare.toFixed(0)}%</div><div className="text-xs text-slate-600">{texts.safe}</div></div><div className="rounded-lg bg-white p-3"><div className="text-2xl font-bold text-rose-700">{strategy.recurringWrongQuestions}</div><div className="text-xs text-slate-600">{texts.recurring}</div></div></div><ol className="list-decimal space-y-2 pl-5 text-sm leading-6 text-slate-800">{(language === 'es' ? strategy.stepsEs : strategy.stepsPt).map((step: string) => <li key={step}>{step}</li>)}</ol><p className="rounded-lg border border-violet-200 bg-white/70 p-3 text-xs leading-5 text-violet-950">{texts.rule} {texts.basedOnly}</p></div>; })()}
         </CardContent>
       </Card>
 

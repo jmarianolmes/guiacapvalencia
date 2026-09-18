@@ -8,6 +8,7 @@ import { simulatorChapters } from '../shared/simulatorChapters';
 import { classifySimulatorQuestion } from './chapterClassifier';
 import { buildOfficialExamAnalysis } from './officialExamAnalysis';
 import { buildStudyPlan } from './studyPlan';
+import { buildStudyStrategy } from './studyStrategy';
 import { isReviewDue, restartReviewSchedule, retryReviewSchedule } from './errorNotebook';
 import { getDemoChapters, getDemoOfficialAnalysis, getDemoOfficialDates, getDemoQuestionsByChapter, getDemoQuestionsByModel, getDemoModels, getDemoRepeatedQuestions, getDemoResults, getDemoStats, isDemoMode, saveDemoResult, getDemoStudyPlan, recordDemoNotebookErrors, getDemoErrorNotebook, reviewDemoErrorNotebookItem } from './demoData';
 
@@ -633,6 +634,12 @@ export async function getUserSimulatorResults(userId: number) {
     console.error("[Database] Failed to get user simulator results:", error);
     return [];
   }
+}
+
+export async function getUserStudyStrategy(userId: number) {
+  const results = await getUserSimulatorResults(userId);
+  const errorFocus = await getUserErrorFocus(userId);
+  return buildStudyStrategy(results, errorFocus);
 }
 
 
