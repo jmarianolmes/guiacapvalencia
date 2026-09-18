@@ -27,13 +27,23 @@ type SimulatorResultInput = {
   createdAt: Date;
 };
 
+export type ErrorFocusInput = {
+  questionId: number;
+  chapterId: string | null;
+  wrongCount: number;
+};
+
 export type Readiness = {
   status: 'insufficient' | 'reinforce' | 'evolving' | 'good' | 'high';
   score: number | null;
+  estimatedApprovalChance: number | null;
+  evidenceAttempts: number;
+  evidenceQuestions: number;
   validAttempts: number;
   explanationPt: string;
   explanationEs: string;
   weakChapterIds: string[];
+  errorFocus: Array<{ chapterId: string | null; count: number }>;
 };
 
 export type StudyActivity = {
@@ -90,16 +100,26 @@ function validResults(results: SimulatorResultInput[]) {
     .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
 }
 
-export function buildReadiness(results: SimulatorResultInput[], priorities: ChapterPriority[]): Readiness {
+export function buildReadiness(results: SimulatorResultInput[], priorities: ChapterPriority[], errorFocus: ErrorFocusInput[] = []): Readiness {
   const attempts = validResults(results);
+  const rankedErrors = Array.from(errorFocus.reduce((counts, item) => {
+    counts.set(item.chapterId, (counts.get(item.chapterId) ?? 0) + item.wrongCount);
+    return counts;
+  }, new Map<string | null, number>()).entries())
+    .map(([chapterId, count]) => ({ chapterId, count }))
+    .sort((left, right) => right.count - left.count);
   if (attempts.length < 3) {
     return {
       status: 'insufficient',
       score: null,
+      estimatedApprovalChance: null,
+      evidenceAttempts: attempts.length,
+      evidenceQuestions: attempts.reduce((total, result) => total + result.questionCount, 0),
       validAttempts: attempts.length,
       explanationPt: `Dados insuficientes: conclua mais ${Math.max(0, 3 - attempts.length)} simulados válidos com pelo menos 50 questões e 60% de respostas marcadas.`,
       explanationEs: `Datos insuficientes: completa ${Math.max(0, 3 - attempts.length)} simulacros válidos más con al menos 50 preguntas y 60% de respuestas marcadas.`,
       weakChapterIds: [],
+      errorFocus: rankedErrors,
     };
   }
 
@@ -111,6 +131,16 @@ export function buildReadiness(results: SimulatorResultInput[], priorities: Chap
   const totalWeight = recentAttempts.reduce((total, _result, index) => total + recentAttempts.length - index, 0);
   const consistencyBonus = Math.min(8, Math.max(0, attempts.length - 3) * 2);
   const score = Math.round(Math.min(100, weighted / totalWeight + consistencyBonus));
+  const officialAttempts = attempts.filter((result) => result.mode === 'official');
+  const chapterAttempts = attempts.filter((result) => result.mode === 'chapter');
+  const officialAccuracy = officialAttempts.length
+    ? officialAttempts.reduce((total, result) => total + result.correctAnswers, 0) / officialAttempts.reduce((total, result) => total + result.questionCount, 0) * 100
+    : score;
+  const chapterAccuracy = chapterAttempts.length
+    ? chapterAttempts.reduce((total, result) => total + result.correctAnswers, 0) / chapterAttempts.reduce((total, result) => total + result.questionCount, 0) * 100
+    : score;
+  const evidenceFactor = Math.min(1, (attempts.length / 6) * 0.65 + (attempts.reduce((total, result) => total + result.questionCount, 0) / 600) * 0.35);
+  const estimatedApprovalChance = Math.round(Math.max(0, Math.min(100, (officialAccuracy * 0.65 + chapterAccuracy * 0.35) * (0.55 + evidenceFactor * 0.45))));
 
   const chapterResults = new Map<string, SimulatorResultInput[]>();
   for (const result of attempts) {
@@ -148,17 +178,17 @@ export function buildReadiness(results: SimulatorResultInput[], priorities: Chap
     insufficient: '',
   }[status];
 
-  return { status, score, validAttempts: attempts.length, explanationPt: pt, explanationEs: es, weakChapterIds };
+  return { status, score, estimatedApprovalChance, evidenceAttempts: attempts.length, evidenceQuestions: attempts.reduce((total, result) => total + result.questionCount, 0), validAttempts: attempts.length, explanationPt: pt, explanationEs: es, weakChapterIds, errorFocus: rankedErrors };
 }
 
 function activity(type: StudyActivity['type'], titlePt: string, titleEs: string, detailPt: string, detailEs: string, estimatedMinutes: number, optional = false): StudyActivity {
   return { type, titlePt, titleEs, detailPt, detailEs, estimatedMinutes, optional };
 }
 
-export function buildStudyPlan(profile: StudyProfileInput, priorities: ChapterPriority[], results: SimulatorResultInput[], now = new Date()): StudyPlan {
+export function buildStudyPlan(profile: StudyProfileInput, priorities: ChapterPriority[], results: SimulatorResultInput[], now = new Date(), errorFocus: ErrorFocusInput[] = []): StudyPlan {
   const dailyStudyMinutes = normalizeDailyMinutes(profile.dailyStudyMinutes);
   const goodsPriorities = priorities.filter((chapter) => chapter.group === 'common' || chapter.group === 'goods');
-  const readiness = buildReadiness(results, goodsPriorities);
+  const readiness = buildReadiness(results, goodsPriorities, errorFocus);
 
   if (!profile.planEnabled) {
     return { status: 'disabled', daysUntilExam: null, dailyStudyMinutes, recentExamWindow: 8, readiness, days: [], messagePt: 'Plano desativado no perfil. Você pode continuar usando livremente os temarios e simulados.', messageEs: 'Plan desactivado en el perfil. Puedes seguir usando libremente los temarios y simulacros.' };

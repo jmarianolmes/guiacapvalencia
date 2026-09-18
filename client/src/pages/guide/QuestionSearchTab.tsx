@@ -16,17 +16,18 @@ interface QuestionSearchTabProps {
 export default function QuestionSearchTab({ language }: QuestionSearchTabProps) {
   const [term, setTerm] = useState('');
   const [submittedTerm, setSubmittedTerm] = useState('');
+  const [category, setCategory] = useState<'all' | 'official' | 'chapter'>('all');
   const [openId, setOpenId] = useState<number | null>(null);
   const [answers, setAnswers] = useState<Record<number, Answer>>({});
   const searchQuery = trpc.guide.searchQuestions.useQuery(
-    { search: submittedTerm },
+    { search: submittedTerm, category },
     { enabled: submittedTerm.trim().length >= 2, staleTime: 60_000 }
   );
 
   const texts = language === 'pt' ? {
     title: 'Pesquisa de questões',
     description: 'Pesquise em todas as questões do banco por palavras do enunciado ou das alternativas.',
-    placeholder: 'Digite palavras da questão...',
+    placeholder: 'Digite palavras ou ID da questão...',
     search: 'Pesquisar',
     minChars: 'Digite pelo menos duas letras para pesquisar.',
     results: 'resultados encontrados',
@@ -39,10 +40,11 @@ export default function QuestionSearchTab({ language }: QuestionSearchTabProps) 
     official: 'Oficial',
     nonOfficial: 'Não oficial',
     clear: 'Limpar',
+    category: 'Categoria', all: 'Todas', officialCategory: 'Provas oficiais', chapterCategory: 'Por capítulo', keyboard: 'Teclas A-D respondem; setas navegam pelos resultados.',
   } : {
     title: 'Búsqueda de preguntas',
     description: 'Busca en todas las preguntas de la base por palabras del enunciado o de las opciones.',
-    placeholder: 'Escribe palabras de la pregunta...',
+    placeholder: 'Escribe palabras o ID de la pregunta...',
     search: 'Buscar',
     minChars: 'Escribe al menos dos letras para buscar.',
     results: 'resultados encontrados',
@@ -55,6 +57,7 @@ export default function QuestionSearchTab({ language }: QuestionSearchTabProps) 
     official: 'Oficial',
     nonOfficial: 'No oficial',
     clear: 'Limpiar',
+    category: 'Categoría', all: 'Todas', officialCategory: 'Exámenes oficiales', chapterCategory: 'Por capítulo', keyboard: 'Las teclas A-D responden; las flechas navegan por los resultados.',
   };
 
   useEffect(() => {
@@ -62,13 +65,33 @@ export default function QuestionSearchTab({ language }: QuestionSearchTabProps) 
     setAnswers({});
   }, [submittedTerm]);
 
+  const questions = searchQuery.data || [];
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((event.target as HTMLElement | null)?.tagName || '')) return;
+      const currentIndex = questions.findIndex((question) => question.id === openId);
+      if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        const next = questions[Math.min(Math.max(0, currentIndex) + 1, questions.length - 1)];
+        if (next) setOpenId(next.id);
+      } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+        event.preventDefault();
+        const previous = questions[Math.max(0, currentIndex - 1)];
+        if (previous) setOpenId(previous.id);
+      } else if (openId !== null && !answers[openId] && ['a', 'b', 'c', 'd'].includes(event.key.toLowerCase())) {
+        setAnswers((current) => ({ ...current, [openId]: event.key.toUpperCase() as Answer }));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [answers, openId, questions]);
+
   const submitSearch = (event: React.FormEvent) => {
     event.preventDefault();
     const nextTerm = term.trim();
     if (nextTerm.length >= 2) setSubmittedTerm(nextTerm);
   };
-
-  const questions = searchQuery.data || [];
 
   return (
     <div className="space-y-4">
@@ -80,15 +103,16 @@ export default function QuestionSearchTab({ language }: QuestionSearchTabProps) 
           </div>
           <form onSubmit={submitSearch} className="flex flex-col gap-2 sm:flex-row">
             <Input value={term} onChange={(event) => setTerm(event.target.value)} placeholder={texts.placeholder} aria-label={texts.placeholder} />
+            <select value={category} onChange={(event) => setCategory(event.target.value as typeof category)} aria-label={texts.category} className="h-10 rounded-md border border-input bg-background px-3 text-sm sm:w-48"><option value="all">{texts.category}: {texts.all}</option><option value="official">{texts.category}: {texts.officialCategory}</option><option value="chapter">{texts.category}: {texts.chapterCategory}</option></select>
             <Button type="submit" className="sm:shrink-0">{texts.search}</Button>
-            {term && <Button type="button" variant="outline" onClick={() => { setTerm(''); setSubmittedTerm(''); }}>{texts.clear}</Button>}
+            {term && <Button type="button" variant="outline" onClick={() => { setTerm(''); setSubmittedTerm(''); setCategory('all'); }}>{texts.clear}</Button>}
           </form>
           {term.trim().length === 1 && <p className="text-xs text-slate-600">{texts.minChars}</p>}
         </CardContent>
       </Card>
 
       {searchQuery.isFetching && <Card><CardContent className="flex items-center justify-center py-8"><Spinner /><span className="ml-2">{texts.search}...</span></CardContent></Card>}
-      {submittedTerm && !searchQuery.isFetching && !searchQuery.isError && <p className="text-sm text-slate-600">{questions.length} {texts.results}</p>}
+      {submittedTerm && !searchQuery.isFetching && !searchQuery.isError && <p className="text-sm text-slate-600">{questions.length} {texts.results} · {texts.keyboard}</p>}
       {submittedTerm && !searchQuery.isFetching && !searchQuery.isError && questions.length === 0 && <Card><CardContent className="py-10 text-center text-sm text-slate-600">{texts.noResults}</CardContent></Card>}
 
       <div className="space-y-3">

@@ -43,4 +43,14 @@ describe('study plan', () => {
     expect(plan.status).toBe('diagnostic');
     expect(plan.days).toHaveLength(0);
   });
+
+  it('estimates approval from official and chapter evidence and ranks notebook errors', () => {
+    const readiness = buildReadiness(validResults, priorities, [
+      { questionId: 1, chapterId: 'goods-2-2', wrongCount: 3 },
+      { questionId: 2, chapterId: 'common-1-2', wrongCount: 1 },
+    ]);
+    expect(readiness.estimatedApprovalChance).not.toBeNull();
+    expect(readiness.evidenceQuestions).toBe(200);
+    expect(readiness.errorFocus[0]).toEqual({ chapterId: 'goods-2-2', count: 3 });
+  });
 });

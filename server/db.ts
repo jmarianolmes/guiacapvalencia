@@ -8,7 +8,7 @@ import { simulatorChapters } from '../shared/simulatorChapters';
 import { classifySimulatorQuestion } from './chapterClassifier';
 import { buildOfficialExamAnalysis } from './officialExamAnalysis';
 import { buildStudyPlan } from './studyPlan';
-import { advanceReviewSchedule, isReviewDue, restartReviewSchedule, retryReviewSchedule } from './errorNotebook';
+import { isReviewDue, restartReviewSchedule, retryReviewSchedule } from './errorNotebook';
 import { getDemoChapters, getDemoOfficialAnalysis, getDemoOfficialDates, getDemoQuestionsByChapter, getDemoQuestionsByModel, getDemoModels, getDemoRepeatedQuestions, getDemoResults, getDemoStats, isDemoMode, saveDemoResult, getDemoStudyPlan, recordDemoNotebookErrors, getDemoErrorNotebook, reviewDemoErrorNotebookItem } from './demoData';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -19,6 +19,10 @@ const CHAPTER_ATTEMPT_SIZE = 50;
 
 export function isOfficialChapterQuestion(question: Pick<SimulatorQuestion, 'model'>) {
   return question.model === 'ORIGINAL' || question.model === 'OF';
+}
+
+function isStudyEvidenceQuestion(question: Pick<SimulatorQuestion, 'model' | 'internalCode' | 'origin'>) {
+  return question.model === 'ORIGINAL' || question.model === 'OF' || (question.internalCode !== null && question.origin === 'official');
 }
 
 export function preferOfficialBankQuestions(questions: SimulatorQuestion[]) {
@@ -310,12 +314,17 @@ export async function getUserByOpenId(openId: string) {
 
 // TODO: add feature queries here as your schema grows.
 
-export async function searchAllSimulatorQuestions(search: string) {
+export async function searchAllSimulatorQuestions(search: string, category: 'all' | 'official' | 'chapter' = 'all') {
   if (isDemoMode()) return [];
   const normalizedSearch = search.trim();
   if (normalizedSearch.length < 2) return [];
   try {
     const term = `%${normalizedSearch}%`;
+    const categoryFilter = category === 'official'
+      ? eq(simulatorQuestions.model, 'ORIGINAL')
+      : category === 'chapter'
+        ? or(eq(simulatorQuestions.model, 'OF'), and(eq(simulatorQuestions.origin, 'official'), sql`${simulatorQuestions.chapterId} IS NOT NULL`))
+        : undefined;
     return await withSimulatorDbRetry((db) =>
       db.select({
         id: simulatorQuestions.id,
@@ -333,7 +342,7 @@ export async function searchAllSimulatorQuestions(search: string) {
         origin: simulatorQuestions.origin,
       })
         .from(simulatorQuestions)
-        .where(or(
+        .where(and(categoryFilter ?? sql`1 = 1`, or(
           sql`LOWER(COALESCE(${simulatorQuestions.question}, '')) LIKE LOWER(${term})`,
           sql`LOWER(COALESCE(${simulatorQuestions.optionA}, '')) LIKE LOWER(${term})`,
           sql`LOWER(COALESCE(${simulatorQuestions.optionB}, '')) LIKE LOWER(${term})`,
@@ -343,7 +352,8 @@ export async function searchAllSimulatorQuestions(search: string) {
           sql`LOWER(COALESCE(${simulatorQuestions.internalCode}, '')) LIKE LOWER(${term})`,
           sql`LOWER(COALESCE(${simulatorQuestions.chapterCode}, '')) LIKE LOWER(${term})`,
           sql`LOWER(COALESCE(${simulatorQuestions.model}, '')) LIKE LOWER(${term})`,
-        ))
+          ...(Number.isInteger(Number(normalizedSearch)) ? [eq(simulatorQuestions.id, Number(normalizedSearch))] : []),
+        )))
         .orderBy(asc(simulatorQuestions.questionNumber))
         .limit(50)
     );
@@ -597,7 +607,7 @@ export async function saveSimulatorResult(userId: number, input: {
       score,
       timeTaken: input.timeTaken,
     });
-    if (input.wrongQuestions?.length) {
+    if ((input.mode === 'official' || input.mode === 'chapter') && input.wrongQuestions?.length) {
       await recordUserNotebookErrors(userId, input.wrongQuestions);
     }
     return result;
@@ -675,15 +685,16 @@ export async function getUserErrorNotebook(userId: number) {
   const items = await db.select().from(userErrorNotebookItems).where(eq(userErrorNotebookItems.userId, userId));
   if (!items.length) return { dueItems: [], summary: { totalItems: 0, dueCount: 0, scheduledCount: 0, resolvedCount: 0, chapterCounts: [] as Array<{ chapterId: string | null; count: number }> } };
 
-  const sourceQuestions = await db.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, items.map((item) => item.questionId)));
+  const sourceQuestions = (await db.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, items.map((item) => item.questionId)))).filter(isStudyEvidenceQuestion);
   const questionsById = new Map(sourceQuestions.map((question) => [question.id, question]));
+  const eligibleItems = items.filter((item) => questionsById.has(item.questionId));
   const now = new Date();
-  const dueItems = items
+  const dueItems = eligibleItems
     .filter((item) => isReviewDue(item, now) && questionsById.has(item.questionId))
     .sort((left, right) => (left.nextReviewAt?.getTime() ?? 0) - (right.nextReviewAt?.getTime() ?? 0))
     .slice(0, 30)
     .map((item) => ({ ...item, question: questionsById.get(item.questionId)! }));
-  const chapterCounts = Array.from(items.reduce((counts, item) => {
+  const chapterCounts = Array.from(eligibleItems.reduce((counts, item) => {
     if (!item.resolvedAt) counts.set(item.chapterId, (counts.get(item.chapterId) ?? 0) + 1);
     return counts;
   }, new Map<string | null, number>()).entries())
@@ -693,13 +704,24 @@ export async function getUserErrorNotebook(userId: number) {
   return {
     dueItems,
     summary: {
-      totalItems: items.length,
-      dueCount: items.filter((item) => isReviewDue(item, now)).length,
-      scheduledCount: items.filter((item) => !item.resolvedAt && !isReviewDue(item, now)).length,
-      resolvedCount: items.filter((item) => Boolean(item.resolvedAt)).length,
+      totalItems: eligibleItems.length,
+      dueCount: eligibleItems.filter((item) => isReviewDue(item, now)).length,
+      scheduledCount: eligibleItems.filter((item) => !item.resolvedAt && !isReviewDue(item, now)).length,
+      resolvedCount: eligibleItems.filter((item) => Boolean(item.resolvedAt)).length,
       chapterCounts,
     },
   };
+}
+
+export async function getUserErrorFocus(userId: number) {
+  if (isDemoMode()) return [];
+  const db = await getDb();
+  if (!db) return [];
+  const items = await db.select().from(userErrorNotebookItems).where(and(eq(userErrorNotebookItems.userId, userId), sql`${userErrorNotebookItems.resolvedAt} IS NULL`));
+  if (!items.length) return [];
+  const sourceQuestions = (await db.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, items.map((item) => item.questionId)))).filter(isStudyEvidenceQuestion);
+  const eligibleIds = new Set(sourceQuestions.map((question) => question.id));
+  return items.filter((item) => eligibleIds.has(item.questionId)).map((item) => ({ questionId: item.questionId, chapterId: item.chapterId, wrongCount: item.wrongCount }));
 }
 
 export async function reviewUserErrorNotebookItem(userId: number, itemId: number, selectedAnswer: 'A' | 'B' | 'C' | 'D') {
@@ -716,7 +738,7 @@ export async function reviewUserErrorNotebookItem(userId: number, itemId: number
 
   const now = new Date();
   const correct = selectedAnswer === question.correctAnswer;
-  const schedule = correct ? advanceReviewSchedule(item.reviewLevel, now) : retryReviewSchedule(now);
+  const schedule = correct ? { reviewLevel: item.reviewLevel, nextReviewAt: null, resolvedAt: now } : retryReviewSchedule(now);
   await db.update(userErrorNotebookItems).set({
     reviewLevel: schedule.reviewLevel,
     lastAnswer: selectedAnswer,
@@ -765,10 +787,11 @@ export async function saveUserStudyProfile(userId: number, input: {
 
 export async function getUserStudyPlan(userId: number) {
   if (isDemoMode()) return getDemoStudyPlan();
-  const [savedProfile, analysis, results] = await Promise.all([
+  const [savedProfile, analysis, results, errorFocus] = await Promise.all([
     getUserStudyProfile(userId),
     getOfficialExamAnalysis(),
     getUserSimulatorResults(userId),
+    getUserErrorFocus(userId),
   ]);
   const profile = savedProfile ?? {
     track: 'goods' as const,
@@ -778,8 +801,8 @@ export async function getUserStudyPlan(userId: number) {
   };
   const chapterPriorities = analysis?.chapterPriorities ?? [];
   // Learning attempts reveal answers immediately; they are useful in history but not a fair exam-readiness signal.
-  const examResults = results.filter((result) => result.studyMode !== 'learning');
-  const plan = buildStudyPlan(profile, chapterPriorities, examResults);
+  const evidenceResults = results.filter((result) => result.mode === 'official' || result.mode === 'chapter');
+  const plan = buildStudyPlan(profile, chapterPriorities, evidenceResults, new Date(), errorFocus);
   return { profile, plan, chapterPriorities };
 }
 

@@ -43,7 +43,7 @@ export default function StudyPlanTab({ language }: Props) {
   const text = isEs ? {
     title: 'Plan de estudio', subtitle: 'Itinerario basado en las 34 pruebas oficiales; las 8 convocatorias más recientes aportan el factor de actualidad.',
     readiness: 'Índice de preparación', attempts: 'simulacros válidos analizados', days: 'días hasta el examen', recent: 'Convocatorias recientes usadas',
-    weak: 'Áreas para reforzar', noWeak: 'Aún no hay prácticas por capítulo suficientes para identificar áreas concretas.',
+    weak: 'Áreas para reforzar', noWeak: 'Aún no hay prácticas por capítulo suficientes para identificar áreas concretas.', chance: 'Probabilidad estimada de aprobar', evidence: 'Base estadística', errorFocus: 'Errores que más necesitan refuerzo', noErrors: 'No hay errores oficiales o de capítulo pendientes.',
     daily: 'Tu plan día a día', optional: 'Opcional', noDays: 'Configura la fecha del examen y activa el plan en Perfil para ver el itinerario.',
     warning: 'Este índice orienta el estudio con los resultados de esta plataforma; no garantiza un resultado en un examen real.',
     status: { insufficient: 'Datos insuficientes', reinforce: 'Refuerza ahora', evolving: 'En evolución', good: 'Buena preparación', high: 'Preparación alta' },
@@ -53,7 +53,7 @@ export default function StudyPlanTab({ language }: Props) {
   } : {
     title: 'Plano de Estudos', subtitle: 'Roteiro baseado nas 34 provas oficiais; as 8 convocações mais recentes entram como fator de atualidade.',
     readiness: 'Índice de prontidão', attempts: 'simulados válidos analisados', days: 'dias até a prova', recent: 'Convocatórias recentes usadas',
-    weak: 'Áreas para reforçar', noWeak: 'Ainda não há práticas por capítulo suficientes para identificar áreas concretas.',
+    weak: 'Áreas para reforçar', noWeak: 'Ainda não há práticas por capítulo suficientes para identificar áreas concretas.', chance: 'Chance estimada de aprovação', evidence: 'Base estatística', errorFocus: 'Erros que mais precisam de reforço', noErrors: 'Nenhum erro oficial ou de capítulo pendente.',
     daily: 'Seu plano dia a dia', optional: 'Opcional', noDays: 'Configure a data da prova e ative o plano no Perfil para visualizar o roteiro.',
     warning: 'Este índice orienta o estudo a partir dos resultados desta plataforma; não garante o resultado em uma prova real.',
     status: { insufficient: 'Dados insuficientes', reinforce: 'Reforçar agora', evolving: 'Em evolução', good: 'Boa prontidão', high: 'Prontidão alta' },
@@ -118,6 +118,7 @@ export default function StudyPlanTab({ language }: Props) {
         <CardHeader><div className="flex flex-wrap items-center justify-between gap-3"><div><CardTitle>{text.readiness}</CardTitle><CardDescription>{readiness.validAttempts} {text.attempts}</CardDescription></div><Badge className={readinessColor}>{text.status[readiness.status]}{readiness.score !== null ? ` · ${readiness.score}/100` : ''}</Badge></div></CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-slate-700">{isEs ? readiness.explanationEs : readiness.explanationPt}</p>
+          <div className="grid gap-3 sm:grid-cols-2"><div className="rounded-xl border border-violet-100 bg-violet-50 p-4"><div className="text-3xl font-bold text-violet-800">{readiness.estimatedApprovalChance === null ? '—' : `${readiness.estimatedApprovalChance}%`}</div><div className="mt-1 text-xs text-violet-900">{text.chance}</div><p className="mt-2 text-xs leading-5 text-violet-800">{readiness.evidenceAttempts} {text.attempts} · {readiness.evidenceQuestions} {isEs ? 'preguntas reales analizadas' : 'questões reais analisadas'}</p></div><div className="rounded-xl border border-rose-100 bg-rose-50 p-4"><h3 className="text-sm font-semibold text-rose-900">{text.errorFocus}</h3>{readiness.errorFocus.length ? <div className="mt-2 space-y-1">{readiness.errorFocus.slice(0, 5).map((item) => { const chapter = chapterPriorities.find((entry) => entry.id === item.chapterId); return <p key={item.chapterId || 'none'} className="text-xs text-rose-800">{chapter ? `${chapter.code} · ${isEs ? chapter.titleEs : chapter.titlePt}` : (isEs ? 'Sin capítulo' : 'Sem capítulo')}: {item.count} {isEs ? 'errores' : 'erros'}</p>; })}</div> : <p className="mt-2 text-xs text-rose-800">{text.noErrors}</p>}</div></div>
           <div><h3 className="mb-2 text-sm font-semibold">{text.weak}</h3>{weakChapters.length ? <div className="flex flex-wrap gap-2">{weakChapters.map((chapter) => <Badge key={chapter.id} variant="outline">{chapter.code} · {isEs ? chapter.titleEs : chapter.titlePt}</Badge>)}</div> : <p className="text-sm text-slate-500">{text.noWeak}</p>}</div>
           <p className="rounded-md bg-amber-50 p-3 text-xs text-amber-800">{text.warning}</p>
         </CardContent>

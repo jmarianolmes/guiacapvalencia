@@ -194,9 +194,9 @@ export const appRouter = router({
       }),
     
     searchQuestions: protectedProcedure
-      .input(z.object({ search: z.string().trim().min(2).max(120) }))
+      .input(z.object({ search: z.string().trim().min(2).max(120), category: z.enum(['all', 'official', 'chapter']).default('all') }))
       .query(async ({ input }) => {
-        return await db.searchAllSimulatorQuestions(input.search);
+        return await db.searchAllSimulatorQuestions(input.search, input.category);
       }),
 
     getRepeatedQuestions: protectedProcedure.query(async () => {

@@ -100,6 +100,27 @@ export default function ErrorNotebookTab({ language }: ErrorNotebookTabProps) {
     void utils.guide.getErrorNotebook.invalidate();
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((event.target as HTMLElement | null)?.tagName || '')) return;
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        setCurrentIndex((index) => Math.min(index + 1, Math.max(0, items.length - 1)));
+        setSelectedAnswer(null);
+        setFeedback(null);
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        setCurrentIndex((index) => Math.max(0, index - 1));
+        setSelectedAnswer(null);
+        setFeedback(null);
+      } else if (!feedback && ['a', 'b', 'c', 'd'].includes(event.key.toLowerCase())) {
+        submitAnswer(event.key.toUpperCase() as Answer);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [feedback, items.length, currentItem]);
+
   if (notebookQuery.isLoading) {
     return <Card><CardContent className="flex items-center justify-center gap-2 py-12"><Spinner />{t.title}</CardContent></Card>;
   }
