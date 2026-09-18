@@ -19,6 +19,7 @@ export default function ErrorNotebookTab({ language }: ErrorNotebookTabProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<Answer | null>(null);
   const [feedback, setFeedback] = useState<{ correct: boolean; resolved: boolean; nextReviewAt: Date | string | null; correctAnswer: string } | null>(null);
+  const [reviewStatus, setReviewStatus] = useState<Record<number, 'correct' | 'wrong'>>({});
 
   const items = notebookQuery.data?.dueItems || [];
   const currentItem = items[Math.min(currentIndex, Math.max(0, items.length - 1))];
@@ -89,6 +90,15 @@ export default function ErrorNotebookTab({ language }: ErrorNotebookTabProps) {
     reviewMutation.mutate({ itemId: currentItem.id, selectedAnswer: answer }, {
       onSuccess: (result) => {
         setFeedback(result);
+        setReviewStatus((current) => ({ ...current, [currentItem.id]: result.correct ? 'correct' : 'wrong' }));
+        if (result.correct) {
+          window.setTimeout(() => {
+            setFeedback(null);
+            setSelectedAnswer(null);
+            setCurrentIndex(0);
+            void utils.guide.getErrorNotebook.invalidate();
+          }, 350);
+        }
       },
     });
   };
@@ -96,7 +106,7 @@ export default function ErrorNotebookTab({ language }: ErrorNotebookTabProps) {
   const nextItem = () => {
     setSelectedAnswer(null);
     setFeedback(null);
-    setCurrentIndex(0);
+    setCurrentIndex((index) => items.length > 0 ? Math.min(index + 1, items.length - 1) : 0);
     void utils.guide.getErrorNotebook.invalidate();
   };
 
@@ -190,6 +200,18 @@ export default function ErrorNotebookTab({ language }: ErrorNotebookTabProps) {
               <p className="mt-1">{feedback.resolved ? t.resolvedMessage : `${t.nextReview}: ${formatReviewDate(feedback.nextReviewAt)}.`}</p>
             </div>}
             {reviewMutation.isError && <p className="text-sm text-red-700">{t.unavailable}</p>}
+            <div className="flex flex-wrap justify-center gap-1 border-t border-slate-200 pt-4">
+              {items.map((item, index) => {
+                const status = reviewStatus[item.id];
+                const isCurrent = index === currentIndex;
+                const colorClass = status === 'correct'
+                  ? 'bg-emerald-100 text-emerald-800 ring-emerald-300'
+                  : status === 'wrong'
+                    ? 'bg-rose-100 text-rose-800 ring-rose-300'
+                    : isCurrent ? 'bg-blue-600 text-white ring-blue-300' : 'bg-slate-200 text-slate-700 ring-slate-300';
+                return <button key={item.id} type="button" onClick={() => { setCurrentIndex(index); setSelectedAnswer(null); setFeedback(null); }} aria-label={`${t.question} ${index + 1}`} className={`h-8 w-8 rounded text-xs font-semibold transition-all ${colorClass} ${isCurrent ? 'ring-2 ring-offset-1' : ''}`}>{index + 1}</button>;
+              })}
+            </div>
             {feedback && <Button className="w-full" onClick={nextItem}>{t.next}</Button>}
           </CardContent>
         </Card>

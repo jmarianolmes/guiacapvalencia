@@ -692,7 +692,6 @@ export async function getUserErrorNotebook(userId: number) {
   const dueItems = eligibleItems
     .filter((item) => isReviewDue(item, now) && questionsById.has(item.questionId))
     .sort((left, right) => (left.nextReviewAt?.getTime() ?? 0) - (right.nextReviewAt?.getTime() ?? 0))
-    .slice(0, 30)
     .map((item) => ({ ...item, question: questionsById.get(item.questionId)! }));
   const chapterCounts = Array.from(eligibleItems.reduce((counts, item) => {
     if (!item.resolvedAt) counts.set(item.chapterId, (counts.get(item.chapterId) ?? 0) + 1);
