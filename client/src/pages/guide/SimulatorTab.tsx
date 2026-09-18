@@ -959,7 +959,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       {/* Question */}
       <Card>
         <CardContent className="px-3 py-2.5 md:px-4 md:py-3">
-          <p className="mb-2.5 text-base font-semibold leading-5.5 md:text-lg md:leading-6">
+          <p className="simulator-question-text mb-2.5 text-base font-semibold leading-5.5 md:text-lg md:leading-6">
             {(question.model === 'OF' || question.model === 'ORIGINAL') && question.internalCode?.match(/-(\d+)$/)?.[1] && (
               <span className="mr-2 inline-block rounded bg-slate-100 px-2 py-0.5 align-middle text-xs font-semibold text-slate-600">ID: {question.internalCode.match(/-(\d+)$/)?.[1]}</span>
             )}
@@ -1008,7 +1008,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                   onClick={() => setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: option }))}
                   disabled={isLearningFeedback}
                   aria-pressed={isSelectedOption}
-                  className={`w-full rounded-lg border-2 px-3 py-1.5 text-left text-[0.92rem] leading-5 transition-all disabled:cursor-default md:px-3 md:py-2 md:text-base md:leading-5.5 ${optionClass}`}
+                  className={`simulator-option-text w-full rounded-lg border-2 px-3 py-1.5 text-left text-[0.92rem] leading-5 transition-all disabled:cursor-default md:px-3 md:py-2 md:text-base md:leading-5.5 ${optionClass}`}
                 >
                   <span className="font-semibold">{option})</span> {String(question[`option${option}` as keyof typeof question])}
                 </button>
@@ -1016,7 +1016,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
             })}
           </div>
           {studyMode === 'learning' && answers[currentQuestion] && (
-            <div className={`mt-2 rounded-lg border px-3 py-2 text-xs font-medium ${
+            <div className={`simulator-learning-feedback mt-2 rounded-lg border px-3 py-2 text-xs font-medium ${
               answers[currentQuestion] === question.correctAnswer
                 ? 'border-green-200 bg-green-50 text-green-800'
                 : 'border-red-200 bg-red-50 text-red-800'
