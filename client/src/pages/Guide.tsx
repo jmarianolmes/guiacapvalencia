@@ -222,7 +222,7 @@ export default function Guide() {
               <TabsTrigger value="temarios" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.temarios}
               </TabsTrigger>
-              <TabsTrigger value="simulator" className={`shrink-0 px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs ${hasSimulatorProgress ? '!border-2 !border-red-500 !bg-red-100 !text-red-900 shadow-md shadow-red-200 hover:!bg-red-200' : 'bg-white'}`}>
+              <TabsTrigger value="simulator" className={`shrink-0 !border-2 !border-red-500 !bg-red-100 !text-red-900 px-3 py-2 shadow-sm hover:!bg-red-200 lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs ${hasSimulatorProgress ? 'shadow-md shadow-red-200' : ''}`}>
                 <span className="inline-flex items-center justify-center whitespace-nowrap">{texts.simulator}</span>
               </TabsTrigger>
               {user && <TabsTrigger value="study-plan" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
