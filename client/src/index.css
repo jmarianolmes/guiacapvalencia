@@ -133,6 +133,18 @@
   }
 }
 
+/* O bloqueio só é aplicado enquanto o utilizador responde a um simulado. */
+html.simulator-session-active,
+body.simulator-session-active {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body.simulator-session-active .simulator-session {
+  max-height: calc(100dvh - 1rem);
+  overflow: hidden;
+}
+
 @layer components {
   /**
    * Custom container utility that centers content and adds responsive padding.

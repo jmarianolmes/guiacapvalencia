@@ -94,6 +94,18 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const [reportedQuestionIds, setReportedQuestionIds] = useState<Set<number>>(new Set());
   const [progressVersion, setProgressVersion] = useState(0);
 
+  const isSimulatorSessionActive = Boolean(selectedModel || selectedChapter);
+
+  useEffect(() => {
+    document.body.classList.toggle('simulator-session-active', isSimulatorSessionActive);
+    document.documentElement.classList.toggle('simulator-session-active', isSimulatorSessionActive);
+
+    return () => {
+      document.body.classList.remove('simulator-session-active');
+      document.documentElement.classList.remove('simulator-session-active');
+    };
+  }, [isSimulatorSessionActive]);
+
   const modelQueryInput = useMemo(() => ({ model: selectedModel || '' }), [selectedModel]);
   const chapterQueryInput = useMemo(() => ({ chapterId: selectedChapter || '', attemptNumber: chapterAttempt }), [selectedChapter, chapterAttempt]);
   const modelsQuery = trpc.guide.getSimulatorModels.useQuery(undefined, {
@@ -886,7 +898,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   }
 
   return (
-    <div className="space-y-2 text-[0.94rem] md:text-[0.96rem]">
+    <div className="simulator-session space-y-1 text-[0.98rem] md:text-base">
       <Popover>
         <PopoverTrigger asChild>
           <Button type="button" variant="secondary" className="fixed bottom-4 right-4 z-30 rounded-full border border-blue-200 bg-white px-4 shadow-lg hover:bg-blue-50">
@@ -919,14 +931,14 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
 
       {/* Question */}
       <Card>
-        <CardContent className="px-4 py-3 md:px-5 md:py-4">
-          <p className="mb-3 text-sm font-semibold leading-5 md:text-base md:leading-6">
+        <CardContent className="px-3 py-2.5 md:px-4 md:py-3">
+          <p className="mb-2.5 text-base font-semibold leading-5.5 md:text-lg md:leading-6">
             {(question.model === 'OF' || question.model === 'ORIGINAL') && question.internalCode?.match(/-(\d+)$/)?.[1] && (
               <span className="mr-2 inline-block rounded bg-slate-100 px-2 py-0.5 align-middle text-xs font-semibold text-slate-600">ID: {question.internalCode.match(/-(\d+)$/)?.[1]}</span>
             )}
             {question.question}
           </p>
-          <label className="mb-2 flex min-h-7 cursor-pointer items-center gap-2 text-[0.7rem] text-slate-500 hover:text-slate-700 md:text-xs">
+          <label className="mb-1.5 flex min-h-6 cursor-pointer items-center gap-2 text-[0.72rem] text-slate-500 hover:text-slate-700 md:text-xs">
             <Checkbox
               checked={reportedQuestionIds.has(question.id)}
               aria-label={texts.conformity}
@@ -946,7 +958,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
             <span>{reportedQuestionIds.has(question.id) ? texts.markedForReview : texts.conformity}</span>
           </label>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {(['A', 'B', 'C', 'D'] as const).map(option => {
               const selectedAnswer = answers[currentQuestion];
               const isLearningFeedback = Boolean(studyMode === 'learning' && selectedAnswer);
@@ -969,7 +981,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                   onClick={() => setAnswers((currentAnswers) => ({ ...currentAnswers, [currentQuestion]: option }))}
                   disabled={isLearningFeedback}
                   aria-pressed={isSelectedOption}
-                  className={`w-full rounded-lg border-2 px-3 py-2 text-left text-[0.8rem] leading-5 transition-all disabled:cursor-default md:px-3 md:py-2.5 md:text-sm ${optionClass}`}
+                  className={`w-full rounded-lg border-2 px-3 py-1.5 text-left text-[0.92rem] leading-5 transition-all disabled:cursor-default md:px-3 md:py-2 md:text-base md:leading-5.5 ${optionClass}`}
                 >
                   <span className="font-semibold">{option})</span> {String(question[`option${option}` as keyof typeof question])}
                 </button>
@@ -1013,7 +1025,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                   ? wasCorrect ? 'bg-green-100 text-green-800 ring-green-300' : 'bg-red-100 text-red-800 ring-red-300'
                   : 'bg-green-100 text-green-800 ring-green-300'
                 : isCurrent ? 'bg-blue-600 text-white ring-blue-300' : 'bg-slate-200 text-slate-700 ring-slate-300';
-              return <button type="button" key={idx} onClick={() => setCurrentQuestion(idx)} aria-label={`${texts.question} ${idx + 1}`} className={`h-8 w-8 rounded text-xs font-semibold transition-all md:h-10 md:w-10 ${colorClass} ${isCurrent ? 'ring-2 ring-offset-1' : ''}`}>{idx + 1}</button>;
+              return <button type="button" key={idx} onClick={() => setCurrentQuestion(idx)} aria-label={`${texts.question} ${idx + 1}`} className={`h-6 w-6 rounded text-[0.68rem] font-semibold transition-all md:h-7 md:w-7 md:text-xs ${colorClass} ${isCurrent ? 'ring-2 ring-offset-1' : ''}`}>{idx + 1}</button>;
             })}
           </div>
 
@@ -1040,7 +1052,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
                   ? wasCorrect ? 'bg-green-100 text-green-800 ring-green-300' : 'bg-red-100 text-red-800 ring-red-300'
                   : 'bg-green-100 text-green-800 ring-green-300'
                 : isCurrent ? 'bg-blue-600 text-white ring-blue-300' : 'bg-slate-200 text-slate-700 ring-slate-300';
-              return <button type="button" key={idx} onClick={() => setCurrentQuestion(idx)} aria-label={`${texts.question} ${idx + 1}`} className={`h-8 w-8 rounded text-xs font-semibold transition-all md:h-10 md:w-10 ${colorClass} ${isCurrent ? 'ring-2 ring-offset-1' : ''}`}>{idx + 1}</button>;
+              return <button type="button" key={idx} onClick={() => setCurrentQuestion(idx)} aria-label={`${texts.question} ${idx + 1}`} className={`h-6 w-6 rounded text-[0.68rem] font-semibold transition-all md:h-7 md:w-7 md:text-xs ${colorClass} ${isCurrent ? 'ring-2 ring-offset-1' : ''}`}>{idx + 1}</button>;
             })}
           </div>
         )}
