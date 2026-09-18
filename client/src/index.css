@@ -140,11 +140,6 @@ body.simulator-session-active {
   overscroll-behavior: none;
 }
 
-body.simulator-session-active .simulator-session {
-  max-height: calc(100dvh - 1rem);
-  overflow: hidden;
-}
-
 @layer components {
   /**
    * Custom container utility that centers content and adds responsive padding.

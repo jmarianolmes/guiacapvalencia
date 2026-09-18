@@ -109,8 +109,11 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
         }
 
         requestAnimationFrame(() => {
-          document.body.classList.add('simulator-session-active');
-          document.documentElement.classList.add('simulator-session-active');
+          const contentFitsViewport = session
+            ? session.scrollHeight <= window.innerHeight - 8
+            : false;
+          document.body.classList.toggle('simulator-session-active', contentFitsViewport);
+          document.documentElement.classList.toggle('simulator-session-active', contentFitsViewport);
         });
       });
     } else {
@@ -157,6 +160,14 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const activeQuestionsQuery = selectedChapter ? chapterQuestionsQuery : questionsQuery;
   const chapterAttemptData = chapterQuestionsQuery.data;
   const questions = selectedChapter ? (chapterAttemptData?.questions || []) : (questionsQuery.data || []);
+
+  useEffect(() => {
+    if (!isSimulatorSessionActive) return;
+    const session = simulatorSessionRef.current;
+    const contentFitsViewport = session ? session.scrollHeight <= window.innerHeight - 8 : false;
+    document.body.classList.toggle('simulator-session-active', contentFitsViewport);
+    document.documentElement.classList.toggle('simulator-session-active', contentFitsViewport);
+  }, [isSimulatorSessionActive, questions.length, showResults]);
 
   type SimulatorStatus = 'passed' | 'failed' | null;
   const getSimulatorStatus = (matches: (result: NonNullable<typeof historyQuery.data>[number]) => boolean): SimulatorStatus => {
