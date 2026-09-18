@@ -43,7 +43,7 @@ export default function Guide() {
     const refreshSimulatorProgress = () => {
       try {
         const saved = JSON.parse(window.localStorage.getItem('cap-simulator-progress-v1') || '{}') as Record<string, { answers?: Record<number, string> }>;
-        setHasSimulatorProgress(Object.values(saved).some((progress) => Object.keys(progress.answers || {}).length > 0));
+        setHasSimulatorProgress(Object.keys(saved).length > 0);
       } catch {
         setHasSimulatorProgress(false);
       }
@@ -222,7 +222,7 @@ export default function Guide() {
               <TabsTrigger value="temarios" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.temarios}
               </TabsTrigger>
-              <TabsTrigger value="simulator" className={`shrink-0 px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs ${hasSimulatorProgress ? 'border-2 border-red-400 bg-red-50/80 text-red-900 shadow-md shadow-red-200 hover:bg-red-100' : 'bg-white'}`}>
+              <TabsTrigger value="simulator" className={`shrink-0 px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs ${hasSimulatorProgress ? '!border-2 !border-red-500 !bg-red-100 !text-red-900 shadow-md shadow-red-200 hover:!bg-red-200' : 'bg-white'}`}>
                 <span className="inline-flex items-center gap-1.5">{texts.simulator}{hasSimulatorProgress && <span className="rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">{language === 'pt' ? 'continuar' : 'continuar'}</span>}</span>
               </TabsTrigger>
               {user && <TabsTrigger value="study-plan" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
