@@ -37,6 +37,25 @@ export default function Guide() {
   const { language, setLanguage } = useLanguage();
   const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get('tab') === 'temarios' ? 'temarios' : 'overview');
   const [profileOpen, setProfileOpen] = useState(false);
+  const [hasSimulatorProgress, setHasSimulatorProgress] = useState(false);
+
+  useEffect(() => {
+    const refreshSimulatorProgress = () => {
+      try {
+        const saved = JSON.parse(window.localStorage.getItem('cap-simulator-progress-v1') || '{}') as Record<string, { answers?: Record<number, string> }>;
+        setHasSimulatorProgress(Object.values(saved).some((progress) => Object.keys(progress.answers || {}).length > 0));
+      } catch {
+        setHasSimulatorProgress(false);
+      }
+    };
+    refreshSimulatorProgress();
+    window.addEventListener('storage', refreshSimulatorProgress);
+    window.addEventListener('cap-simulator-progress-changed', refreshSimulatorProgress);
+    return () => {
+      window.removeEventListener('storage', refreshSimulatorProgress);
+      window.removeEventListener('cap-simulator-progress-changed', refreshSimulatorProgress);
+    };
+  }, []);
 
   const statsQuery = trpc.guide.getStats.useQuery();
   const officialExamDatesQuery = trpc.guide.getOfficialExamDates.useQuery();
@@ -203,8 +222,8 @@ export default function Guide() {
               <TabsTrigger value="temarios" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.temarios}
               </TabsTrigger>
-              <TabsTrigger value="simulator" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
-                {texts.simulator}
+              <TabsTrigger value="simulator" className={`shrink-0 px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs ${hasSimulatorProgress ? 'border-2 border-red-400 bg-red-50/80 text-red-900 shadow-md shadow-red-200 hover:bg-red-100' : 'bg-white'}`}>
+                <span className="inline-flex items-center gap-1.5">{texts.simulator}{hasSimulatorProgress && <span className="rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">{language === 'pt' ? 'continuar' : 'continuar'}</span>}</span>
               </TabsTrigger>
               {user && <TabsTrigger value="study-plan" className="shrink-0 bg-white px-3 py-2 shadow-sm lg:w-full lg:whitespace-normal lg:px-1 lg:text-xs">
                 {texts.plan}

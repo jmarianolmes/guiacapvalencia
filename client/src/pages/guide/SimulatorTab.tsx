@@ -66,6 +66,7 @@ function writeProgress(key: string, progress: SimulatorProgress) {
   const all = readAllProgress();
   all[key] = progress;
   window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(all));
+  window.dispatchEvent(new Event('cap-simulator-progress-changed'));
 }
 
 function removeProgress(key: string) {
@@ -73,6 +74,7 @@ function removeProgress(key: string) {
   const all = readAllProgress();
   delete all[key];
   window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(all));
+  window.dispatchEvent(new Event('cap-simulator-progress-changed'));
 }
 
 export default function SimulatorTab({ language }: SimulatorTabProps) {
