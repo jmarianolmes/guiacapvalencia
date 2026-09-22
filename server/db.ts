@@ -75,17 +75,54 @@ export async function resolveQuestionReview(reportId: number, correctAnswer: 'A'
     : eq(simulatorQuestions.normalized, source.normalized ?? source.question);
   const equivalentQuestions = await db.select().from(simulatorQuestions).where(equivalentFilter);
   let updatedQuestions = 0;
+  let recalculatedResults = 0;
   await db.transaction(async (tx) => {
+    const correctedAnswersByQuestionId = new Map<number, 'A' | 'B' | 'C' | 'D'>();
     for (const question of equivalentQuestions) {
       const matchingAnswer = (['A', 'B', 'C', 'D'] as const).find((letter) => question[`option${letter}` as 'optionA' | 'optionB' | 'optionC' | 'optionD'] === correctText);
       if (!matchingAnswer) continue;
       await tx.update(simulatorQuestions).set({ correctAnswer: matchingAnswer, reviewStatus: 'reviewed' }).where(eq(simulatorQuestions.id, question.id));
+      correctedAnswersByQuestionId.set(question.id, matchingAnswer);
       updatedQuestions++;
     }
     if (updatedQuestions === 0) throw new Error('Não foi possível localizar a alternativa textual equivalente para atualizar.');
     await tx.update(questionReviewReports).set({ status: 'resolved', resolvedAt: new Date() }).where(eq(questionReviewReports.id, reportId));
+
+    // Recalcula somente tentativas que possuem o conjunto completo de respostas
+    // detalhadas. Resultados legados sem essa informação permanecem inalterados.
+    const affectedAnswers = await tx.select().from(userSimulatorAnswers).where(
+      inArray(userSimulatorAnswers.questionId, Array.from(correctedAnswersByQuestionId.keys())),
+    );
+    const affectedResultIds = new Set<number>();
+    for (const answer of affectedAnswers) {
+      const newCorrectAnswer = correctedAnswersByQuestionId.get(answer.questionId);
+      if (!newCorrectAnswer) continue;
+      affectedResultIds.add(answer.resultId);
+      const isCorrect = answer.selectedAnswer !== null && answer.selectedAnswer === newCorrectAnswer;
+      if (answer.isCorrect !== isCorrect) {
+        await tx.update(userSimulatorAnswers).set({ isCorrect }).where(eq(userSimulatorAnswers.id, answer.id));
+      }
+    }
+
+    for (const resultId of Array.from(affectedResultIds)) {
+      const [result] = await tx.select().from(userSimulatorResults).where(eq(userSimulatorResults.id, resultId)).limit(1);
+      if (!result) continue;
+      const answers = await tx.select().from(userSimulatorAnswers).where(eq(userSimulatorAnswers.resultId, resultId));
+      if (answers.length !== result.questionCount) continue;
+      const correctCount = answers.filter((answer) => answer.isCorrect).length;
+      const blankCount = answers.filter((answer) => answer.selectedAnswer === null).length;
+      const wrongCount = answers.length - correctCount - blankCount;
+      const score = result.questionCount > 0 ? Math.round((correctCount / result.questionCount) * 100) : 0;
+      await tx.update(userSimulatorResults).set({
+        correctAnswers: correctCount,
+        wrongAnswers: wrongCount,
+        blankAnswers: blankCount,
+        score,
+      }).where(eq(userSimulatorResults.id, resultId));
+      recalculatedResults++;
+    }
   });
-  return { success: true, updatedQuestions };
+  return { success: true, updatedQuestions, recalculatedResults };
 }
 
 export async function dismissQuestionReview(reportId: number) {
