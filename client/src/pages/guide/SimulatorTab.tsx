@@ -275,6 +275,11 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       if (!question || question.correctAnswer === selectedAnswer) return [];
       return [{ questionId: question.id, selectedAnswer: selectedAnswer as 'A' | 'B' | 'C' | 'D' }];
     });
+    const attemptAnswers = questions.map((question, questionIndex) => ({
+      questionId: question.id,
+      questionIndex,
+      selectedAnswer: (answers[questionIndex] as 'A' | 'B' | 'C' | 'D' | undefined) ?? null,
+    }));
     setShowResults(true);
     removeProgress(progressKey({ mode, model: selectedModel || undefined, date: selectedDate || undefined, chapterId: selectedChapter || undefined, attemptNumber: selectedChapter ? chapterAttempt : undefined }));
     setProgressVersion((version) => version + 1);
@@ -286,6 +291,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       questionCount: questions.length,
       ...stats,
       studyMode,
+      answers: attemptAnswers,
       wrongQuestions,
       timeTaken: questions.length === 100 ? Math.max(0, 7200 - timeLeft) : 0,
     }, {

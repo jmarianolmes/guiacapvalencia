@@ -182,6 +182,25 @@ export const userSimulatorResults = mysqlTable("user_simulator_results", {
 export type UserSimulatorResult = typeof userSimulatorResults.$inferSelect;
 export type InsertUserSimulatorResult = typeof userSimulatorResults.$inferInsert;
 
+// Individual answers preserve enough information to recalculate future attempts after question corrections.
+export const userSimulatorAnswers = mysqlTable("user_simulator_answers", {
+  id: int("id").autoincrement().primaryKey(),
+  resultId: int("resultId").notNull(),
+  userId: int("userId").notNull(),
+  questionId: int("questionId").notNull(),
+  questionIndex: int("questionIndex").notNull(),
+  selectedAnswer: varchar("selectedAnswer", { length: 1 }),
+  correctAnswerAtAttempt: varchar("correctAnswerAtAttempt", { length: 1 }).notNull(),
+  isCorrect: boolean("isCorrect").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  index("user_simulator_answers_result_idx").on(table.resultId),
+  index("user_simulator_answers_question_idx").on(table.questionId),
+]);
+
+export type UserSimulatorAnswer = typeof userSimulatorAnswers.$inferSelect;
+export type InsertUserSimulatorAnswer = typeof userSimulatorAnswers.$inferInsert;
+
 // Individual error notebook. Each record belongs to exactly one user and one source question.
 // The source question stays in simulator_questions; no pedagogical content is duplicated here.
 export const userErrorNotebookItems = mysqlTable("user_error_notebook_items", {

@@ -228,6 +228,11 @@ export const appRouter = router({
         wrong: z.number(),
         blank: z.number(),
         timeTaken: z.number(),
+        answers: z.array(z.object({
+          questionId: z.number().int().positive(),
+          questionIndex: z.number().int().min(0),
+          selectedAnswer: z.enum(['A', 'B', 'C', 'D']).nullable(),
+        })).max(200).optional(),
         wrongQuestions: z.array(z.object({
           questionId: z.number().int().positive(),
           selectedAnswer: z.enum(['A', 'B', 'C', 'D']),

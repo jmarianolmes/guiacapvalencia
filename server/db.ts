@@ -2,7 +2,7 @@ import { and, asc, count, eq, inArray, ne, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool, type Pool } from "mysql2";
 import { desc } from 'drizzle-orm';
-import { InsertUser, users, passwordResets, userAccessLogs, simulatorQuestions, repeatedQuestions, tricks, siglas, userSimulatorResults, userStudyProfiles, userErrorNotebookItems, questionReviewReports, siteSettings } from "../drizzle/schema";
+import { InsertUser, users, passwordResets, userAccessLogs, simulatorQuestions, repeatedQuestions, tricks, siglas, userSimulatorResults, userSimulatorAnswers, userStudyProfiles, userErrorNotebookItems, questionReviewReports, siteSettings } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { simulatorChapters } from '../shared/simulatorChapters';
 import { classifySimulatorQuestion } from './chapterClassifier';
@@ -605,6 +605,7 @@ export async function saveSimulatorResult(userId: number, input: {
   wrong: number;
   blank: number;
   timeTaken: number;
+  answers?: Array<{ questionId: number; questionIndex: number; selectedAnswer: 'A' | 'B' | 'C' | 'D' | null }>;
   wrongQuestions?: Array<{ questionId: number; selectedAnswer: 'A' | 'B' | 'C' | 'D' }>;
 }) {
   if (isDemoMode()) {
@@ -617,19 +618,34 @@ export async function saveSimulatorResult(userId: number, input: {
   
   try {
     const score = Math.round((input.correct / input.questionCount) * 100);
-    const result = await db.insert(userSimulatorResults).values({
-      userId,
-      model: input.model,
-      mode: input.mode,
-      studyMode: input.studyMode,
-      chapterId: input.chapterId ?? null,
-      attemptNumber: input.attemptNumber ?? 1,
-      questionCount: input.questionCount,
-      correctAnswers: input.correct,
-      wrongAnswers: input.wrong,
-      blankAnswers: input.blank,
-      score,
-      timeTaken: input.timeTaken,
+    const result = await db.transaction(async (tx) => {
+      const inserted = await tx.insert(userSimulatorResults).values({
+        userId,
+        model: input.model,
+        mode: input.mode,
+        studyMode: input.studyMode,
+        chapterId: input.chapterId ?? null,
+        attemptNumber: input.attemptNumber ?? 1,
+        questionCount: input.questionCount,
+        correctAnswers: input.correct,
+        wrongAnswers: input.wrong,
+        blankAnswers: input.blank,
+        score,
+        timeTaken: input.timeTaken,
+      });
+      const resultId = Number((inserted as any)[0]?.insertId);
+      if (!resultId) throw new Error('Não foi possível identificar a tentativa criada.');
+      if (input.answers?.length) {
+        const questions = await tx.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, input.answers.map((answer) => answer.questionId)));
+        const questionsById = new Map(questions.map((question) => [question.id, question]));
+        const answerRows = input.answers.flatMap((answer) => {
+          const question = questionsById.get(answer.questionId);
+          if (!question) return [];
+          return [{ resultId, userId, questionId: question.id, questionIndex: answer.questionIndex, selectedAnswer: answer.selectedAnswer, correctAnswerAtAttempt: question.correctAnswer, isCorrect: answer.selectedAnswer !== null && answer.selectedAnswer === question.correctAnswer }];
+        });
+        if (answerRows.length) await tx.insert(userSimulatorAnswers).values(answerRows);
+      }
+      return inserted;
     });
     if ((input.mode === 'official' || input.mode === 'chapter') && input.wrongQuestions?.length) {
       await recordUserNotebookErrors(userId, input.wrongQuestions);
