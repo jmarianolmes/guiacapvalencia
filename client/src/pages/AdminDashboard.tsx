@@ -35,7 +35,7 @@ export default function AdminDashboard() {
         manager: 'Gestión de usuarios', noUsers: 'No hay usuarios registrados', status: 'Estado', actions: 'Acciones', account: 'Cuenta',
         approve: 'Aprobar', block: 'Bloquear', unblock: 'Desbloquear', approvedStatus: 'Aprobado', blockedStatus: 'Bloqueado', pendingStatus: 'Pendiente', temporary: 'Cambio de contraseña pendiente', master: 'Cuenta maestra',
         resetPassword: 'Nueva contraseña temporal', savePassword: 'Guardar contraseña', showPassword: 'Mostrar', hidePassword: 'Ocultar', delete: 'Eliminar', confirmDelete: 'Confirmar eliminación', cancel: 'Cancelar', resetDone: 'Contraseña temporal actualizada. La persona deberá cambiarla en su próximo acceso.', deleted: 'Cuenta eliminada correctamente.',
-        created: 'Cuenta creada y aprobada. Comparta la contraseña temporal con la persona usuaria por un canal seguro.', reviewTitle: 'Averiguaciones de conformidad', reviewEmpty: 'No hay cuestiones pendientes.', reviewResolve: 'Corregir y resolver', reviewCancel: 'Cancelar averiguación', publicTitle: 'Acceso público', publicDescription: 'Permite acceder al guía sin iniciar sesión. El login administrativo permanece disponible.', publicOn: 'Desactivar login para visitantes', publicOff: 'Mantener login obligatorio',
+        created: 'Cuenta creada y aprobada. Comparta la contraseña temporal con la persona usuaria por un canal seguro.', reviewTitle: 'Averiguaciones de conformidad', reviewEmpty: 'No hay cuestiones pendientes.', reviewResolve: 'Corregir y resolver', reviewCancel: 'Cancelar averiguación', compareOfficial: 'Comparar na fonte oficial', searchOfficial: 'Buscar resposta oficial', searchingOfficial: 'Buscando...', officialFound: 'Resposta encontrada. Confirme antes de salvar.', officialBlocked: 'Busca automática indisponível; compare manualmente.', acceptOfficial: 'Aceitar sugestão oficial', publicTitle: 'Acceso público', publicDescription: 'Permite acceder al guía sin iniciar sesión. El login administrativo permanece disponible.', publicOn: 'Desactivar login para visitantes', publicOff: 'Mantener login obligatorio',
       }
     : {
         title: 'Painel administrativo', back: 'Voltar', total: 'Total de Usuários', pending: 'Pendentes de Aprovação', approved: 'Usuários Aprovados', blocked: 'Usuários Bloqueados',
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
         manager: 'Gerenciamento de usuários', noUsers: 'Nenhum usuário cadastrado', status: 'Status', actions: 'Ações', account: 'Conta',
         approve: 'Aprovar', block: 'Bloquear', unblock: 'Desbloquear', approvedStatus: 'Aprovado', blockedStatus: 'Bloqueado', pendingStatus: 'Pendente', temporary: 'Troca de senha pendente', master: 'Conta mestre',
         resetPassword: 'Nova senha temporária', savePassword: 'Salvar senha', showPassword: 'Mostrar', hidePassword: 'Ocultar', delete: 'Excluir', confirmDelete: 'Confirmar exclusão', cancel: 'Cancelar', resetDone: 'Senha temporária atualizada. A pessoa deverá alterá-la no próximo acesso.', deleted: 'Conta excluída com sucesso.',
-        created: 'Conta criada e aprovada. Compartilhe a senha temporária com a pessoa usuária por um canal seguro.', reviewTitle: 'Averiguações de conformidade', reviewEmpty: 'Nenhuma questão pendente.', reviewResolve: 'Corrigir e resolver', reviewCancel: 'Cancelar averiguação', publicTitle: 'Acesso público', publicDescription: 'Permite acessar o guia sem login. O login administrativo continua disponível.', publicOn: 'Desligar login para visitantes', publicOff: 'Manter login obrigatório',
+        created: 'Conta criada e aprovada. Compartilhe a senha temporária com a pessoa usuária por um canal seguro.', reviewTitle: 'Averiguações de conformidade', reviewEmpty: 'Nenhuma questão pendente.', reviewResolve: 'Corrigir e resolver', reviewCancel: 'Cancelar averiguação', compareOfficial: 'Comparar na fonte oficial', searchOfficial: 'Buscar resposta oficial', searchingOfficial: 'Buscando...', officialFound: 'Resposta encontrada. Confirme antes de salvar.', officialBlocked: 'Busca automática indisponível; compare manualmente.', acceptOfficial: 'Aceitar sugestão oficial', publicTitle: 'Acesso público', publicDescription: 'Permite acessar o guia sem login. O login administrativo continua disponível.', publicOn: 'Desligar login para visitantes', publicOff: 'Manter login obrigatório',
       };
 
   const statsQuery = trpc.admin.getStats.useQuery();
@@ -62,6 +62,8 @@ export default function AdminDashboard() {
   const publicAccessMutation = trpc.admin.setPublicAccess.useMutation();
   const importObjective32Mutation = trpc.admin.importObjective32.useMutation();
   const [reviewAnswers, setReviewAnswers] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
+  const [officialSuggestions, setOfficialSuggestions] = useState<Record<number, { answer: 'A' | 'B' | 'C' | 'D' | null; sourceUrl: string; message: string }>>({});
+  const officialLookupMutation = trpc.admin.lookupOfficialQuestion.useMutation();
 
   useEffect(() => {
     if (user && user.role !== 'admin') {
@@ -190,6 +192,31 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleOfficialLookup = async (questionId: number) => {
+    try {
+      const result = await officialLookupMutation.mutateAsync({ questionId });
+      setOfficialSuggestions((current) => ({ ...current, [questionId]: { answer: result.suggestedAnswer, sourceUrl: result.sourceUrl, message: result.message } }));
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Não foi possível consultar a fonte oficial.');
+    }
+  };
+
+  const handleCompareOfficial = async (questionId: number) => {
+    const popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
+    try {
+      const existing = officialSuggestions[questionId];
+      const result = existing
+        ? { suggestedAnswer: existing.answer, sourceUrl: existing.sourceUrl, message: existing.message }
+        : await officialLookupMutation.mutateAsync({ questionId });
+      setOfficialSuggestions((current) => ({ ...current, [questionId]: { answer: result.suggestedAnswer, sourceUrl: result.sourceUrl, message: result.message } }));
+      if (popup) popup.location.href = result.sourceUrl;
+      else window.open(result.sourceUrl, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      popup?.close();
+      setFormError(error instanceof Error ? error.message : 'Não foi possível abrir a fonte oficial.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <nav className="bg-white shadow-sm">
@@ -254,6 +281,15 @@ export default function AdminDashboard() {
               <div key={report.id} className="rounded-lg border border-amber-200 bg-amber-50 p-4">
                 <p className="font-semibold">{question.model} · {question.provaDate} · questão {question.questionNumber}</p>
                 <p className="mt-2 text-sm text-slate-700">{question.question}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-blue-200 bg-blue-50 p-3">
+                  <Button size="sm" variant="outline" disabled={officialLookupMutation.isPending} onClick={() => handleOfficialLookup(question.id)}>
+                    {officialLookupMutation.isPending ? text.searchingOfficial : text.searchOfficial}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => handleCompareOfficial(question.id)}>{text.compareOfficial}</Button>
+                  {officialSuggestions[question.id]?.answer && <span className="font-semibold text-blue-900">Sugestão oficial: {officialSuggestions[question.id].answer}</span>}
+                  {officialSuggestions[question.id] && <span className="basis-full text-xs text-blue-800">{officialSuggestions[question.id].message}</span>}
+                  {officialSuggestions[question.id]?.answer && <Button size="sm" onClick={() => resolveReviewMutation.mutate({ reportId: report.id, correctAnswer: officialSuggestions[question.id]!.answer! }, { onSuccess: () => { setOfficialSuggestions((current) => { const next = { ...current }; delete next[question.id]; return next; }); reviewReportsQuery.refetch(); } })}>{text.acceptOfficial}</Button>}
+                </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   {(['A', 'B', 'C', 'D'] as const).map((answer) => <Button key={answer} size="sm" variant={reviewAnswers[report.id] === answer ? 'default' : 'outline'} onClick={() => setReviewAnswers((current) => ({ ...current, [report.id]: answer }))}>{answer}</Button>)}
                   <Button size="sm" disabled={!reviewAnswers[report.id] || resolveReviewMutation.isPending} onClick={() => resolveReviewMutation.mutate({ reportId: report.id, correctAnswer: reviewAnswers[report.id] }, { onSuccess: () => reviewReportsQuery.refetch() })}>{text.reviewResolve}</Button>

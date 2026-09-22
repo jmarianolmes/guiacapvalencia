@@ -55,6 +55,13 @@ export async function getQuestionReviewReports() {
     .orderBy(asc(questionReviewReports.createdAt));
 }
 
+export async function getSimulatorQuestionById(questionId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [question] = await db.select().from(simulatorQuestions).where(eq(simulatorQuestions.id, questionId)).limit(1);
+  return question ?? null;
+}
+
 export async function resolveQuestionReview(reportId: number, correctAnswer: 'A' | 'B' | 'C' | 'D') {
   const db = await getDb();
   if (!db) throw new Error('Database connection unavailable');

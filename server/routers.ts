@@ -7,6 +7,7 @@ import { z } from "zod";
 import * as authService from "./auth";
 import * as db from "./db";
 import { importOfQuestionBank } from "./ofQuestionBank";
+import { getOfficialSourceUrl, lookupOfficialQuestion } from "./officialQuestionLookup";
 import { TRPCError } from "@trpc/server";
 
 export const appRouter = router({
@@ -315,6 +316,20 @@ export const appRouter = router({
 
   admin: router({
     getQuestionReviewReports: adminProcedure.query(() => db.getQuestionReviewReports()),
+    getOfficialQuestionSource: adminProcedure
+      .input(z.object({ questionId: z.number().int().positive() }))
+      .query(async ({ input }) => {
+        const question = await db.getSimulatorQuestionById(input.questionId);
+        if (!question) throw new TRPCError({ code: 'NOT_FOUND', message: 'Pergunta não encontrada.' });
+        return { sourceUrl: getOfficialSourceUrl(question) };
+      }),
+    lookupOfficialQuestion: adminProcedure
+      .input(z.object({ questionId: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        const question = await db.getSimulatorQuestionById(input.questionId);
+        if (!question) throw new TRPCError({ code: 'NOT_FOUND', message: 'Pergunta não encontrada.' });
+        return lookupOfficialQuestion(question);
+      }),
     resolveQuestionReview: adminProcedure
       .input(z.object({ reportId: z.number().int().positive(), correctAnswer: z.enum(['A', 'B', 'C', 'D']) }))
       .mutation(({ input }) => db.resolveQuestionReview(input.reportId, input.correctAnswer)),
