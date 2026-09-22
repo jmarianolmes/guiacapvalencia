@@ -67,9 +67,25 @@ export async function resolveQuestionReview(reportId: number, correctAnswer: 'A'
   if (!db) throw new Error('Database connection unavailable');
   const [report] = await db.select().from(questionReviewReports).where(eq(questionReviewReports.id, reportId)).limit(1);
   if (!report) throw new Error('Averiguação não encontrada');
-  await db.update(simulatorQuestions).set({ correctAnswer, reviewStatus: 'reviewed' }).where(eq(simulatorQuestions.id, report.questionId));
+  const [source] = await db.select().from(simulatorQuestions).where(eq(simulatorQuestions.id, report.questionId)).limit(1);
+  if (!source) throw new Error('Pergunta da averiguação não encontrada');
+  const correctText = source[`option${correctAnswer}` as 'optionA' | 'optionB' | 'optionC' | 'optionD'];
+  const equivalentFilter = source.equivalenceKey
+    ? eq(simulatorQuestions.equivalenceKey, source.equivalenceKey)
+    : eq(simulatorQuestions.normalized, source.normalized ?? source.question);
+  const equivalentQuestions = await db.select().from(simulatorQuestions).where(equivalentFilter);
+  let updatedQuestions = 0;
+  await db.transaction(async (tx) => {
+    for (const question of equivalentQuestions) {
+      const matchingAnswer = (['A', 'B', 'C', 'D'] as const).find((letter) => question[`option${letter}` as 'optionA' | 'optionB' | 'optionC' | 'optionD'] === correctText);
+      if (!matchingAnswer) continue;
+      await tx.update(simulatorQuestions).set({ correctAnswer: matchingAnswer, reviewStatus: 'reviewed' }).where(eq(simulatorQuestions.id, question.id));
+      updatedQuestions++;
+    }
+  });
+  if (updatedQuestions === 0) throw new Error('Não foi possível localizar a alternativa textual equivalente para atualizar.');
   await db.update(questionReviewReports).set({ status: 'resolved', resolvedAt: new Date() }).where(eq(questionReviewReports.id, reportId));
-  return { success: true };
+  return { success: true, updatedQuestions };
 }
 
 export async function dismissQuestionReview(reportId: number) {
