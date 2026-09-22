@@ -82,6 +82,15 @@ function sourceUrls(question: { chapterId: string | null; chapterCode: string | 
   return [urls[blockIndex], ...urls.filter((_url, index) => index !== blockIndex)];
 }
 
+function sourceUrlForOfFile(file: string | null, fallback: string) {
+  const objective = file?.match(/of_cap_objetivo_([^/.]+)\.json$/)?.[1];
+  return objective
+    ? OFFICIAL_COMMON_URLS.find((url) => url.includes(`objetivo${objective}`))
+      || OFFICIAL_GOODS_URLS.find((url) => url.includes(`objetivo${objective}`))
+      || fallback
+    : fallback;
+}
+
 function findAnswer(pageText: string, question: { question: string; optionA: string; optionB: string; optionC: string; optionD: string }) {
   const normalizedPage = normalize(pageText);
   const normalizedQuestion = normalize(question.question);
@@ -106,22 +115,45 @@ function findAnswer(pageText: string, question: { question: string; optionA: str
   return { answer, candidates, compatible };
 }
 
+function answerLetterByText(record: { correctAnswer?: 'A' | 'B' | 'C' | 'D'; optionA?: string; optionB?: string; optionC?: string; optionD?: string }, question: { optionA: string; optionB: string; optionC: string; optionD: string }) {
+  const correctText = record.correctAnswer ? record[`option${record.correctAnswer}` as 'optionA' | 'optionB' | 'optionC' | 'optionD'] : '';
+  const options = [question.optionA, question.optionB, question.optionC, question.optionD];
+  const index = options.findIndex((option) => normalize(option) === normalize(correctText || ''));
+  return index >= 0 ? (['A', 'B', 'C', 'D'] as const)[index] : null;
+}
+
 function findBundledOfficialAnswer(question: { question: string; optionA: string; optionB: string; optionC: string; optionD: string; chapterId: string | null; chapterCode: string | null; internalCode?: string | null }) {
   const blockId = resolveBlockId(question);
   const objective = (question.chapterCode?.toLowerCase().replace(/bis$/, '_bis').replace(/\./g, '_')
     || blockId?.replace(/^(common|goods)-/, '').replace(/-/g, '_'));
-  if (!objective) return { answer: null, candidates: 0, compatible: 0, file: null };
-  const file = join(process.cwd(), 'server', 'data', `of_cap_objetivo_${objective}.json`);
-  try {
-    const records = JSON.parse(readFileSync(file, 'utf8')) as Array<{ question?: string; optionA?: string; optionB?: string; optionC?: string; optionD?: string; correctAnswer?: 'A' | 'B' | 'C' | 'D' }>;
-    const target = normalize(question.question);
-    const candidates = records.filter((record) => normalize(record.question || '') === target);
-    const compatible = candidates.filter((record) => [question.optionA, question.optionB, question.optionC, question.optionD].filter((option, index) => normalize(option) === normalize([record.optionA, record.optionB, record.optionC, record.optionD][index] || '')).length >= 2);
-    const selected = compatible[0] || candidates[0];
-    return { answer: selected?.correctAnswer || null, candidates: candidates.length, compatible: compatible.length, file };
-  } catch {
-    return { answer: null, candidates: 0, compatible: 0, file };
+  const dataDir = join(process.cwd(), 'server', 'data');
+  const files = objective
+    ? [`of_cap_objetivo_${objective}.json`, ...['1_1','1_2','1_3','1_3_bis','1_4','2_1','2_2','3_1','3_2','3_3','3_4','3_5','3_6','3_7'].filter((item) => item !== objective).map((item) => `of_cap_objetivo_${item}.json`)]
+    : ['1_1','1_2','1_3','1_3_bis','1_4','2_1','2_2','3_1','3_2','3_3','3_4','3_5','3_6','3_7'].map((item) => `of_cap_objetivo_${item}.json`);
+  const targetTokens = new Set(normalize(question.question).split(' ').filter((token) => token.length >= 4));
+  let candidates = 0;
+  let compatible = 0;
+  for (const filename of files) {
+    const file = join(dataDir, filename);
+    try {
+      const records = JSON.parse(readFileSync(file, 'utf8')) as Array<{ question?: string; optionA?: string; optionB?: string; optionC?: string; optionD?: string; correctAnswer?: 'A' | 'B' | 'C' | 'D'; internalCode?: string }>;
+      for (const record of records) {
+        const recordTokens = new Set(normalize(record.question || '').split(' ').filter((token) => token.length >= 4));
+        const overlap = Array.from(targetTokens).filter((token) => recordTokens.has(token)).length / Math.max(targetTokens.size, 1);
+        if (normalize(record.question || '') !== normalize(question.question) && overlap < 0.7) continue;
+        candidates++;
+        const optionMatches = [question.optionA, question.optionB, question.optionC, question.optionD]
+          .filter((option) => [record.optionA, record.optionB, record.optionC, record.optionD].some((candidate) => normalize(option) === normalize(candidate || ''))).length;
+        if (optionMatches < 2) continue;
+        compatible++;
+        const mappedAnswer = answerLetterByText(record, question);
+        if (mappedAnswer) return { answer: mappedAnswer, candidates, compatible, file, internalCode: record.internalCode || null };
+      }
+    } catch {
+      // Arquivo OF ainda não disponível: continuar a busca nos demais objetivos.
+    }
   }
+  return { answer: null, candidates, compatible, file: null, internalCode: null };
 }
 
 export type OfficialLookupResult = {
@@ -129,6 +161,7 @@ export type OfficialLookupResult = {
   suggestedAnswer: 'A' | 'B' | 'C' | 'D' | null;
   ofAnswer: 'A' | 'B' | 'C' | 'D' | null;
   onlineAnswer: 'A' | 'B' | 'C' | 'D' | null;
+  ofInternalCode: string | null;
   sourceUrl: string;
   message: string;
   diagnostic: string;
@@ -183,7 +216,8 @@ export async function lookupOfficialQuestion(question: {
     suggestedAnswer,
     ofAnswer,
     onlineAnswer,
-    sourceUrl: onlineAnswer ? onlineUrl : urls[0],
+    ofInternalCode: ofResult.internalCode,
+    sourceUrl: onlineAnswer ? onlineUrl : sourceUrlForOfFile(ofResult.file, urls[0]),
     diagnostic,
     message: divergence
       ? `Divergência: banco OF = ${ofAnswer}; fonte online = ${onlineAnswer}. Confira manualmente antes de salvar.`
@@ -194,6 +228,7 @@ export async function lookupOfficialQuestion(question: {
     suggestedAnswer: null,
     ofAnswer,
     onlineAnswer,
+    ofInternalCode: ofResult.internalCode,
     sourceUrl: urls[0],
     diagnostic,
     message: 'Não foi possível localizar automaticamente. Use Comparar para conferir manualmente na fonte oficial.',

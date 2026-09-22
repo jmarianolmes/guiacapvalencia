@@ -62,7 +62,7 @@ export default function AdminDashboard() {
   const publicAccessMutation = trpc.admin.setPublicAccess.useMutation();
   const importObjective32Mutation = trpc.admin.importObjective32.useMutation();
   const [reviewAnswers, setReviewAnswers] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
-  const [officialSuggestions, setOfficialSuggestions] = useState<Record<number, { answer: 'A' | 'B' | 'C' | 'D' | null; ofAnswer: 'A' | 'B' | 'C' | 'D' | null; onlineAnswer: 'A' | 'B' | 'C' | 'D' | null; sourceUrl: string; message: string; diagnostic: string }>>({});
+  const [officialSuggestions, setOfficialSuggestions] = useState<Record<number, { answer: 'A' | 'B' | 'C' | 'D' | null; ofAnswer: 'A' | 'B' | 'C' | 'D' | null; onlineAnswer: 'A' | 'B' | 'C' | 'D' | null; ofInternalCode: string | null; sourceUrl: string; message: string; diagnostic: string }>>({});
   const officialLookupMutation = trpc.admin.lookupOfficialQuestion.useMutation();
 
   useEffect(() => {
@@ -195,7 +195,7 @@ export default function AdminDashboard() {
   const handleOfficialLookup = async (questionId: number) => {
     try {
       const result = await officialLookupMutation.mutateAsync({ questionId });
-      setOfficialSuggestions((current) => ({ ...current, [questionId]: { answer: result.suggestedAnswer, ofAnswer: result.ofAnswer, onlineAnswer: result.onlineAnswer, sourceUrl: result.sourceUrl, message: result.message, diagnostic: result.diagnostic } }));
+      setOfficialSuggestions((current) => ({ ...current, [questionId]: { answer: result.suggestedAnswer, ofAnswer: result.ofAnswer, onlineAnswer: result.onlineAnswer, ofInternalCode: result.ofInternalCode, sourceUrl: result.sourceUrl, message: result.message, diagnostic: result.diagnostic } }));
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Não foi possível consultar a fonte oficial.');
     }
@@ -205,9 +205,9 @@ export default function AdminDashboard() {
     try {
       const existing = officialSuggestions[questionId];
       const result = existing
-        ? { suggestedAnswer: existing.answer, ofAnswer: existing.ofAnswer, onlineAnswer: existing.onlineAnswer, sourceUrl: existing.sourceUrl, message: existing.message, diagnostic: existing.diagnostic }
+        ? { suggestedAnswer: existing.answer, ofAnswer: existing.ofAnswer, onlineAnswer: existing.onlineAnswer, ofInternalCode: existing.ofInternalCode, sourceUrl: existing.sourceUrl, message: existing.message, diagnostic: existing.diagnostic }
         : await officialLookupMutation.mutateAsync({ questionId });
-      setOfficialSuggestions((current) => ({ ...current, [questionId]: { answer: result.suggestedAnswer, ofAnswer: result.ofAnswer, onlineAnswer: result.onlineAnswer, sourceUrl: result.sourceUrl, message: result.message, diagnostic: result.diagnostic } }));
+      setOfficialSuggestions((current) => ({ ...current, [questionId]: { answer: result.suggestedAnswer, ofAnswer: result.ofAnswer, onlineAnswer: result.onlineAnswer, ofInternalCode: result.ofInternalCode, sourceUrl: result.sourceUrl, message: result.message, diagnostic: result.diagnostic } }));
       window.open(result.sourceUrl, '_blank', 'noopener,noreferrer');
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Não foi possível abrir a fonte oficial.');
@@ -294,6 +294,7 @@ export default function AdminDashboard() {
                   {officialLookupMutation.isPending && <div className="basis-full space-y-1"><div className="h-1.5 w-full overflow-hidden rounded-full bg-blue-200"><div className="h-full w-1/3 animate-pulse rounded-full bg-blue-600" /></div><span className="text-xs text-blue-800">Consultando os blocos oficiais, comparando o título e filtrando pelas alternativas...</span></div>}
                   {officialSuggestions[question.id]?.answer && <span className="font-semibold text-blue-900">Sugestão oficial: {officialSuggestions[question.id].answer}</span>}
                   {officialSuggestions[question.id]?.ofAnswer && <span className="text-xs font-semibold text-slate-700">Banco OF: {officialSuggestions[question.id].ofAnswer}</span>}
+                  {officialSuggestions[question.id]?.ofInternalCode && <span className="text-xs text-slate-600">Registro OF: {officialSuggestions[question.id].ofInternalCode}</span>}
                   {officialSuggestions[question.id]?.onlineAnswer && <span className="text-xs font-semibold text-slate-700">Fonte online: {officialSuggestions[question.id].onlineAnswer}</span>}
                   {officialSuggestions[question.id] && <span className="basis-full text-xs text-blue-800">{officialSuggestions[question.id].message}</span>}
                   {officialSuggestions[question.id] && <span className="basis-full rounded bg-white px-2 py-1 text-[11px] leading-relaxed text-slate-600">Diagnóstico técnico: {officialSuggestions[question.id].diagnostic}</span>}
