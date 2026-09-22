@@ -281,6 +281,14 @@ export default function AdminDashboard() {
               <div key={report.id} className="rounded-lg border border-amber-200 bg-amber-50 p-4">
                 <p className="font-semibold">{question.model} · {question.provaDate} · questão {question.questionNumber}</p>
                 <p className="mt-2 text-sm text-slate-700">{question.question}</p>
+                <div className="mt-2 grid gap-1 text-xs text-slate-700 sm:grid-cols-2">
+                  {(['A', 'B', 'C', 'D'] as const).map((answer) => (
+                    <div key={answer} className="rounded border border-amber-100 bg-white/70 px-2 py-1">
+                      <span className="mr-1 font-bold">{answer})</span>{String(question[`option${answer}` as keyof typeof question] ?? '')}
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs font-semibold text-slate-600">Resposta atualmente registrada: {question.correctAnswer}</p>
                 <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-blue-200 bg-blue-50 p-3">
                   <Button size="sm" variant="outline" disabled={officialLookupMutation.isPending} onClick={() => handleOfficialLookup(question.id)}>
                     {officialLookupMutation.isPending ? text.searchingOfficial : text.searchOfficial}
