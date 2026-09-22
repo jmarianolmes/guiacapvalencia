@@ -95,8 +95,10 @@ function findAnswer(pageText: string, question: { question: string; optionA: str
   return answerMatch ? answerMatch[1].toUpperCase() as 'A' | 'B' | 'C' | 'D' : null;
 }
 
-function findBundledOfficialAnswer(question: { question: string; chapterCode: string | null }) {
-  const objective = question.chapterCode?.toLowerCase().replace(/bis$/, '_bis').replace(/\./g, '_');
+function findBundledOfficialAnswer(question: { question: string; chapterId: string | null; chapterCode: string | null; internalCode?: string | null }) {
+  const blockId = resolveBlockId(question);
+  const objective = (question.chapterCode?.toLowerCase().replace(/bis$/, '_bis').replace(/\./g, '_')
+    || blockId?.replace(/^common-/, '').replace(/-/g, '_'));
   if (!objective) return null;
   try {
     const file = join(process.cwd(), 'server', 'data', `of_cap_objetivo_${objective}.json`);
@@ -111,6 +113,8 @@ function findBundledOfficialAnswer(question: { question: string; chapterCode: st
 export type OfficialLookupResult = {
   found: boolean;
   suggestedAnswer: 'A' | 'B' | 'C' | 'D' | null;
+  ofAnswer: 'A' | 'B' | 'C' | 'D' | null;
+  onlineAnswer: 'A' | 'B' | 'C' | 'D' | null;
   sourceUrl: string;
   message: string;
 };
@@ -129,6 +133,9 @@ export async function lookupOfficialQuestion(question: {
 }): Promise<OfficialLookupResult> {
   const urls = sourceUrls(question);
   let lastUrl = urls[0];
+  const ofAnswer = findBundledOfficialAnswer(question);
+  let onlineAnswer: 'A' | 'B' | 'C' | 'D' | null = null;
+  let onlineUrl = urls[0];
   for (const url of urls) {
     try {
       const response = await fetch(url, { headers: { 'user-agent': 'Guia-CAP-Valencia-admin-review/1.0' } });
@@ -136,19 +143,31 @@ export async function lookupOfficialQuestion(question: {
       const text = htmlToText(await response.text());
       const suggestedAnswer = findAnswer(text, question);
       if (suggestedAnswer) {
-        return { found: true, suggestedAnswer, sourceUrl: url, message: 'Pregunta localizada na fonte oficial. Confirme antes de salvar.' };
+        onlineAnswer = suggestedAnswer;
+        onlineUrl = url;
+        break;
       }
     } catch {
       // A comparação manual continua disponível quando a fonte não puder ser lida.
     }
   }
-  const bundledAnswer = findBundledOfficialAnswer(question);
-  if (bundledAnswer) {
-    return { found: true, suggestedAnswer: bundledAnswer, sourceUrl: urls[0], message: 'Resposta localizada no material oficial importado. Confirme também na fonte online antes de salvar.' };
-  }
+  const suggestedAnswer = onlineAnswer || ofAnswer;
+  const divergence = onlineAnswer && ofAnswer && onlineAnswer !== ofAnswer;
+  if (suggestedAnswer) return {
+    found: true,
+    suggestedAnswer,
+    ofAnswer,
+    onlineAnswer,
+    sourceUrl: onlineAnswer ? onlineUrl : urls[0],
+    message: divergence
+      ? `Divergência: banco OF = ${ofAnswer}; fonte online = ${onlineAnswer}. Confira manualmente antes de salvar.`
+      : onlineAnswer ? 'Resposta encontrada na fonte online e comparada com o banco OF.' : 'Resposta encontrada no banco OF. A fonte online não respondeu; compare manualmente antes de salvar.',
+  };
   return {
     found: false,
     suggestedAnswer: null,
+    ofAnswer,
+    onlineAnswer,
     sourceUrl: lastUrl,
     message: 'Não foi possível localizar automaticamente. Use Comparar para conferir manualmente na fonte oficial.',
   };

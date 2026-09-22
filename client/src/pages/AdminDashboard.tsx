@@ -62,7 +62,7 @@ export default function AdminDashboard() {
   const publicAccessMutation = trpc.admin.setPublicAccess.useMutation();
   const importObjective32Mutation = trpc.admin.importObjective32.useMutation();
   const [reviewAnswers, setReviewAnswers] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
-  const [officialSuggestions, setOfficialSuggestions] = useState<Record<number, { answer: 'A' | 'B' | 'C' | 'D' | null; sourceUrl: string; message: string }>>({});
+  const [officialSuggestions, setOfficialSuggestions] = useState<Record<number, { answer: 'A' | 'B' | 'C' | 'D' | null; ofAnswer: 'A' | 'B' | 'C' | 'D' | null; onlineAnswer: 'A' | 'B' | 'C' | 'D' | null; sourceUrl: string; message: string }>>({});
   const officialLookupMutation = trpc.admin.lookupOfficialQuestion.useMutation();
 
   useEffect(() => {
@@ -195,24 +195,21 @@ export default function AdminDashboard() {
   const handleOfficialLookup = async (questionId: number) => {
     try {
       const result = await officialLookupMutation.mutateAsync({ questionId });
-      setOfficialSuggestions((current) => ({ ...current, [questionId]: { answer: result.suggestedAnswer, sourceUrl: result.sourceUrl, message: result.message } }));
+      setOfficialSuggestions((current) => ({ ...current, [questionId]: { answer: result.suggestedAnswer, ofAnswer: result.ofAnswer, onlineAnswer: result.onlineAnswer, sourceUrl: result.sourceUrl, message: result.message } }));
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Não foi possível consultar a fonte oficial.');
     }
   };
 
   const handleCompareOfficial = async (questionId: number) => {
-    const popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
     try {
       const existing = officialSuggestions[questionId];
       const result = existing
-        ? { suggestedAnswer: existing.answer, sourceUrl: existing.sourceUrl, message: existing.message }
+        ? { suggestedAnswer: existing.answer, ofAnswer: existing.ofAnswer, onlineAnswer: existing.onlineAnswer, sourceUrl: existing.sourceUrl, message: existing.message }
         : await officialLookupMutation.mutateAsync({ questionId });
-      setOfficialSuggestions((current) => ({ ...current, [questionId]: { answer: result.suggestedAnswer, sourceUrl: result.sourceUrl, message: result.message } }));
-      if (popup) popup.location.href = result.sourceUrl;
-      else window.open(result.sourceUrl, '_blank', 'noopener,noreferrer');
+      setOfficialSuggestions((current) => ({ ...current, [questionId]: { answer: result.suggestedAnswer, ofAnswer: result.ofAnswer, onlineAnswer: result.onlineAnswer, sourceUrl: result.sourceUrl, message: result.message } }));
+      window.open(result.sourceUrl, '_blank', 'noopener,noreferrer');
     } catch (error) {
-      popup?.close();
       setFormError(error instanceof Error ? error.message : 'Não foi possível abrir a fonte oficial.');
     }
   };
@@ -295,6 +292,8 @@ export default function AdminDashboard() {
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => handleCompareOfficial(question.id)}>{text.compareOfficial}</Button>
                   {officialSuggestions[question.id]?.answer && <span className="font-semibold text-blue-900">Sugestão oficial: {officialSuggestions[question.id].answer}</span>}
+                  {officialSuggestions[question.id]?.ofAnswer && <span className="text-xs font-semibold text-slate-700">Banco OF: {officialSuggestions[question.id].ofAnswer}</span>}
+                  {officialSuggestions[question.id]?.onlineAnswer && <span className="text-xs font-semibold text-slate-700">Fonte online: {officialSuggestions[question.id].onlineAnswer}</span>}
                   {officialSuggestions[question.id] && <span className="basis-full text-xs text-blue-800">{officialSuggestions[question.id].message}</span>}
                   {officialSuggestions[question.id]?.answer && <Button size="sm" onClick={() => resolveReviewMutation.mutate({ reportId: report.id, correctAnswer: officialSuggestions[question.id]!.answer! }, { onSuccess: () => { setOfficialSuggestions((current) => { const next = { ...current }; delete next[question.id]; return next; }); reviewReportsQuery.refetch(); } })}>{text.acceptOfficial}</Button>}
                 </div>
