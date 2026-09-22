@@ -52,7 +52,24 @@ function htmlToText(html: string) {
 
 function sourceUrls(question: { chapterId: string | null; chapterCode: string | null; subject: string; provaDate: string }) {
   const isGoods = /mercanc|mercad|goods/i.test(`${question.subject} ${question.provaDate}`);
-  return isGoods ? OFFICIAL_GOODS_URLS : OFFICIAL_COMMON_URLS;
+  const urls = isGoods ? OFFICIAL_GOODS_URLS : OFFICIAL_COMMON_URLS;
+  const blockIndex = isGoods
+    ? ({ 'goods-1-4': 0, 'goods-2-2': 1, 'goods-3-7': 2 } as Record<string, number>)[question.chapterId || '']
+    : ({
+        'common-1-1': 0,
+        'common-1-2': 1,
+        'common-1-3': 2,
+        'common-1-3bis': 3,
+        'common-2-1': 4,
+        'common-3-1': 5,
+        'common-3-2': 6,
+        'common-3-3': 7,
+        'common-3-4': 8,
+        'common-3-5': 9,
+        'common-3-6': 10,
+      } as Record<string, number>)[question.chapterId || ''];
+  if (blockIndex === undefined) return urls;
+  return [urls[blockIndex], ...urls.filter((_url, index) => index !== blockIndex)];
 }
 
 function findAnswer(pageText: string, question: { question: string; optionA: string; optionB: string; optionC: string; optionD: string }) {
