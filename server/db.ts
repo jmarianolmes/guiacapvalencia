@@ -618,8 +618,7 @@ export async function saveSimulatorResult(userId: number, input: {
   
   try {
     const score = Math.round((input.correct / input.questionCount) * 100);
-    const result = await db.transaction(async (tx) => {
-      const inserted = await tx.insert(userSimulatorResults).values({
+    const result = await db.insert(userSimulatorResults).values({
         userId,
         model: input.model,
         mode: input.mode,
@@ -633,20 +632,25 @@ export async function saveSimulatorResult(userId: number, input: {
         score,
         timeTaken: input.timeTaken,
       });
-      const resultId = Number((inserted as any)[0]?.insertId);
+    try {
+      const resultId = Number((result as any)[0]?.insertId);
       if (!resultId) throw new Error('Não foi possível identificar a tentativa criada.');
-      if (input.answers?.length) {
-        const questions = await tx.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, input.answers.map((answer) => answer.questionId)));
+      const answers = input.answers;
+      if (answers?.length) {
+        await db.transaction(async (tx) => {
+        const questions = await tx.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, answers.map((answer) => answer.questionId)));
         const questionsById = new Map(questions.map((question) => [question.id, question]));
-        const answerRows = input.answers.flatMap((answer) => {
+        const answerRows = answers.flatMap((answer) => {
           const question = questionsById.get(answer.questionId);
           if (!question) return [];
           return [{ resultId, userId, questionId: question.id, questionIndex: answer.questionIndex, selectedAnswer: answer.selectedAnswer, correctAnswerAtAttempt: question.correctAnswer, isCorrect: answer.selectedAnswer !== null && answer.selectedAnswer === question.correctAnswer }];
         });
         if (answerRows.length) await tx.insert(userSimulatorAnswers).values(answerRows);
+        });
       }
-      return inserted;
-    });
+    } catch (answerError) {
+      console.error('[Database] Result saved, but individual answers could not be persisted:', answerError);
+    }
     if ((input.mode === 'official' || input.mode === 'chapter') && input.wrongQuestions?.length) {
       await recordUserNotebookErrors(userId, input.wrongQuestions);
     }
