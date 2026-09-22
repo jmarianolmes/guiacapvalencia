@@ -4,6 +4,12 @@ import { join } from 'node:path';
 const OFFICIAL_BASE = 'https://www.transportes.gob.es';
 
 const COMMON_SECTION_CANDIDATES = [1, 2, 3];
+const COMMON_OBJECTIVE_CANDIDATES = [
+  '1_1', '1_2', '1_3', '1_3_bis', '1_4', '1_5',
+  '2_1', '2_2', '2_3',
+  '3_1', '3_2', '3_3', '3_4', '3_5', '3_6', '3_7',
+];
+const GOODS_OBJECTIVE_CANDIDATES = ['1', '2', '3'];
 
 function normalize(value: string) {
   return value
@@ -39,16 +45,16 @@ function sourceUrls(question: { chapterId: string | null; chapterCode: string | 
   const objective = chapterCode.replace(/bis$/, '_bis').replace(/\./g, '_');
   const isGoods = /mercanc|mercad|goods/i.test(`${question.subject} ${question.provaDate}`);
   if (isGoods && objective) {
-    const goodsObjective = objective.split('_')[0];
-    return [
-      `${OFFICIAL_BASE}/areas-de-actividad/transporte-terrestre/servicios-al-transportista/cap/preguntas-especificasmercancias-objetivo-${goodsObjective}`,
-      `${OFFICIAL_BASE}/areas-de-actividad/transporte-terrestre/servicios-al-transportista/cap/preguntas-especificas-mercancias-objetivo-${goodsObjective}`,
+    const preferred = objective.split('_')[0];
+    const orderedGoodsObjectives = [
+      ...(GOODS_OBJECTIVE_CANDIDATES.includes(preferred) ? [preferred] : []),
+      ...GOODS_OBJECTIVE_CANDIDATES.filter((item) => item !== preferred),
     ];
+    return orderedGoodsObjectives.map((item) => `${OFFICIAL_BASE}/areas-de-actividad/transporte-terrestre/servicios-al-transportista/cap/preguntas-especificasmercancias-objetivo-${item}`)
+      .concat(GOODS_OBJECTIVE_CANDIDATES.map((item) => `${OFFICIAL_BASE}/areas-de-actividad/transporte-terrestre/servicios-al-transportista/cap/preguntas-especificas-mercancias-objetivo-${item}`));
   }
-  if (objective) {
-    return COMMON_SECTION_CANDIDATES.map((section) => `${OFFICIAL_BASE}/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion${section}-objetivo${objective}`);
-  }
-  return [`${OFFICIAL_BASE}/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap`];
+  const preferredObjectives = objective ? [objective, ...COMMON_OBJECTIVE_CANDIDATES.filter((item) => item !== objective)] : COMMON_OBJECTIVE_CANDIDATES;
+  return preferredObjectives.flatMap((item) => COMMON_SECTION_CANDIDATES.map((section) => `${OFFICIAL_BASE}/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion${section}-objetivo${item}`));
 }
 
 function findAnswer(pageText: string, question: { question: string; optionA: string; optionB: string; optionC: string; optionD: string }) {
@@ -98,7 +104,6 @@ export async function lookupOfficialQuestion(question: {
   const urls = sourceUrls(question);
   let lastUrl = urls[0];
   for (const url of urls) {
-    lastUrl = url;
     try {
       const response = await fetch(url, { headers: { 'user-agent': 'Guia-CAP-Valencia-admin-review/1.0' } });
       if (!response.ok) continue;
