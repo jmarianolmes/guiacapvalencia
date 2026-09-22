@@ -85,14 +85,25 @@ function sourceUrls(question: { chapterId: string | null; chapterCode: string | 
 function findAnswer(pageText: string, question: { question: string; optionA: string; optionB: string; optionC: string; optionD: string }) {
   const normalizedPage = normalize(pageText);
   const normalizedQuestion = normalize(question.question);
-  const questionIndex = normalizedPage.indexOf(normalizedQuestion);
-  if (questionIndex < 0) return null;
-  const nearby = normalizedPage.slice(questionIndex, questionIndex + 7000);
-  const optionMatches = [question.optionA, question.optionB, question.optionC, question.optionD]
-    .filter((option) => nearby.includes(normalize(option))).length;
-  if (optionMatches < 2) return null;
-  const answerMatch = nearby.match(/respuesta\s*:\s*([abcd])/i);
-  return answerMatch ? answerMatch[1].toUpperCase() as 'A' | 'B' | 'C' | 'D' : null;
+  let cursor = 0;
+  let candidates = 0;
+  let compatible = 0;
+  let answer: 'A' | 'B' | 'C' | 'D' | null = null;
+  while (cursor < normalizedPage.length) {
+    const questionIndex = normalizedPage.indexOf(normalizedQuestion, cursor);
+    if (questionIndex < 0) break;
+    candidates++;
+    const nearby = normalizedPage.slice(questionIndex, questionIndex + 7000);
+    const optionMatches = [question.optionA, question.optionB, question.optionC, question.optionD]
+      .filter((option) => nearby.includes(normalize(option))).length;
+    if (optionMatches >= 2) {
+      compatible++;
+      const answerMatch = nearby.match(/respuesta\s*:\s*([abcd])/i);
+      if (!answer && answerMatch) answer = answerMatch[1].toUpperCase() as 'A' | 'B' | 'C' | 'D';
+    }
+    cursor = questionIndex + normalizedQuestion.length;
+  }
+  return { answer, candidates, compatible };
 }
 
 function findBundledOfficialAnswer(question: { question: string; optionA: string; optionB: string; optionC: string; optionD: string; chapterId: string | null; chapterCode: string | null; internalCode?: string | null }) {
@@ -142,6 +153,8 @@ export async function lookupOfficialQuestion(question: {
   let onlineAnswer: 'A' | 'B' | 'C' | 'D' | null = null;
   let onlineUrl = urls[0];
   let onlinePagesRead = 0;
+  let onlineCandidates = 0;
+  let onlineCompatible = 0;
   const onlineErrors: string[] = [];
   for (const url of urls) {
     try {
@@ -149,9 +162,11 @@ export async function lookupOfficialQuestion(question: {
       onlinePagesRead++;
       if (!response.ok) { onlineErrors.push(`${new URL(url).pathname.split('/').pop()}: HTTP ${response.status}`); continue; }
       const text = htmlToText(await response.text());
-      const suggestedAnswer = findAnswer(text, question);
-      if (suggestedAnswer) {
-        onlineAnswer = suggestedAnswer;
+      const onlineMatch = findAnswer(text, question);
+      onlineCandidates += onlineMatch.candidates;
+      onlineCompatible += onlineMatch.compatible;
+      if (onlineMatch.answer) {
+        onlineAnswer = onlineMatch.answer;
         onlineUrl = url;
         break;
       }
@@ -162,7 +177,7 @@ export async function lookupOfficialQuestion(question: {
   }
   const suggestedAnswer = onlineAnswer || ofAnswer;
   const divergence = onlineAnswer && ofAnswer && onlineAnswer !== ofAnswer;
-  const diagnostic = `Bloco identificado: ${blockId}. Banco OF: ${ofResult.file ? `${ofResult.candidates} ocorrência(s), ${ofResult.compatible} compatível(is)` : 'arquivo não encontrado'}. Fonte online: ${onlinePagesRead}/${urls.length} bloco(s) consultado(s)${onlineErrors.length ? `; erros: ${onlineErrors.slice(0, 3).join(' | ')}` : ''}.`;
+  const diagnostic = `Bloco identificado: ${blockId}. Banco OF: ${ofResult.file ? `${ofResult.candidates} ocorrência(s), ${ofResult.compatible} compatível(is)` : 'arquivo não encontrado'}. Fonte online: ${onlinePagesRead}/${urls.length} bloco(s), ${onlineCandidates} ocorrência(s), ${onlineCompatible} compatível(is)${onlineErrors.length ? `; erros: ${onlineErrors.slice(0, 3).join(' | ')}` : ''}.`;
   if (suggestedAnswer) return {
     found: true,
     suggestedAnswer,
