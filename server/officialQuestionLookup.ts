@@ -95,18 +95,21 @@ function findAnswer(pageText: string, question: { question: string; optionA: str
   return answerMatch ? answerMatch[1].toUpperCase() as 'A' | 'B' | 'C' | 'D' : null;
 }
 
-function findBundledOfficialAnswer(question: { question: string; chapterId: string | null; chapterCode: string | null; internalCode?: string | null }) {
+function findBundledOfficialAnswer(question: { question: string; optionA: string; optionB: string; optionC: string; optionD: string; chapterId: string | null; chapterCode: string | null; internalCode?: string | null }) {
   const blockId = resolveBlockId(question);
   const objective = (question.chapterCode?.toLowerCase().replace(/bis$/, '_bis').replace(/\./g, '_')
     || blockId?.replace(/^(common|goods)-/, '').replace(/-/g, '_'));
-  if (!objective) return null;
+  if (!objective) return { answer: null, candidates: 0, compatible: 0, file: null };
+  const file = join(process.cwd(), 'server', 'data', `of_cap_objetivo_${objective}.json`);
   try {
-    const file = join(process.cwd(), 'server', 'data', `of_cap_objetivo_${objective}.json`);
-    const records = JSON.parse(readFileSync(file, 'utf8')) as Array<{ question?: string; correctAnswer?: 'A' | 'B' | 'C' | 'D' }>;
+    const records = JSON.parse(readFileSync(file, 'utf8')) as Array<{ question?: string; optionA?: string; optionB?: string; optionC?: string; optionD?: string; correctAnswer?: 'A' | 'B' | 'C' | 'D' }>;
     const target = normalize(question.question);
-    return records.find((record) => normalize(record.question || '') === target)?.correctAnswer || null;
+    const candidates = records.filter((record) => normalize(record.question || '') === target);
+    const compatible = candidates.filter((record) => [question.optionA, question.optionB, question.optionC, question.optionD].filter((option, index) => normalize(option) === normalize([record.optionA, record.optionB, record.optionC, record.optionD][index] || '')).length >= 2);
+    const selected = compatible[0] || candidates[0];
+    return { answer: selected?.correctAnswer || null, candidates: candidates.length, compatible: compatible.length, file };
   } catch {
-    return null;
+    return { answer: null, candidates: 0, compatible: 0, file };
   }
 }
 
@@ -117,6 +120,7 @@ export type OfficialLookupResult = {
   onlineAnswer: 'A' | 'B' | 'C' | 'D' | null;
   sourceUrl: string;
   message: string;
+  diagnostic: string;
 };
 
 export async function lookupOfficialQuestion(question: {
@@ -132,14 +136,18 @@ export async function lookupOfficialQuestion(question: {
   provaDate: string;
 }): Promise<OfficialLookupResult> {
   const urls = sourceUrls(question);
-  let lastUrl = urls[0];
-  const ofAnswer = findBundledOfficialAnswer(question);
+  const blockId = resolveBlockId(question) || 'bloco não identificado';
+  const ofResult = findBundledOfficialAnswer(question);
+  const ofAnswer = ofResult.answer;
   let onlineAnswer: 'A' | 'B' | 'C' | 'D' | null = null;
   let onlineUrl = urls[0];
+  let onlinePagesRead = 0;
+  const onlineErrors: string[] = [];
   for (const url of urls) {
     try {
       const response = await fetch(url, { headers: { 'user-agent': 'Guia-CAP-Valencia-admin-review/1.0' } });
-      if (!response.ok) continue;
+      onlinePagesRead++;
+      if (!response.ok) { onlineErrors.push(`${new URL(url).pathname.split('/').pop()}: HTTP ${response.status}`); continue; }
       const text = htmlToText(await response.text());
       const suggestedAnswer = findAnswer(text, question);
       if (suggestedAnswer) {
@@ -147,18 +155,21 @@ export async function lookupOfficialQuestion(question: {
         onlineUrl = url;
         break;
       }
-    } catch {
-      // A comparação manual continua disponível quando a fonte não puder ser lida.
+    } catch (error) {
+      onlinePagesRead++;
+      onlineErrors.push(`${new URL(url).pathname.split('/').pop()}: ${error instanceof Error ? error.message : 'erro de rede'}`);
     }
   }
   const suggestedAnswer = onlineAnswer || ofAnswer;
   const divergence = onlineAnswer && ofAnswer && onlineAnswer !== ofAnswer;
+  const diagnostic = `Bloco identificado: ${blockId}. Banco OF: ${ofResult.file ? `${ofResult.candidates} ocorrência(s), ${ofResult.compatible} compatível(is)` : 'arquivo não encontrado'}. Fonte online: ${onlinePagesRead}/${urls.length} bloco(s) consultado(s)${onlineErrors.length ? `; erros: ${onlineErrors.slice(0, 3).join(' | ')}` : ''}.`;
   if (suggestedAnswer) return {
     found: true,
     suggestedAnswer,
     ofAnswer,
     onlineAnswer,
     sourceUrl: onlineAnswer ? onlineUrl : urls[0],
+    diagnostic,
     message: divergence
       ? `Divergência: banco OF = ${ofAnswer}; fonte online = ${onlineAnswer}. Confira manualmente antes de salvar.`
       : onlineAnswer ? 'Resposta encontrada na fonte online e comparada com o banco OF.' : 'Resposta encontrada no banco OF. A fonte online não respondeu; compare manualmente antes de salvar.',
@@ -168,7 +179,8 @@ export async function lookupOfficialQuestion(question: {
     suggestedAnswer: null,
     ofAnswer,
     onlineAnswer,
-    sourceUrl: lastUrl,
+    sourceUrl: urls[0],
+    diagnostic,
     message: 'Não foi possível localizar automaticamente. Use Comparar para conferir manualmente na fonte oficial.',
   };
 }
