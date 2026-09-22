@@ -3,13 +3,25 @@ import { join } from 'node:path';
 
 const OFFICIAL_BASE = 'https://www.transportes.gob.es';
 
-const COMMON_SECTION_CANDIDATES = [1, 2, 3];
-const COMMON_OBJECTIVE_CANDIDATES = [
-  '1_1', '1_2', '1_3', '1_3_bis', '1_4', '1_5',
-  '2_1', '2_2', '2_3',
-  '3_1', '3_2', '3_3', '3_4', '3_5', '3_6', '3_7',
+const OFFICIAL_COMMON_URLS = [
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion1-objetivo1_1',
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion1-objetivo1_2',
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion1-objetivo1_3',
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion1-objetivo1_3_bis',
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion1-objetivo2_1',
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion1-objetivo3_1',
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion1-objetivo3_2',
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion1-objetivo3_3',
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion1-objetivo3_4',
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion1-objetivo3_5',
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion1-objetivo3_6',
 ];
-const GOODS_OBJECTIVE_CANDIDATES = ['1', '2', '3'];
+
+const OFFICIAL_GOODS_URLS = [
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion2-objetivo1_4',
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion2-objetivo2_2',
+  'https://www.transportes.gob.es/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion2-objetivo3_7',
+];
 
 function normalize(value: string) {
   return value
@@ -39,22 +51,8 @@ function htmlToText(html: string) {
 }
 
 function sourceUrls(question: { chapterId: string | null; chapterCode: string | null; subject: string; provaDate: string }) {
-  const chapterCode = question.chapterCode?.toLowerCase().replace(/\s+/g, '')
-    || question.chapterId?.replace(/^(common|goods)-/i, '').replace('-', '.')
-    || '';
-  const objective = chapterCode.replace(/bis$/, '_bis').replace(/\./g, '_');
   const isGoods = /mercanc|mercad|goods/i.test(`${question.subject} ${question.provaDate}`);
-  if (isGoods && objective) {
-    const preferred = objective.split('_')[0];
-    const orderedGoodsObjectives = [
-      ...(GOODS_OBJECTIVE_CANDIDATES.includes(preferred) ? [preferred] : []),
-      ...GOODS_OBJECTIVE_CANDIDATES.filter((item) => item !== preferred),
-    ];
-    return orderedGoodsObjectives.map((item) => `${OFFICIAL_BASE}/areas-de-actividad/transporte-terrestre/servicios-al-transportista/cap/preguntas-especificasmercancias-objetivo-${item}`)
-      .concat(GOODS_OBJECTIVE_CANDIDATES.map((item) => `${OFFICIAL_BASE}/areas-de-actividad/transporte-terrestre/servicios-al-transportista/cap/preguntas-especificas-mercancias-objetivo-${item}`));
-  }
-  const preferredObjectives = objective ? [objective, ...COMMON_OBJECTIVE_CANDIDATES.filter((item) => item !== objective)] : COMMON_OBJECTIVE_CANDIDATES;
-  return preferredObjectives.flatMap((item) => COMMON_SECTION_CANDIDATES.map((section) => `${OFFICIAL_BASE}/transporte-terrestre/examenes-y-formacion/examenes-de-formacion-de-conductores-profesionales-cap/seccion${section}-objetivo${item}`));
+  return isGoods ? OFFICIAL_GOODS_URLS : OFFICIAL_COMMON_URLS;
 }
 
 function findAnswer(pageText: string, question: { question: string; optionA: string; optionB: string; optionC: string; optionD: string }) {
