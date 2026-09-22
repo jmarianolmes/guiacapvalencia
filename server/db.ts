@@ -82,9 +82,9 @@ export async function resolveQuestionReview(reportId: number, correctAnswer: 'A'
       await tx.update(simulatorQuestions).set({ correctAnswer: matchingAnswer, reviewStatus: 'reviewed' }).where(eq(simulatorQuestions.id, question.id));
       updatedQuestions++;
     }
+    if (updatedQuestions === 0) throw new Error('Não foi possível localizar a alternativa textual equivalente para atualizar.');
+    await tx.update(questionReviewReports).set({ status: 'resolved', resolvedAt: new Date() }).where(eq(questionReviewReports.id, reportId));
   });
-  if (updatedQuestions === 0) throw new Error('Não foi possível localizar a alternativa textual equivalente para atualizar.');
-  await db.update(questionReviewReports).set({ status: 'resolved', resolvedAt: new Date() }).where(eq(questionReviewReports.id, reportId));
   return { success: true, updatedQuestions };
 }
 
