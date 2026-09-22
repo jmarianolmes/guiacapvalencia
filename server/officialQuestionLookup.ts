@@ -98,7 +98,7 @@ function findAnswer(pageText: string, question: { question: string; optionA: str
 function findBundledOfficialAnswer(question: { question: string; chapterId: string | null; chapterCode: string | null; internalCode?: string | null }) {
   const blockId = resolveBlockId(question);
   const objective = (question.chapterCode?.toLowerCase().replace(/bis$/, '_bis').replace(/\./g, '_')
-    || blockId?.replace(/^common-/, '').replace(/-/g, '_'));
+    || blockId?.replace(/^(common|goods)-/, '').replace(/-/g, '_'));
   if (!objective) return null;
   try {
     const file = join(process.cwd(), 'server', 'data', `of_cap_objetivo_${objective}.json`);
