@@ -50,11 +50,21 @@ function htmlToText(html: string) {
     .trim();
 }
 
-function sourceUrls(question: { chapterId: string | null; chapterCode: string | null; subject: string; provaDate: string }) {
-  const isGoods = /mercanc|mercad|goods/i.test(`${question.subject} ${question.provaDate}`);
+function resolveBlockId(question: { chapterId: string | null; internalCode?: string | null }) {
+  if (question.chapterId && /^(common|goods)-/.test(question.chapterId)) return question.chapterId;
+  const code = question.internalCode?.toUpperCase().match(/^([CM])(\d{2})/) ;
+  if (!code) return null;
+  const group = code[2][0];
+  const objective = code[2][1];
+  return code[1] === 'M' ? `goods-${group}-${objective}` : `common-${group}-${objective}`;
+}
+
+function sourceUrls(question: { chapterId: string | null; chapterCode: string | null; internalCode?: string | null; subject: string; provaDate: string }) {
+  const blockId = resolveBlockId(question);
+  const isGoods = blockId?.startsWith('goods-') || /mercanc|mercad|goods/i.test(`${question.subject} ${question.provaDate}`);
   const urls = isGoods ? OFFICIAL_GOODS_URLS : OFFICIAL_COMMON_URLS;
   const blockIndex = isGoods
-    ? ({ 'goods-1-4': 0, 'goods-2-2': 1, 'goods-3-7': 2 } as Record<string, number>)[question.chapterId || '']
+    ? ({ 'goods-1-4': 0, 'goods-2-2': 1, 'goods-3-7': 2 } as Record<string, number>)[blockId || '']
     : ({
         'common-1-1': 0,
         'common-1-2': 1,
@@ -67,7 +77,7 @@ function sourceUrls(question: { chapterId: string | null; chapterCode: string | 
         'common-3-4': 8,
         'common-3-5': 9,
         'common-3-6': 10,
-      } as Record<string, number>)[question.chapterId || ''];
+      } as Record<string, number>)[blockId || ''];
   if (blockIndex === undefined) return urls;
   return [urls[blockIndex], ...urls.filter((_url, index) => index !== blockIndex)];
 }
@@ -113,6 +123,7 @@ export async function lookupOfficialQuestion(question: {
   optionD: string;
   chapterId: string | null;
   chapterCode: string | null;
+  internalCode?: string | null;
   subject: string;
   provaDate: string;
 }): Promise<OfficialLookupResult> {
@@ -143,6 +154,6 @@ export async function lookupOfficialQuestion(question: {
   };
 }
 
-export function getOfficialSourceUrl(question: { chapterId: string | null; chapterCode: string | null; subject: string; provaDate: string }) {
+export function getOfficialSourceUrl(question: { chapterId: string | null; chapterCode: string | null; internalCode?: string | null; subject: string; provaDate: string }) {
   return sourceUrls(question)[0];
 }
