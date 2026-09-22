@@ -33,13 +33,16 @@ function htmlToText(html: string) {
 }
 
 function sourceUrls(question: { chapterId: string | null; chapterCode: string | null; subject: string; provaDate: string }) {
-  const chapterCode = question.chapterCode?.toLowerCase().replace(/\s+/g, '') || '';
+  const chapterCode = question.chapterCode?.toLowerCase().replace(/\s+/g, '')
+    || question.chapterId?.replace(/^(common|goods)-/i, '').replace('-', '.')
+    || '';
   const objective = chapterCode.replace(/bis$/, '_bis').replace(/\./g, '_');
   const isGoods = /mercanc|mercad|goods/i.test(`${question.subject} ${question.provaDate}`);
   if (isGoods && objective) {
+    const goodsObjective = objective.split('_')[0];
     return [
-      `${OFFICIAL_BASE}/areas-de-actividad/transporte-terrestre/servicios-al-transportista/cap/preguntas-especificasmercancias-objetivo-${objective}`,
-      `${OFFICIAL_BASE}/areas-de-actividad/transporte-terrestre/servicios-al-transportista/cap/preguntas-especificas-mercancias-objetivo-${objective}`,
+      `${OFFICIAL_BASE}/areas-de-actividad/transporte-terrestre/servicios-al-transportista/cap/preguntas-especificasmercancias-objetivo-${goodsObjective}`,
+      `${OFFICIAL_BASE}/areas-de-actividad/transporte-terrestre/servicios-al-transportista/cap/preguntas-especificas-mercancias-objetivo-${goodsObjective}`,
     ];
   }
   if (objective) {
