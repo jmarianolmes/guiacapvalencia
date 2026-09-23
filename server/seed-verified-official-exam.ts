@@ -121,7 +121,9 @@ async function seedVerifiedOfficialExams() {
   console.log(`Importadas ${EXPECTED_FILE_COUNT} provas homologadas (${EXPECTED_FILE_COUNT * EXPECTED_QUESTION_COUNT} questões).`);
 }
 
-seedVerifiedOfficialExams().catch((error) => {
-  console.error("Erro na importação das provas homologadas:", error);
-  process.exitCode = 1;
-});
+seedVerifiedOfficialExams()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error("Erro na importação das provas homologadas:", error);
+    process.exitCode = 1;
+  });
