@@ -6,7 +6,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { count } from "drizzle-orm";
+import { count, sql } from "drizzle-orm";
 import { getDb } from "./db";
 import { verifiedOfficialQuestions } from "../drizzle/schema";
 
@@ -95,9 +95,7 @@ async function seedVerifiedOfficialExams() {
   // table is deliberately never read, deleted or written by this importer.
   // sourceId is stable, so re-running the seed preserves question IDs, reports,
   // correction overlays and historical answer references.
-  for (const { data } of sources) {
-    for (const record of data.registros) {
-      await db.insert(verifiedOfficialQuestions).values({
+  const rows = sources.flatMap(({ data }) => data.registros.map((record) => ({
         sourceId: record.id,
         examDate: record.convocatoria,
         model: "VERIFIED_OFFICIAL",
@@ -111,21 +109,13 @@ async function seedVerifiedOfficialExams() {
         optionD: record.opciones.D,
         correctAnswer: record.respuesta_correcta,
         isReserve: record.numero > 100,
-      }).onDuplicateKeyUpdate({ set: {
-        examDate: record.convocatoria,
-        model: "VERIFIED_OFFICIAL",
-        questionNumber: record.numero,
-        subject: "Mercancias",
-        question: record.texto_original,
-        stem: record.enunciado,
-        optionA: record.opciones.A,
-        optionB: record.opciones.B,
-        optionC: record.opciones.C,
-        optionD: record.opciones.D,
-        correctAnswer: record.respuesta_correcta,
-        isReserve: record.numero > 100,
-      } });
-    }
+      })));
+  // Keep the source rows immutable on repeat runs. Since every row is validated
+  // from the homologated files above, a duplicate is safely a no-op while new
+  // rows are inserted in bounded batches.
+  for (let offset = 0; offset < rows.length; offset += 250) {
+    await db.insert(verifiedOfficialQuestions).values(rows.slice(offset, offset + 250))
+      .onDuplicateKeyUpdate({ set: { sourceId: sql.raw("sourceId") } });
   }
 
   console.log(`Importadas ${EXPECTED_FILE_COUNT} provas homologadas (${EXPECTED_FILE_COUNT * EXPECTED_QUESTION_COUNT} questões).`);
