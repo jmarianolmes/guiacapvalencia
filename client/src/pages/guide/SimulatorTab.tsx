@@ -261,9 +261,14 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   }, [answers, chapterAttempt, currentQuestion, questions.length, selectedChapter, selectedDate, selectedModel, showResults, studyMode, timeLeft]);
 
   const getResultStats = () => {
-    const correct = Object.entries(answers).filter(([idx, answer]) => questions[Number(idx)]?.correctAnswer === answer).length;
-    const wrong = Object.entries(answers).filter(([idx, answer]) => questions[Number(idx)]?.correctAnswer !== answer).length;
-    return { correct, wrong, blank: questions.length - Object.keys(answers).length };
+    const countedQuestions = selectedDate
+      ? questions.filter((question) => question.questionNumber <= 100)
+      : questions;
+    const countedIndexes = new Set(countedQuestions.map((question) => questions.indexOf(question)));
+    const answeredCounted = Object.entries(answers).filter(([idx]) => countedIndexes.has(Number(idx)));
+    const correct = answeredCounted.filter(([idx, answer]) => questions[Number(idx)]?.correctAnswer === answer).length;
+    const wrong = answeredCounted.filter(([idx, answer]) => questions[Number(idx)]?.correctAnswer !== answer).length;
+    return { correct, wrong, blank: countedQuestions.length - answeredCounted.length };
   };
 
   const finishSimulator = () => {
@@ -272,9 +277,12 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
     const model = selectedChapter || selectedDate || selectedModel || '';
     const wrongQuestions = Object.entries(answers).flatMap(([index, selectedAnswer]) => {
       const question = questions[Number(index)];
-      if (!question || question.correctAnswer === selectedAnswer) return [];
+      if (!question || (selectedDate && question.questionNumber > 100) || question.correctAnswer === selectedAnswer) return [];
       return [{ questionId: question.id, selectedAnswer: selectedAnswer as 'A' | 'B' | 'C' | 'D' }];
     });
+    const countedQuestionCount = selectedDate
+      ? questions.filter((question) => question.questionNumber <= 100).length
+      : questions.length;
     const attemptAnswers = questions.map((question, questionIndex) => ({
       questionId: question.id,
       questionIndex,
@@ -288,12 +296,12 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
       mode,
       chapterId: selectedChapter || undefined,
       attemptNumber: selectedChapter ? chapterAttempt : undefined,
-      questionCount: questions.length,
+      questionCount: countedQuestionCount,
       ...stats,
       studyMode,
       answers: attemptAnswers,
       wrongQuestions,
-      timeTaken: questions.length === 100 ? Math.max(0, 7200 - timeLeft) : 0,
+      timeTaken: countedQuestionCount === 100 ? Math.max(0, 7200 - timeLeft) : 0,
     }, {
       onSuccess: () => {
         simulatorUtils.guide.getUserResults.invalidate();
@@ -500,12 +508,13 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
 
   // Timer
   useEffect(() => {
-    if ((!selectedModel && !selectedDate && !selectedChapter) || showResults || questions.length !== 100) return;
+    const countedQuestionCount = selectedDate ? questions.filter((question) => question.questionNumber <= 100).length : questions.length;
+    if ((!selectedModel && !selectedDate && !selectedChapter) || showResults || countedQuestionCount !== 100) return;
     const interval = setInterval(() => {
       setTimeLeft(prev => Math.max(0, prev - 1));
     }, 1000);
     return () => clearInterval(interval);
-  }, [selectedModel, selectedDate, selectedChapter, showResults, questions.length]);
+  }, [selectedModel, selectedDate, selectedChapter, showResults, questions]);
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);

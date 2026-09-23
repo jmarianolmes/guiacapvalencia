@@ -120,6 +120,20 @@
       "when": 1788950600000,
       "tag": "0016_user_simulator_answers",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1788165400000,
+      "tag": "0017_verified_official_questions",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1788165500000,
+      "tag": "0018_verified_official_corrections",
+      "breakpoints": true
     }
   ]
 }

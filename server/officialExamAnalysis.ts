@@ -210,8 +210,13 @@ function percentage(value: number, total: number) {
 }
 
 function dateStamp(date: string) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) return Date.parse(`${date}T00:00:00Z`);
   const [day, month, year] = date.split('/').map(Number);
   return Date.UTC(year, month - 1, day);
+}
+
+function sortExamDates(left: string, right: string) {
+  return dateStamp(right) - dateStamp(left);
 }
 
 export function buildOfficialExamAnalysis(records: OfficialQuestionRecord[]) {
@@ -332,11 +337,7 @@ export function buildOfficialExamAnalysis(records: OfficialQuestionRecord[]) {
       optionC: group.question.optionC,
       optionD: group.question.optionD,
       correctAnswer: group.question.correctAnswer as AnswerKey,
-      exams: Array.from(group.exams).sort((left, right) => {
-        const [leftDay, leftMonth, leftYear] = left.split('/').map(Number);
-        const [rightDay, rightMonth, rightYear] = right.split('/').map(Number);
-        return Date.UTC(rightYear, rightMonth - 1, rightDay) - Date.UTC(leftYear, leftMonth - 1, leftDay);
-      }),
+      exams: Array.from(group.exams).sort(sortExamDates),
     }))
     .sort((left, right) => right.occurrences - left.occurrences || left.question.localeCompare(right.question, 'es'));
 
@@ -360,11 +361,7 @@ export function buildOfficialExamAnalysis(records: OfficialQuestionRecord[]) {
         optionD: group.question.optionD,
         correctAnswer: group.question.correctAnswer as AnswerKey,
         occurrences: group.occurrences,
-        exams: Array.from(group.exams).sort((left, right) => {
-          const [leftDay, leftMonth, leftYear] = left.split('/').map(Number);
-          const [rightDay, rightMonth, rightYear] = right.split('/').map(Number);
-          return Date.UTC(rightYear, rightMonth - 1, rightDay) - Date.UTC(leftYear, leftMonth - 1, leftDay);
-        }),
+        exams: Array.from(group.exams).sort(sortExamDates),
       })),
     };
   }).filter((insight) => insight.count > 0).sort((left, right) => right.count - left.count);

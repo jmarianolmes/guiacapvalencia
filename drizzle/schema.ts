@@ -94,6 +94,48 @@ export const simulatorQuestions = mysqlTable("simulator_questions", {
 export type SimulatorQuestion = typeof simulatorQuestions.$inferSelect;
 export type InsertSimulatorQuestion = typeof simulatorQuestions.$inferInsert;
 
+// Immutable operational projection of the user-homologated official exam files.
+// This table is intentionally separate from simulator_questions: no chapter
+// classification, equivalence, deduplication or administrative correction may
+// alter these records.
+export const verifiedOfficialQuestions = mysqlTable("verified_official_questions", {
+  id: int("id").autoincrement().primaryKey(),
+  sourceId: varchar("sourceId", { length: 64 }).notNull().unique(),
+  examDate: varchar("examDate", { length: 10 }).notNull(), // YYYY-MM-DD from the validated filename
+  model: varchar("model", { length: 20 }).default("VERIFIED_OFFICIAL").notNull(),
+  questionNumber: int("questionNumber").notNull(),
+  subject: varchar("subject", { length: 50 }).default("Mercancias").notNull(),
+  question: text("question").notNull(),
+  stem: text("stem").notNull(),
+  optionA: text("optionA").notNull(),
+  optionB: text("optionB").notNull(),
+  optionC: text("optionC").notNull(),
+  optionD: text("optionD").notNull(),
+  correctAnswer: varchar("correctAnswer", { length: 1 }).notNull(),
+  isReserve: boolean("isReserve").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => [
+  index("verified_official_questions_exam_order_idx").on(table.examDate, table.questionNumber),
+  uniqueIndex("verified_official_questions_exam_number_unique").on(table.examDate, table.questionNumber),
+]);
+
+export type VerifiedOfficialQuestion = typeof verifiedOfficialQuestions.$inferSelect;
+export type InsertVerifiedOfficialQuestion = typeof verifiedOfficialQuestions.$inferInsert;
+
+// A correction is an operational overlay. The homologated source JSON and the
+// original answer in verified_official_questions remain immutable.
+export const verifiedOfficialCorrections = mysqlTable("verified_official_corrections", {
+  id: int("id").autoincrement().primaryKey(),
+  sourceId: varchar("sourceId", { length: 64 }).notNull().unique(),
+  correctAnswer: varchar("correctAnswer", { length: 1 }).notNull(),
+  note: text("note"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type VerifiedOfficialCorrection = typeof verifiedOfficialCorrections.$inferSelect;
+export type InsertVerifiedOfficialCorrection = typeof verifiedOfficialCorrections.$inferInsert;
+
 export const questionReviewReports = mysqlTable("question_review_reports", {
   id: int("id").autoincrement().primaryKey(),
   questionId: int("questionId").notNull(),

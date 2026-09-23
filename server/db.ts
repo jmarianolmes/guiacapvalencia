@@ -2,7 +2,7 @@ import { and, asc, count, eq, inArray, ne, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createPool, type Pool } from "mysql2";
 import { desc } from 'drizzle-orm';
-import { InsertUser, users, passwordResets, userAccessLogs, simulatorQuestions, repeatedQuestions, tricks, siglas, userSimulatorResults, userSimulatorAnswers, userStudyProfiles, userErrorNotebookItems, questionReviewReports, siteSettings } from "../drizzle/schema";
+import { InsertUser, users, passwordResets, userAccessLogs, simulatorQuestions, verifiedOfficialQuestions, verifiedOfficialCorrections, repeatedQuestions, tricks, siglas, userSimulatorResults, userSimulatorAnswers, userStudyProfiles, userErrorNotebookItems, questionReviewReports, siteSettings } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { simulatorChapters } from '../shared/simulatorChapters';
 import { classifySimulatorQuestion } from './chapterClassifier';
@@ -17,13 +17,46 @@ let _pool: Pool | null = null;
 type SimulatorQuestion = typeof simulatorQuestions.$inferSelect;
 type ChapterQuestionIndex = Map<string, SimulatorQuestion[]>;
 const CHAPTER_ATTEMPT_SIZE = 50;
+const VERIFIED_OFFICIAL_ID_OFFSET = 1_000_000;
+
+function toVerifiedOfficialQuestion(question: typeof verifiedOfficialQuestions.$inferSelect, correctedAnswer?: string | null) {
+  return {
+    id: VERIFIED_OFFICIAL_ID_OFFSET + question.id,
+    model: question.model,
+    provaDate: question.examDate,
+    questionNumber: question.questionNumber,
+    subject: question.subject,
+    question: question.question,
+    stem: question.stem,
+    optionA: question.optionA,
+    optionB: question.optionB,
+    optionC: question.optionC,
+    optionD: question.optionD,
+    correctAnswer: correctedAnswer ?? question.correctAnswer,
+    normalized: null,
+    internalCode: null,
+    equivalenceKey: null,
+    chapterId: null,
+    chapterCode: null,
+    origin: 'official',
+    reviewStatus: 'reviewed',
+    isVariant: false,
+    createdAt: question.createdAt,
+  };
+}
 
 export function isOfficialChapterQuestion(question: Pick<SimulatorQuestion, 'model'>) {
   return question.model === 'ORIGINAL' || question.model === 'OF';
 }
 
+async function getVerifiedCorrectionMap(db: NonNullable<typeof _db>, sourceIds: string[]) {
+  if (sourceIds.length === 0) return new Map<string, string>();
+  const corrections = await db.select().from(verifiedOfficialCorrections).where(inArray(verifiedOfficialCorrections.sourceId, sourceIds));
+  return new Map(corrections.map((correction) => [correction.sourceId, correction.correctAnswer]));
+}
+
 function isStudyEvidenceQuestion(question: Pick<SimulatorQuestion, 'model' | 'internalCode' | 'origin'>) {
-  return question.model === 'ORIGINAL' || question.model === 'OF' || (question.internalCode !== null && question.origin === 'official');
+  return question.model === 'ORIGINAL' || question.model === 'VERIFIED_OFFICIAL' || question.model === 'OF' || (question.internalCode !== null && question.origin === 'official');
 }
 
 export function preferOfficialBankQuestions(questions: SimulatorQuestion[]) {
@@ -34,6 +67,7 @@ export function preferOfficialBankQuestions(questions: SimulatorQuestion[]) {
 export async function reportQuestionForReview(userId: number, questionId: number) {
   const db = await getDb();
   if (!db) throw new Error('Database connection unavailable');
+  if (!await getSimulatorQuestionById(questionId)) throw new Error('Pergunta não encontrada');
   await db.insert(questionReviewReports).values({ userId, questionId, status: 'open' }).onDuplicateKeyUpdate({ set: { status: 'open', resolvedAt: null } });
   return { success: true };
 }
@@ -48,16 +82,37 @@ export async function cancelQuestionReview(userId: number, questionId: number) {
 export async function getQuestionReviewReports() {
   const db = await getDb();
   if (!db) return [];
-  return db.select({ report: questionReviewReports, question: simulatorQuestions })
-    .from(questionReviewReports)
-    .innerJoin(simulatorQuestions, eq(questionReviewReports.questionId, simulatorQuestions.id))
+  const reports = await db.select().from(questionReviewReports)
     .where(eq(questionReviewReports.status, 'open'))
     .orderBy(asc(questionReviewReports.createdAt));
+  const legacyReports = reports.filter((report) => report.questionId < VERIFIED_OFFICIAL_ID_OFFSET);
+  const verifiedReports = reports.filter((report) => report.questionId >= VERIFIED_OFFICIAL_ID_OFFSET);
+  const legacyQuestions = legacyReports.length
+    ? await db.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, legacyReports.map((report) => report.questionId)))
+    : [];
+  const verifiedQuestions = verifiedReports.length
+    ? await db.select().from(verifiedOfficialQuestions).where(inArray(verifiedOfficialQuestions.id, verifiedReports.map((report) => report.questionId - VERIFIED_OFFICIAL_ID_OFFSET)))
+    : [];
+  const corrections = await getVerifiedCorrectionMap(db, verifiedQuestions.map((question) => question.sourceId));
+  const questionsById = new Map<number, SimulatorQuestion>([
+    ...legacyQuestions.map((question) => [question.id, question] as const),
+    ...verifiedQuestions.map((question) => [VERIFIED_OFFICIAL_ID_OFFSET + question.id, toVerifiedOfficialQuestion(question, corrections.get(question.sourceId))] as const),
+  ]);
+  return reports.flatMap((report) => {
+    const question = questionsById.get(report.questionId);
+    return question ? [{ report, question }] : [];
+  });
 }
 
 export async function getSimulatorQuestionById(questionId: number) {
   const db = await getDb();
   if (!db) return null;
+  if (questionId >= VERIFIED_OFFICIAL_ID_OFFSET) {
+    const [question] = await db.select().from(verifiedOfficialQuestions).where(eq(verifiedOfficialQuestions.id, questionId - VERIFIED_OFFICIAL_ID_OFFSET)).limit(1);
+    if (!question) return null;
+    const corrections = await getVerifiedCorrectionMap(db, [question.sourceId]);
+    return toVerifiedOfficialQuestion(question, corrections.get(question.sourceId));
+  }
   const [question] = await db.select().from(simulatorQuestions).where(eq(simulatorQuestions.id, questionId)).limit(1);
   return question ?? null;
 }
@@ -67,6 +122,37 @@ export async function resolveQuestionReview(reportId: number, correctAnswer: 'A'
   if (!db) throw new Error('Database connection unavailable');
   const [report] = await db.select().from(questionReviewReports).where(eq(questionReviewReports.id, reportId)).limit(1);
   if (!report) throw new Error('Averiguação não encontrada');
+  if (report.questionId >= VERIFIED_OFFICIAL_ID_OFFSET) {
+    const [source] = await db.select().from(verifiedOfficialQuestions).where(eq(verifiedOfficialQuestions.id, report.questionId - VERIFIED_OFFICIAL_ID_OFFSET)).limit(1);
+    if (!source) throw new Error('Pergunta homologada da averiguação não encontrada');
+    let recalculatedResults = 0;
+    await db.transaction(async (tx) => {
+      await tx.insert(verifiedOfficialCorrections).values({ sourceId: source.sourceId, correctAnswer }).onDuplicateKeyUpdate({ set: { correctAnswer, updatedAt: new Date() } });
+      await tx.update(questionReviewReports).set({ status: 'resolved', resolvedAt: new Date() }).where(eq(questionReviewReports.id, reportId));
+      const affectedAnswers = await tx.select().from(userSimulatorAnswers).where(eq(userSimulatorAnswers.questionId, report.questionId));
+      const affectedResultIds = new Set<number>();
+      for (const answer of affectedAnswers) {
+        affectedResultIds.add(answer.resultId);
+        const isCorrect = answer.selectedAnswer !== null && answer.selectedAnswer === correctAnswer;
+        if (answer.isCorrect !== isCorrect) {
+          await tx.update(userSimulatorAnswers).set({ isCorrect }).where(eq(userSimulatorAnswers.id, answer.id));
+        }
+      }
+      for (const resultId of Array.from(affectedResultIds)) {
+        const [result] = await tx.select().from(userSimulatorResults).where(eq(userSimulatorResults.id, resultId)).limit(1);
+        if (!result) continue;
+        const answers = await tx.select().from(userSimulatorAnswers).where(eq(userSimulatorAnswers.resultId, resultId));
+        if (answers.length !== result.questionCount) continue;
+        const correctCount = answers.filter((answer) => answer.isCorrect).length;
+        const blankCount = answers.filter((answer) => answer.selectedAnswer === null).length;
+        const wrongCount = answers.length - correctCount - blankCount;
+        const score = result.questionCount > 0 ? Math.round((correctCount / result.questionCount) * 100) : 0;
+        await tx.update(userSimulatorResults).set({ correctAnswers: correctCount, wrongAnswers: wrongCount, blankAnswers: blankCount, score }).where(eq(userSimulatorResults.id, resultId));
+        recalculatedResults++;
+      }
+    });
+    return { success: true, updatedQuestions: 1, recalculatedResults };
+  }
   const [source] = await db.select().from(simulatorQuestions).where(eq(simulatorQuestions.id, report.questionId)).limit(1);
   if (!source) throw new Error('Pergunta da averiguação não encontrada');
   const correctText = source[`option${correctAnswer}` as 'optionA' | 'optionB' | 'optionC' | 'optionD'];
@@ -429,20 +515,23 @@ export async function searchAllSimulatorQuestions(search: string, category: 'all
 export async function getSimulatorQuestionsByModel(model: string) {
   if (isDemoMode()) return getDemoQuestionsByModel(model);
   try {
-    // Se o identificador contém '/', trata-se de uma prova oficial por data.
-    // As provas oficiais são armazenadas separadamente para não misturar
-    // questões do pool estatístico com o exame original.
-    const isDate = model.includes('/');
+    // Official exams use the validated ISO filename date and are read only
+    // from the isolated verified table. Never fall back to simulator_questions.
+    const isDate = /^\d{4}-\d{2}-\d{2}$/.test(model) || model.includes('/');
+
+    if (isDate) {
+      const verifiedQuestions = await withSimulatorDbRetry((db) =>
+        db.select().from(verifiedOfficialQuestions)
+          .where(eq(verifiedOfficialQuestions.examDate, model))
+          .orderBy(asc(verifiedOfficialQuestions.questionNumber))
+      );
+      const corrections = await withSimulatorDbRetry((db) => getVerifiedCorrectionMap(db, verifiedQuestions.map((question) => question.sourceId)));
+      return verifiedQuestions.map((question) => toVerifiedOfficialQuestion(question, corrections.get(question.sourceId)));
+    }
     
     return await withSimulatorDbRetry((db) =>
       db.select().from(simulatorQuestions)
-        .where(isDate
-          ? and(
-              eq(simulatorQuestions.provaDate, model),
-              eq(simulatorQuestions.model, 'ORIGINAL')
-            )
-          : eq(simulatorQuestions.model, model)
-        )
+        .where(eq(simulatorQuestions.model, model))
         .orderBy(asc(simulatorQuestions.questionNumber))
     );
   } catch (error) {
@@ -473,18 +562,14 @@ export async function getOfficialExamDates() {
   if (isDemoMode()) return getDemoOfficialDates();
   try {
     const result = await withSimulatorDbRetry((db) =>
-      db.selectDistinct({ provaDate: simulatorQuestions.provaDate })
-        .from(simulatorQuestions)
-        .where(eq(simulatorQuestions.model, 'ORIGINAL'))
+      db.selectDistinct({ provaDate: verifiedOfficialQuestions.examDate })
+        .from(verifiedOfficialQuestions)
     );
 
     return result
       .map(({ provaDate }) => provaDate)
       .sort((left, right) => {
-        const toTimestamp = (date: string) => {
-          const [day, month, year] = date.split('/').map(Number);
-          return Date.UTC(year, month - 1, day);
-        };
+        const toTimestamp = (date: string) => Date.parse(`${date}T00:00:00Z`);
         return toTimestamp(right) - toTimestamp(left);
       });
   } catch (error) {
@@ -500,9 +585,15 @@ export async function getOfficialExamAnalysis() {
   }
 
   try {
-    const officialQuestions = await withSimulatorDbRetry((db) =>
-      db.select().from(simulatorQuestions).where(eq(simulatorQuestions.model, 'ORIGINAL'))
+    const verifiedQuestions = await withSimulatorDbRetry((db) =>
+      db.select().from(verifiedOfficialQuestions).where(eq(verifiedOfficialQuestions.isReserve, false))
     );
+    const corrections = await withSimulatorDbRetry((db) => getVerifiedCorrectionMap(db, verifiedQuestions.map((question) => question.sourceId)));
+    const officialQuestions = verifiedQuestions.map((question) => ({
+      ...toVerifiedOfficialQuestion(question, corrections.get(question.sourceId)),
+      model: 'ORIGINAL',
+      normalized: null,
+    }));
     const analysis = buildOfficialExamAnalysis(officialQuestions);
     officialAnalysisCache = { createdAt: Date.now(), value: analysis };
     return analysis;
@@ -609,12 +700,20 @@ export async function getSimulatorStats() {
         catalogPendingReviewEntries: sql<number>`count(distinct case when ${simulatorQuestions.reviewStatus} = 'pending_review' then ${simulatorQuestions.equivalenceKey} end)`,
       }).from(simulatorQuestions)
     );
+    const [verifiedSummary] = await withSimulatorDbRetry((db) =>
+      db.select({
+        officialQuestions: count(),
+        officialExams: sql<number>`count(distinct ${verifiedOfficialQuestions.examDate})`,
+      }).from(verifiedOfficialQuestions).where(eq(verifiedOfficialQuestions.isReserve, false))
+    );
+    const legacyOfficialQuestions = Number(summary?.officialQuestions ?? 0);
+    const verifiedOfficialQuestionsCount = Number(verifiedSummary?.officialQuestions ?? 0);
 
     return {
-      totalQuestions: Number(summary?.totalQuestions ?? 0),
-      totalOfficialQuestions: Number(summary?.officialQuestions ?? 0),
+      totalQuestions: Number(summary?.totalQuestions ?? 0) - legacyOfficialQuestions + verifiedOfficialQuestionsCount,
+      totalOfficialQuestions: verifiedOfficialQuestionsCount,
       totalStatisticalQuestions: Number(summary?.statisticalQuestions ?? 0),
-      totalOfficialExams: Number(summary?.officialExams ?? 0),
+      totalOfficialExams: Number(verifiedSummary?.officialExams ?? 0),
       totalModels: Number(summary?.statisticalModels ?? 0),
       totalRepeatedQuestions: Number(summary?.repeatedQuestions ?? 0),
       catalogUniqueEntries: Number(summary?.catalogUniqueEntries ?? 0),
@@ -675,8 +774,24 @@ export async function saveSimulatorResult(userId: number, input: {
       const answers = input.answers;
       if (answers?.length) {
         await db.transaction(async (tx) => {
-        const questions = await tx.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, answers.map((answer) => answer.questionId)));
-        const questionsById = new Map(questions.map((question) => [question.id, question]));
+        const legacyQuestionIds = answers.map((answer) => answer.questionId).filter((questionId) => questionId < VERIFIED_OFFICIAL_ID_OFFSET);
+        const verifiedQuestionIds = answers
+          .map((answer) => answer.questionId - VERIFIED_OFFICIAL_ID_OFFSET)
+          .filter((questionId) => questionId > 0);
+        const legacyQuestions = legacyQuestionIds.length
+          ? await tx.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, legacyQuestionIds))
+          : [];
+        const verifiedQuestions = verifiedQuestionIds.length
+          ? await tx.select().from(verifiedOfficialQuestions).where(inArray(verifiedOfficialQuestions.id, verifiedQuestionIds))
+          : [];
+        const verifiedCorrectionsRows = verifiedQuestions.length
+          ? await tx.select().from(verifiedOfficialCorrections).where(inArray(verifiedOfficialCorrections.sourceId, verifiedQuestions.map((question) => question.sourceId)))
+          : [];
+        const verifiedCorrections = new Map(verifiedCorrectionsRows.map((correction) => [correction.sourceId, correction.correctAnswer]));
+        const questionsById = new Map<number, { id: number; correctAnswer: string }>([
+          ...legacyQuestions.map((question) => [question.id, question] as const),
+          ...verifiedQuestions.map((question) => [VERIFIED_OFFICIAL_ID_OFFSET + question.id, { id: VERIFIED_OFFICIAL_ID_OFFSET + question.id, correctAnswer: verifiedCorrections.get(question.sourceId) ?? question.correctAnswer }] as const),
+        ]);
         const answerRows = answers.flatMap((answer) => {
           const question = questionsById.get(answer.questionId);
           if (!question) return [];
@@ -722,11 +837,23 @@ export async function getUserStudyStrategy(userId: number) {
   const errorFocus = db ? await (async () => {
     const items = await db.select().from(userErrorNotebookItems).where(and(eq(userErrorNotebookItems.userId, userId), sql`${userErrorNotebookItems.resolvedAt} IS NULL`));
     if (!items.length) return [];
-    const officialQuestions = await db.select({ id: simulatorQuestions.id }).from(simulatorQuestions).where(and(eq(simulatorQuestions.model, 'ORIGINAL'), inArray(simulatorQuestions.id, items.map((item) => item.questionId))));
-    const officialIds = new Set(officialQuestions.map((question) => question.id));
+    const officialQuestions = await getStudyQuestionsByIds(db, items.map((item) => item.questionId));
+    const officialIds = new Set(officialQuestions.filter((question) => question.model === 'ORIGINAL' || question.model === 'VERIFIED_OFFICIAL').map((question) => question.id));
     return items.filter((item) => officialIds.has(item.questionId)).map((item) => ({ wrongCount: item.wrongCount }));
   })() : [];
   return buildStudyStrategy(results, errorFocus);
+}
+
+async function getStudyQuestionsByIds(db: NonNullable<typeof _db>, questionIds: number[]) {
+  const legacyIds = questionIds.filter((questionId) => questionId < VERIFIED_OFFICIAL_ID_OFFSET);
+  const verifiedIds = questionIds.filter((questionId) => questionId >= VERIFIED_OFFICIAL_ID_OFFSET).map((questionId) => questionId - VERIFIED_OFFICIAL_ID_OFFSET);
+  const legacyQuestions = legacyIds.length ? await db.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, legacyIds)) : [];
+  const verifiedQuestions = verifiedIds.length ? await db.select().from(verifiedOfficialQuestions).where(inArray(verifiedOfficialQuestions.id, verifiedIds)) : [];
+  const corrections = await getVerifiedCorrectionMap(db, verifiedQuestions.map((question) => question.sourceId));
+  return [
+    ...legacyQuestions,
+    ...verifiedQuestions.map((question) => toVerifiedOfficialQuestion(question, corrections.get(question.sourceId))),
+  ];
 }
 
 
@@ -737,7 +864,7 @@ export async function recordUserNotebookErrors(userId: number, wrongQuestions: A
   const uniqueAnswers = new Map<number, 'A' | 'B' | 'C' | 'D'>();
   for (const item of wrongQuestions) uniqueAnswers.set(item.questionId, item.selectedAnswer);
   const questionIds = Array.from(uniqueAnswers.keys());
-  const sourceQuestions = await db.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, questionIds));
+  const sourceQuestions = await getStudyQuestionsByIds(db, questionIds);
   const now = new Date();
   const reset = restartReviewSchedule(now);
 
@@ -745,7 +872,7 @@ export async function recordUserNotebookErrors(userId: number, wrongQuestions: A
     for (const question of sourceQuestions) {
       const selectedAnswer = uniqueAnswers.get(question.id);
       if (!selectedAnswer || selectedAnswer === question.correctAnswer) continue;
-      const chapterId = classifySimulatorQuestion(question).chapter?.id ?? null;
+      const chapterId = question.model === 'VERIFIED_OFFICIAL' ? null : classifySimulatorQuestion(question).chapter?.id ?? null;
       await tx.insert(userErrorNotebookItems).values({
         userId,
         questionId: question.id,
@@ -779,7 +906,7 @@ export async function getUserErrorNotebook(userId: number) {
   const items = await db.select().from(userErrorNotebookItems).where(eq(userErrorNotebookItems.userId, userId));
   if (!items.length) return { dueItems: [], summary: { totalItems: 0, dueCount: 0, scheduledCount: 0, resolvedCount: 0, chapterCounts: [] as Array<{ chapterId: string | null; count: number }> } };
 
-  const sourceQuestions = (await db.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, items.map((item) => item.questionId)))).filter(isStudyEvidenceQuestion);
+  const sourceQuestions = (await getStudyQuestionsByIds(db, items.map((item) => item.questionId))).filter(isStudyEvidenceQuestion);
   const questionsById = new Map(sourceQuestions.map((question) => [question.id, question]));
   const eligibleItems = items.filter((item) => questionsById.has(item.questionId));
   const now = new Date();
@@ -812,7 +939,7 @@ export async function getUserErrorFocus(userId: number) {
   if (!db) return [];
   const items = await db.select().from(userErrorNotebookItems).where(and(eq(userErrorNotebookItems.userId, userId), sql`${userErrorNotebookItems.resolvedAt} IS NULL`));
   if (!items.length) return [];
-  const sourceQuestions = (await db.select().from(simulatorQuestions).where(inArray(simulatorQuestions.id, items.map((item) => item.questionId)))).filter(isStudyEvidenceQuestion);
+  const sourceQuestions = (await getStudyQuestionsByIds(db, items.map((item) => item.questionId))).filter(isStudyEvidenceQuestion);
   const eligibleIds = new Set(sourceQuestions.map((question) => question.id));
   return items.filter((item) => eligibleIds.has(item.questionId)).map((item) => ({ questionId: item.questionId, chapterId: item.chapterId, wrongCount: item.wrongCount }));
 }
@@ -826,7 +953,7 @@ export async function reviewUserErrorNotebookItem(userId: number, itemId: number
     .where(and(eq(userErrorNotebookItems.id, itemId), eq(userErrorNotebookItems.userId, userId)))
     .limit(1);
   if (!item) throw new Error('Item de revisão não encontrado');
-  const [question] = await db.select().from(simulatorQuestions).where(eq(simulatorQuestions.id, item.questionId)).limit(1);
+  const [question] = await getStudyQuestionsByIds(db, [item.questionId]);
   if (!question) throw new Error('Questão de revisão não encontrada');
 
   const now = new Date();
