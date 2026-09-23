@@ -467,42 +467,62 @@ export async function searchAllSimulatorQuestions(search: string, category: 'all
   if (normalizedSearch.length < 2) return [];
   try {
     const term = `%${normalizedSearch}%`;
-    const categoryFilter = category === 'official'
+    const legacyCategoryFilter = category === 'official'
       ? eq(simulatorQuestions.model, 'ORIGINAL')
       : category === 'chapter'
         ? or(eq(simulatorQuestions.model, 'OF'), and(eq(simulatorQuestions.origin, 'official'), sql`${simulatorQuestions.chapterId} IS NOT NULL`))
         : undefined;
     return await withSimulatorDbRetry((db) =>
-      db.select({
-        id: simulatorQuestions.id,
-        questionNumber: simulatorQuestions.questionNumber,
-        model: simulatorQuestions.model,
-        provaDate: simulatorQuestions.provaDate,
-        question: simulatorQuestions.question,
-        optionA: simulatorQuestions.optionA,
-        optionB: simulatorQuestions.optionB,
-        optionC: simulatorQuestions.optionC,
-        optionD: simulatorQuestions.optionD,
-        correctAnswer: simulatorQuestions.correctAnswer,
-        internalCode: simulatorQuestions.internalCode,
-        chapterCode: simulatorQuestions.chapterCode,
-        origin: simulatorQuestions.origin,
+      Promise.all([
+        db.select({
+          id: simulatorQuestions.id,
+          questionNumber: simulatorQuestions.questionNumber,
+          model: simulatorQuestions.model,
+          provaDate: simulatorQuestions.provaDate,
+          question: simulatorQuestions.question,
+          optionA: simulatorQuestions.optionA,
+          optionB: simulatorQuestions.optionB,
+          optionC: simulatorQuestions.optionC,
+          optionD: simulatorQuestions.optionD,
+          correctAnswer: simulatorQuestions.correctAnswer,
+          internalCode: simulatorQuestions.internalCode,
+          chapterCode: simulatorQuestions.chapterCode,
+          origin: simulatorQuestions.origin,
+        })
+          .from(simulatorQuestions)
+          .where(and(legacyCategoryFilter ?? sql`1 = 1`, or(
+            sql`LOWER(COALESCE(${simulatorQuestions.question}, '')) LIKE LOWER(${term})`,
+            sql`LOWER(COALESCE(${simulatorQuestions.optionA}, '')) LIKE LOWER(${term})`,
+            sql`LOWER(COALESCE(${simulatorQuestions.optionB}, '')) LIKE LOWER(${term})`,
+            sql`LOWER(COALESCE(${simulatorQuestions.optionC}, '')) LIKE LOWER(${term})`,
+            sql`LOWER(COALESCE(${simulatorQuestions.optionD}, '')) LIKE LOWER(${term})`,
+            sql`LOWER(COALESCE(${simulatorQuestions.normalized}, '')) LIKE LOWER(${term})`,
+            sql`LOWER(COALESCE(${simulatorQuestions.internalCode}, '')) LIKE LOWER(${term})`,
+            sql`LOWER(COALESCE(${simulatorQuestions.chapterCode}, '')) LIKE LOWER(${term})`,
+            sql`LOWER(COALESCE(${simulatorQuestions.model}, '')) LIKE LOWER(${term})`,
+            ...(Number.isInteger(Number(normalizedSearch)) ? [eq(simulatorQuestions.id, Number(normalizedSearch))] : []),
+          )))
+          .limit(50),
+        category === 'chapter'
+          ? Promise.resolve([])
+          : db.select().from(verifiedOfficialQuestions)
+            .where(or(
+              sql`LOWER(COALESCE(${verifiedOfficialQuestions.question}, '')) LIKE LOWER(${term})`,
+              sql`LOWER(COALESCE(${verifiedOfficialQuestions.stem}, '')) LIKE LOWER(${term})`,
+              sql`LOWER(COALESCE(${verifiedOfficialQuestions.optionA}, '')) LIKE LOWER(${term})`,
+              sql`LOWER(COALESCE(${verifiedOfficialQuestions.optionB}, '')) LIKE LOWER(${term})`,
+              sql`LOWER(COALESCE(${verifiedOfficialQuestions.optionC}, '')) LIKE LOWER(${term})`,
+              sql`LOWER(COALESCE(${verifiedOfficialQuestions.optionD}, '')) LIKE LOWER(${term})`,
+              ...(Number.isInteger(Number(normalizedSearch)) ? [eq(verifiedOfficialQuestions.id, Number(normalizedSearch))] : []),
+            ))
+            .limit(50),
+      ]).then(async ([legacyQuestions, verifiedRows]) => {
+        const corrections = await getVerifiedCorrectionMap(db, verifiedRows.map((question) => question.sourceId));
+        const verifiedQuestions = verifiedRows.map((question) => toVerifiedOfficialQuestion(question, corrections.get(question.sourceId)));
+        return [...legacyQuestions, ...verifiedQuestions]
+          .sort((left, right) => `${left.provaDate ?? ''}-${String(left.questionNumber).padStart(3, '0')}`.localeCompare(`${right.provaDate ?? ''}-${String(right.questionNumber).padStart(3, '0')}`))
+          .slice(0, 50);
       })
-        .from(simulatorQuestions)
-        .where(and(categoryFilter ?? sql`1 = 1`, or(
-          sql`LOWER(COALESCE(${simulatorQuestions.question}, '')) LIKE LOWER(${term})`,
-          sql`LOWER(COALESCE(${simulatorQuestions.optionA}, '')) LIKE LOWER(${term})`,
-          sql`LOWER(COALESCE(${simulatorQuestions.optionB}, '')) LIKE LOWER(${term})`,
-          sql`LOWER(COALESCE(${simulatorQuestions.optionC}, '')) LIKE LOWER(${term})`,
-          sql`LOWER(COALESCE(${simulatorQuestions.optionD}, '')) LIKE LOWER(${term})`,
-          sql`LOWER(COALESCE(${simulatorQuestions.normalized}, '')) LIKE LOWER(${term})`,
-          sql`LOWER(COALESCE(${simulatorQuestions.internalCode}, '')) LIKE LOWER(${term})`,
-          sql`LOWER(COALESCE(${simulatorQuestions.chapterCode}, '')) LIKE LOWER(${term})`,
-          sql`LOWER(COALESCE(${simulatorQuestions.model}, '')) LIKE LOWER(${term})`,
-          ...(Number.isInteger(Number(normalizedSearch)) ? [eq(simulatorQuestions.id, Number(normalizedSearch))] : []),
-        )))
-        .orderBy(asc(simulatorQuestions.questionNumber))
-        .limit(50)
     );
   } catch (error) {
     console.error('[Database] Failed to search simulator questions:', error);
