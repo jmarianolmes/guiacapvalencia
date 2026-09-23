@@ -19,6 +19,16 @@ describe('study plan', () => {
     expect(readiness.score).toBeNull();
   });
 
+  it('excludes partial attempts from the probability evidence cutoff', () => {
+    const readiness = buildReadiness([
+      ...validResults,
+      { questionCount: 100, correctAnswers: 49, wrongAnswers: 0, blankAnswers: 51, chapterId: null, mode: 'official', createdAt: new Date('2026-08-19T10:00:00Z') },
+      { questionCount: 50, correctAnswers: 39, wrongAnswers: 0, blankAnswers: 11, chapterId: 'goods-2-2', mode: 'chapter', createdAt: new Date('2026-08-20T10:00:00Z') },
+    ], priorities);
+    expect(readiness.evidenceAttempts).toBe(3);
+    expect(readiness.evidenceQuestions).toBe(200);
+  });
+
   it('generates a complete plan when there are at least 21 days', () => {
     const plan = buildStudyPlan({ track: 'goods', targetExamDate: '2026-09-20', dailyStudyMinutes: 60, planEnabled: true }, priorities, validResults, new Date('2026-08-19T10:00:00Z'));
     expect(plan.status).toBe('complete');

@@ -42,7 +42,7 @@ export default function OverviewTab({ language }: OverviewTabProps) {
       methodology: 'Como interpretar',
       methodologyText: 'O índice pondera 55% de volume relativo, 25% de recorrência literal, 10% de presença nas 34 provas e 10% de presença nas 8 convocatórias mais recentes. Recorrência usa enunciado, quatro alternativas e gabarito; apenas provas oficiais entram no cálculo.',
       loading: 'Calculando a análise oficial...', error: 'Não foi possível carregar a análise oficial.',
-      questionsShort: 'questões', percentage: 'percentual', simulatorSummary: 'Resumo dos seus simulados', simulatorAttempts: 'simulados realizados', simulatorAverage: 'média das notas', simulatorBest: 'melhor nota', simulatorPassed: 'aprovados', simulatorRecent: 'Resultados recentes', simulatorNone: 'Você ainda não finalizou nenhum simulado.', simulatorOfficial: 'Data', simulatorModel: 'Modelo', simulatorChapter: 'Capítulo', simulatorQuestions: 'questões', simulatorScore: 'nota', simulatorLoading: 'Carregando histórico...',
+      questionsShort: 'questões', percentage: 'percentual', simulatorSummary: 'Resumo dos seus simulados', simulatorAttempts: 'simulados válidos', simulatorTotal: 'total no histórico', simulatorAverage: 'média das notas válidas', simulatorBest: 'melhor nota válida', simulatorPassed: 'aprovados válidos', simulatorRecent: 'Todos os simulados', simulatorNone: 'Você ainda não finalizou nenhum simulado.', simulatorOfficial: 'Data', simulatorModel: 'Modelo', simulatorChapter: 'Capítulo', simulatorQuestions: 'questões', simulatorScore: 'nota', simulatorLoading: 'Carregando histórico...', simulatorCutoff: 'Faixa de corte: provas de 100 exigem 50 respostas; simulados de 50 exigem 40. Tentativas abaixo disso não entram na média nem na probabilidade.', simulatorIncomplete: 'incompleto para estatísticas',
     },
     es: {
       title: 'Visión General — Estadísticas Oficiales',
@@ -70,7 +70,7 @@ export default function OverviewTab({ language }: OverviewTabProps) {
       methodology: 'Cómo interpretar',
       methodologyText: 'El índice pondera 55% de volumen relativo, 25% de recurrencia literal, 10% de presencia en los 34 exámenes y 10% de presencia en las 8 convocatorias más recientes. La recurrencia usa enunciado, cuatro alternativas y respuesta; solo entran exámenes oficiales.',
       loading: 'Calculando el análisis oficial...', error: 'No se ha podido cargar el análisis oficial.',
-      questionsShort: 'preguntas', percentage: 'porcentaje', simulatorSummary: 'Resumen de tus simulacros', simulatorAttempts: 'simulacros realizados', simulatorAverage: 'media de las notas', simulatorBest: 'mejor nota', simulatorPassed: 'aprobados', simulatorRecent: 'Resultados recientes', simulatorNone: 'Todavía no has finalizado ningún simulacro.', simulatorOfficial: 'Fecha', simulatorModel: 'Modelo', simulatorChapter: 'Capítulo', simulatorQuestions: 'preguntas', simulatorScore: 'nota', simulatorLoading: 'Cargando historial...',
+      questionsShort: 'preguntas', percentage: 'porcentaje', simulatorSummary: 'Resumen de tus simulacros', simulatorAttempts: 'simulacros válidos', simulatorTotal: 'total en el historial', simulatorAverage: 'media de notas válidas', simulatorBest: 'mejor nota válida', simulatorPassed: 'aprobados válidos', simulatorRecent: 'Todos los simulacros', simulatorNone: 'Todavía no has finalizado ningún simulacro.', simulatorOfficial: 'Fecha', simulatorModel: 'Modelo', simulatorChapter: 'Capítulo', simulatorQuestions: 'preguntas', simulatorScore: 'nota', simulatorLoading: 'Cargando historial...', simulatorCutoff: 'Rango mínimo: los exámenes de 100 exigen 50 respuestas; los simulacros de 50 exigen 40. Los intentos inferiores no entran en la media ni en la probabilidad.', simulatorIncomplete: 'incompleto para estadísticas',
     },
   } as const;
   const texts = t[language];
@@ -80,9 +80,13 @@ export default function OverviewTab({ language }: OverviewTabProps) {
 
   const analysis = analysisQuery.data;
   const results = resultsQuery.data || [];
-  const averageScore = results.length ? results.reduce((total, result) => total + result.score, 0) / results.length : 0;
-  const bestScore = results.length ? Math.max(...results.map((result) => result.score)) : 0;
-  const passedCount = results.filter((result) => result.score >= 50).length;
+  const validResults = results.filter((result) => {
+    const answered = result.correctAnswers + result.wrongAnswers;
+    return result.questionCount === 100 ? answered >= 50 : result.questionCount === 50 ? answered >= 40 : false;
+  });
+  const averageScore = validResults.length ? validResults.reduce((total, result) => total + result.score, 0) / validResults.length : 0;
+  const bestScore = validResults.length ? Math.max(...validResults.map((result) => result.score)) : 0;
+  const passedCount = validResults.filter((result) => result.score >= 50).length;
   const recurringRate = analysis.totalQuestions ? ((analysis.repeatedAppearances / analysis.totalQuestions) * 100).toFixed(1) : '0.0';
   const priorityData = analysis.chapterPriorities.map((chapter) => ({
     ...chapter,
@@ -118,17 +122,22 @@ export default function OverviewTab({ language }: OverviewTabProps) {
         <CardContent>
           {resultsQuery.isLoading ? <div className="flex items-center gap-2 text-sm text-slate-600"><Spinner />{texts.simulatorLoading}</div> : results.length === 0 ? <p className="text-sm text-slate-600">{texts.simulatorNone}</p> : <>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              <div className="rounded-lg bg-white p-3"><div className="text-2xl font-bold text-emerald-700">{results.length}</div><div className="text-xs text-slate-600">{texts.simulatorAttempts}</div></div>
+              <div className="rounded-lg bg-white p-3"><div className="text-2xl font-bold text-emerald-700">{validResults.length}</div><div className="text-xs text-slate-600">{texts.simulatorAttempts}</div><div className="text-[11px] text-slate-500">{results.length} {texts.simulatorTotal}</div></div>
               <div className="rounded-lg bg-white p-3"><div className="text-2xl font-bold text-blue-700">{averageScore.toFixed(1)}%</div><div className="text-xs text-slate-600">{texts.simulatorAverage}</div></div>
               <div className="rounded-lg bg-white p-3"><div className="text-2xl font-bold text-violet-700">{bestScore}%</div><div className="text-xs text-slate-600">{texts.simulatorBest}</div></div>
               <div className="rounded-lg bg-white p-3"><div className="text-2xl font-bold text-amber-700">{passedCount}</div><div className="text-xs text-slate-600">{texts.simulatorPassed}</div></div>
             </div>
             <div className="mt-4 space-y-2">
               <h3 className="text-sm font-semibold text-slate-800">{texts.simulatorRecent}</h3>
-              {results.slice(0, 5).map((result) => {
+              <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">{texts.simulatorCutoff}</p>
+              <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
+              {results.map((result) => {
                 const label = result.mode === 'official' ? `${texts.simulatorOfficial} ${result.model}` : result.mode === 'chapter' ? `${texts.simulatorChapter} ${result.chapterId || ''}` : `${texts.simulatorModel} ${result.model}`;
-                return <div key={result.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 text-sm"><span className="font-medium text-slate-800">{label}</span><span className="text-slate-600">{result.correctAnswers}/{result.questionCount} {texts.simulatorQuestions} · <strong>{result.score}%</strong> {texts.simulatorScore}</span></div>;
+                const answered = result.correctAnswers + result.wrongAnswers;
+                const valid = result.questionCount === 100 ? answered >= 50 : result.questionCount === 50 ? answered >= 40 : false;
+                return <div key={result.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 text-sm"><span className="font-medium text-slate-800">{label}</span><span className="text-slate-600">{result.correctAnswers}/{result.questionCount} {texts.simulatorQuestions} · <strong>{result.score}%</strong> {texts.simulatorScore}{!valid && <span className="ml-2 text-xs text-amber-700">· {texts.simulatorIncomplete}</span>}</span></div>;
               })}
+              </div>
             </div>
           </>}
         </CardContent>

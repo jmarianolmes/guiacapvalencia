@@ -28,7 +28,11 @@ type ResultInput = {
 type ErrorInput = { wrongCount: number };
 
 export function buildStudyStrategy(results: ResultInput[], errors: ErrorInput[] = []): StrategyResult {
-  const evidence = results.filter((result) => result.mode === 'official' && result.questionCount === 100);
+  const evidence = results.filter((result) => {
+    const answered = result.correctAnswers + result.wrongAnswers;
+    const minimumAnswered = result.questionCount === 100 ? 50 : result.questionCount === 50 ? 40 : Number.POSITIVE_INFINITY;
+    return result.mode === 'official' && answered >= minimumAnswered;
+  });
   const totalQuestions = evidence.reduce((sum, result) => sum + result.questionCount, 0);
   const totalCorrect = evidence.reduce((sum, result) => sum + result.correctAnswers, 0);
   const totalWrong = evidence.reduce((sum, result) => sum + result.wrongAnswers, 0);

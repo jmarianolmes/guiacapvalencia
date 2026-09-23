@@ -95,8 +95,11 @@ function normalizeDailyMinutes(value: number) {
 
 function validResults(results: SimulatorResultInput[]) {
   return results
-    .filter((result) => result.questionCount >= 50)
-    .filter((result) => (result.correctAnswers + result.wrongAnswers) / result.questionCount >= 0.6)
+    .filter((result) => {
+      const answered = result.correctAnswers + result.wrongAnswers;
+      const minimumAnswered = result.questionCount === 100 ? 50 : result.questionCount === 50 ? 40 : Number.POSITIVE_INFINITY;
+      return answered >= minimumAnswered;
+    })
     .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
 }
 
@@ -116,8 +119,8 @@ export function buildReadiness(results: SimulatorResultInput[], priorities: Chap
       evidenceAttempts: attempts.length,
       evidenceQuestions: attempts.reduce((total, result) => total + result.questionCount, 0),
       validAttempts: attempts.length,
-      explanationPt: `Dados insuficientes: conclua mais ${Math.max(0, 3 - attempts.length)} simulados válidos com pelo menos 50 questões e 60% de respostas marcadas.`,
-      explanationEs: `Datos insuficientes: completa ${Math.max(0, 3 - attempts.length)} simulacros válidos más con al menos 50 preguntas y 60% de respuestas marcadas.`,
+      explanationPt: `Dados insuficientes: conclua mais ${Math.max(0, 3 - attempts.length)} simulados válidos. Uma prova de 100 questões exige pelo menos 50 respostas; um simulado de 50 exige pelo menos 40.`,
+      explanationEs: `Datos insuficientes: completa ${Math.max(0, 3 - attempts.length)} simulacros válidos. Un examen de 100 preguntas exige al menos 50 respuestas; uno de 50 exige al menos 40.`,
       weakChapterIds: [],
       errorFocus: rankedErrors,
     };
