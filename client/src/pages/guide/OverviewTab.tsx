@@ -14,6 +14,7 @@ const ANSWER_COLORS: Record<string, string> = { A: '#2563eb', B: '#7c3aed', C: '
 export default function OverviewTab({ language }: OverviewTabProps) {
   const [priorityIndex, setPriorityIndex] = useState(0);
   const analysisQuery = trpc.guide.getOfficialExamAnalysis.useQuery(undefined, { staleTime: 5 * 60 * 1000, retry: 1 });
+  const resultsQuery = trpc.guide.getUserResults.useQuery(undefined, { staleTime: 60 * 1000, retry: 1 });
   const t = {
     pt: {
       title: 'Visão Geral — Estatísticas Oficiais',
@@ -41,7 +42,7 @@ export default function OverviewTab({ language }: OverviewTabProps) {
       methodology: 'Como interpretar',
       methodologyText: 'O índice pondera 55% de volume relativo, 25% de recorrência literal, 10% de presença nas 34 provas e 10% de presença nas 8 convocatórias mais recentes. Recorrência usa enunciado, quatro alternativas e gabarito; apenas provas oficiais entram no cálculo.',
       loading: 'Calculando a análise oficial...', error: 'Não foi possível carregar a análise oficial.',
-      questionsShort: 'questões', percentage: 'percentual',
+      questionsShort: 'questões', percentage: 'percentual', simulatorSummary: 'Resumo dos seus simulados', simulatorAttempts: 'simulados realizados', simulatorAverage: 'média das notas', simulatorBest: 'melhor nota', simulatorPassed: 'aprovados', simulatorRecent: 'Resultados recentes', simulatorNone: 'Você ainda não finalizou nenhum simulado.', simulatorOfficial: 'Data', simulatorModel: 'Modelo', simulatorChapter: 'Capítulo', simulatorQuestions: 'questões', simulatorScore: 'nota', simulatorLoading: 'Carregando histórico...',
     },
     es: {
       title: 'Visión General — Estadísticas Oficiales',
@@ -69,7 +70,7 @@ export default function OverviewTab({ language }: OverviewTabProps) {
       methodology: 'Cómo interpretar',
       methodologyText: 'El índice pondera 55% de volumen relativo, 25% de recurrencia literal, 10% de presencia en los 34 exámenes y 10% de presencia en las 8 convocatorias más recientes. La recurrencia usa enunciado, cuatro alternativas y respuesta; solo entran exámenes oficiales.',
       loading: 'Calculando el análisis oficial...', error: 'No se ha podido cargar el análisis oficial.',
-      questionsShort: 'preguntas', percentage: 'porcentaje',
+      questionsShort: 'preguntas', percentage: 'porcentaje', simulatorSummary: 'Resumen de tus simulacros', simulatorAttempts: 'simulacros realizados', simulatorAverage: 'media de las notas', simulatorBest: 'mejor nota', simulatorPassed: 'aprobados', simulatorRecent: 'Resultados recientes', simulatorNone: 'Todavía no has finalizado ningún simulacro.', simulatorOfficial: 'Fecha', simulatorModel: 'Modelo', simulatorChapter: 'Capítulo', simulatorQuestions: 'preguntas', simulatorScore: 'nota', simulatorLoading: 'Cargando historial...',
     },
   } as const;
   const texts = t[language];
@@ -78,6 +79,10 @@ export default function OverviewTab({ language }: OverviewTabProps) {
   if (analysisQuery.isError || !analysisQuery.data) return <Card><CardContent className="py-10 text-center text-sm text-red-700">{texts.error}</CardContent></Card>;
 
   const analysis = analysisQuery.data;
+  const results = resultsQuery.data || [];
+  const averageScore = results.length ? results.reduce((total, result) => total + result.score, 0) / results.length : 0;
+  const bestScore = results.length ? Math.max(...results.map((result) => result.score)) : 0;
+  const passedCount = results.filter((result) => result.score >= 50).length;
   const recurringRate = analysis.totalQuestions ? ((analysis.repeatedAppearances / analysis.totalQuestions) * 100).toFixed(1) : '0.0';
   const priorityData = analysis.chapterPriorities.map((chapter) => ({
     ...chapter,
@@ -107,6 +112,27 @@ export default function OverviewTab({ language }: OverviewTabProps) {
           { value: analysis.repeatedGroups, label: texts.repeated, color: 'text-amber-700' },
         ].map((stat) => <Card key={stat.label}><CardContent className="p-4"><div className={`text-2xl font-bold ${stat.color}`}>{stat.value}</div><div className="mt-1 text-xs text-slate-600">{stat.label}</div></CardContent></Card>)}
       </div>
+
+      <Card className="border-emerald-200 bg-emerald-50/60">
+        <CardHeader className="pb-3"><CardTitle>{texts.simulatorSummary}</CardTitle></CardHeader>
+        <CardContent>
+          {resultsQuery.isLoading ? <div className="flex items-center gap-2 text-sm text-slate-600"><Spinner />{texts.simulatorLoading}</div> : results.length === 0 ? <p className="text-sm text-slate-600">{texts.simulatorNone}</p> : <>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              <div className="rounded-lg bg-white p-3"><div className="text-2xl font-bold text-emerald-700">{results.length}</div><div className="text-xs text-slate-600">{texts.simulatorAttempts}</div></div>
+              <div className="rounded-lg bg-white p-3"><div className="text-2xl font-bold text-blue-700">{averageScore.toFixed(1)}%</div><div className="text-xs text-slate-600">{texts.simulatorAverage}</div></div>
+              <div className="rounded-lg bg-white p-3"><div className="text-2xl font-bold text-violet-700">{bestScore}%</div><div className="text-xs text-slate-600">{texts.simulatorBest}</div></div>
+              <div className="rounded-lg bg-white p-3"><div className="text-2xl font-bold text-amber-700">{passedCount}</div><div className="text-xs text-slate-600">{texts.simulatorPassed}</div></div>
+            </div>
+            <div className="mt-4 space-y-2">
+              <h3 className="text-sm font-semibold text-slate-800">{texts.simulatorRecent}</h3>
+              {results.slice(0, 5).map((result) => {
+                const label = result.mode === 'official' ? `${texts.simulatorOfficial} ${result.model}` : result.mode === 'chapter' ? `${texts.simulatorChapter} ${result.chapterId || ''}` : `${texts.simulatorModel} ${result.model}`;
+                return <div key={result.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 text-sm"><span className="font-medium text-slate-800">{label}</span><span className="text-slate-600">{result.correctAnswers}/{result.questionCount} {texts.simulatorQuestions} · <strong>{result.score}%</strong> {texts.simulatorScore}</span></div>;
+              })}
+            </div>
+          </>}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 xl:grid-cols-2">
         <Card>

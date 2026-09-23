@@ -616,6 +616,9 @@ export async function getOfficialExamAnalysis() {
     const corrections = await withSimulatorDbRetry((db) => getVerifiedCorrectionMap(db, verifiedQuestions.map((question) => question.sourceId)));
     const officialQuestions = verifiedQuestions.map((question) => ({
       ...toVerifiedOfficialQuestion(question, corrections.get(question.sourceId)),
+      // A análise usa o texto integral homologado; a separação visual pertence apenas ao simulador.
+      question: question.question,
+      stem: question.stem,
       model: 'ORIGINAL',
       normalized: null,
     }));
