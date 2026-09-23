@@ -165,6 +165,9 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   const activeQuestionsQuery = selectedChapter ? chapterQuestionsQuery : questionsQuery;
   const chapterAttemptData = chapterQuestionsQuery.data;
   const questions = selectedChapter ? (chapterAttemptData?.questions || []) : (questionsQuery.data || []);
+  const isTimedSimulator = (selectedDate
+    ? questions.filter((question) => question.questionNumber <= 100).length
+    : questions.length) === 100;
   const mobileNavigationStart = Math.min(
     Math.max(currentQuestion - 4, 0),
     Math.max(questions.length - 10, 0),
@@ -530,13 +533,12 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
 
   // Timer
   useEffect(() => {
-    const countedQuestionCount = selectedDate ? questions.filter((question) => question.questionNumber <= 100).length : questions.length;
-    if ((!selectedModel && !selectedDate && !selectedChapter) || showResults || countedQuestionCount !== 100) return;
+    if ((!selectedModel && !selectedDate && !selectedChapter) || showResults || !isTimedSimulator) return;
     const interval = setInterval(() => {
       setTimeLeft(prev => Math.max(0, prev - 1));
     }, 1000);
     return () => clearInterval(interval);
-  }, [selectedModel, selectedDate, selectedChapter, showResults, questions]);
+  }, [selectedModel, selectedDate, selectedChapter, showResults, isTimedSimulator]);
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -974,7 +976,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
           </Badge>
         </div>
         <div className="flex flex-col items-start gap-0 md:items-end">
-          {questions.length === 100 && <div className={`font-semibold text-sm md:text-base ${timeLeft <= 600 ? 'text-red-700' : 'text-slate-800'}`}>{texts.time}: {formatTime(timeLeft)}</div>}
+          {isTimedSimulator && <div className={`font-semibold text-sm md:text-base ${timeLeft <= 600 ? 'text-red-700' : 'text-slate-800'}`}>{texts.time}: {formatTime(timeLeft)}</div>}
           <span className="hidden text-xs text-slate-500 md:block">{texts.keyboard_hint}</span>
         </div>
       </div>
