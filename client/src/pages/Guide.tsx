@@ -278,7 +278,7 @@ export default function Guide() {
       <footer className="bg-slate-800 text-white py-8 px-4 mt-12">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-sm text-slate-400 mb-2">
-            Deploy: 1342515 · Criador: J.M.L.M. · Versão 1.5
+            Deploy: 00c0375 · Criador: J.M.L.M. · Versão 2.0
           </p>
           <p className="text-xs text-slate-500 font-semibold">
             ⚠️ PROIBIDA A REPRODUÇÃO SEM AUTORIZAÇÃO
