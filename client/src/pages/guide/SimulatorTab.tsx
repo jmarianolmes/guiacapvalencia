@@ -42,16 +42,35 @@ type SimulatorProgress = {
 
 const PROGRESS_STORAGE_KEY = 'cap-simulator-progress-v1';
 
+function normalizeOfficialDate(value?: string | null) {
+  if (!value) return '';
+  const trimmed = value.trim();
+  const slashDate = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(trimmed);
+  return slashDate ? `${slashDate[3]}-${slashDate[2]}-${slashDate[1]}` : trimmed;
+}
+
 function progressKey(progress: Pick<SimulatorProgress, 'mode' | 'model' | 'date' | 'chapterId' | 'attemptNumber'>) {
   if (progress.mode === 'chapter') return `chapter:${progress.chapterId}:${progress.attemptNumber || 1}`;
-  if (progress.mode === 'official') return `official:${progress.date || progress.model || ''}`;
+  if (progress.mode === 'official') return `official:${normalizeOfficialDate(progress.date || progress.model)}`;
   return `statistical:${progress.model || ''}`;
 }
 
 function readAllProgress(): Record<string, SimulatorProgress> {
   if (typeof window === 'undefined') return {};
   try {
-    return JSON.parse(window.localStorage.getItem(PROGRESS_STORAGE_KEY) || '{}') as Record<string, SimulatorProgress>;
+    const stored = JSON.parse(window.localStorage.getItem(PROGRESS_STORAGE_KEY) || '{}') as Record<string, SimulatorProgress>;
+    const normalized: Record<string, SimulatorProgress> = {};
+    Object.values(stored).forEach((progress) => {
+      const canonicalProgress = progress.mode === 'official'
+        ? { ...progress, date: normalizeOfficialDate(progress.date || progress.model), model: normalizeOfficialDate(progress.model || progress.date) }
+        : progress;
+      const key = progressKey(canonicalProgress);
+      const previous = normalized[key];
+      const answerCount = Object.keys(canonicalProgress.answers || {}).length;
+      const previousAnswerCount = previous ? Object.keys(previous.answers || {}).length : -1;
+      if (!previous || answerCount > previousAnswerCount || canonicalProgress.savedAt > previous.savedAt) normalized[key] = canonicalProgress;
+    });
+    return normalized;
   } catch {
     return {};
   }

@@ -19,6 +19,11 @@ type ChapterQuestionIndex = Map<string, SimulatorQuestion[]>;
 const CHAPTER_ATTEMPT_SIZE = 50;
 const VERIFIED_OFFICIAL_ID_OFFSET = 1_000_000;
 
+function verifiedQuestionStem(text: string) {
+  const firstOption = text.search(/(?:^|\n)\s*[aA][)\.]\s+/);
+  return firstOption >= 0 ? text.slice(0, firstOption).trim() : text.trim();
+}
+
 function toVerifiedOfficialQuestion(question: typeof verifiedOfficialQuestions.$inferSelect, correctedAnswer?: string | null) {
   return {
     id: VERIFIED_OFFICIAL_ID_OFFSET + question.id,
@@ -26,7 +31,7 @@ function toVerifiedOfficialQuestion(question: typeof verifiedOfficialQuestions.$
     provaDate: question.examDate,
     questionNumber: question.questionNumber,
     subject: question.subject,
-    question: question.question,
+    question: verifiedQuestionStem(question.question),
     stem: question.stem,
     optionA: question.optionA,
     optionB: question.optionB,
