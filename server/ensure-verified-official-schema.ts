@@ -47,7 +47,9 @@ async function ensureVerifiedOfficialSchema() {
   console.log("Schema isolado das provas homologadas confirmado.");
 }
 
-ensureVerifiedOfficialSchema().catch((error) => {
-  console.error("Erro ao garantir o schema isolado das provas homologadas:", error);
-  process.exitCode = 1;
-});
+ensureVerifiedOfficialSchema()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error("Erro ao garantir o schema isolado das provas homologadas:", error);
+    process.exitCode = 1;
+  });
