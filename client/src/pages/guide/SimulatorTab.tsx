@@ -223,16 +223,19 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
 
   const resumeSavedProgress = (saved: SimulatorProgress) => {
     if (saved.mode === 'chapter' && saved.chapterId) {
+      setSimulatorMode('byChapter');
       setSelectedChapter(saved.chapterId);
       setSelectedModel(null);
       setSelectedDate(null);
       setChapterAttempt(saved.attemptNumber || 1);
     } else if (saved.mode === 'official' && (saved.date || saved.model)) {
+      setSimulatorMode('byDate');
       setSelectedDate(saved.date || saved.model || null);
       setSelectedModel(saved.model || saved.date || null);
       setSelectedChapter(null);
       setChapterAttempt(1);
     } else if (saved.model) {
+      setSimulatorMode('statistical');
       setSelectedModel(saved.model);
       setSelectedDate(null);
       setSelectedChapter(null);
@@ -457,7 +460,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
 
   const texts = t[language];
   const resumableProgress = Object.values(readAllProgress())
-    .filter((progress) => Object.keys(progress.answers || {}).length > 0)
+    .filter((progress) => Object.keys(progress.answers || {}).length > 0 || progress.currentQuestion > 0 || progress.timeLeft < 7200)
     .sort((left, right) => right.savedAt - left.savedAt);
   const discardSavedProgress = (saved: SimulatorProgress) => {
     removeProgress(progressKey(saved));
@@ -465,7 +468,7 @@ export default function SimulatorTab({ language }: SimulatorTabProps) {
   };
   const hasChapterProgress = (chapterId: string) => {
     void progressVersion;
-    return Object.values(readAllProgress()).some((progress) => progress.chapterId === chapterId && Object.keys(progress.answers || {}).length > 0);
+    return Object.values(readAllProgress()).some((progress) => progress.chapterId === chapterId && (Object.keys(progress.answers || {}).length > 0 || progress.currentQuestion > 0 || progress.timeLeft < 7200));
   };
 
   const resetSimulatorState = () => {
