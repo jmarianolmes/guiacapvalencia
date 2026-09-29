@@ -32,7 +32,7 @@ type SourceFile = {
 };
 
 const SOURCE_DIRECTORY = path.join(process.cwd(), "server/data/verified-official-exams");
-const EXPECTED_FILE_COUNT = 34;
+const EXPECTED_FILE_COUNT = 35;
 const EXPECTED_QUESTION_COUNT = 103;
 const letters: Answer[] = ["A", "B", "C", "D"];
 

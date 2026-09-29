@@ -33,7 +33,7 @@ export default function Home() {
         overview: '📊 Visão geral', overviewDescription: 'Análise completa de distribuição de temas, padrões de respostas e ranking de prioridade de estudo.',
         strategy: '🎯 Estratégia', strategyDescription: 'Dicas práticas e simulador de pontuação para otimizar sua performance no exame.',
         repeated: '🔁 Questões repetidas', repeatedDescription: 'grupos de questões recorrentes nas provas oficiais — prioridade para a revisão.',
-        pitfalls: '⚠️ Pegadinhas', pitfallsDescription: 'Padrões de atenção extraídos das 34 provas oficiais para revisar condições, limites e exceções.',
+        pitfalls: '⚠️ Pegadinhas', pitfallsDescription: 'Padrões de atenção extraídos das provas oficiais para revisar condições, limites e exceções.',
         quickGuide: '📋 Cola de estudo', quickGuideDescription: 'Tabelas e resumos de tempos de condução, legislação e primeiros socorros.',
         simulator: '📝 Simulado', simulatorDescription: 'modelos interativos com cronômetro, correção automática e práticas por capítulo.',
         reproductionNotice: '⚠️ PROIBIDA A REPRODUÇÃO SEM AUTORIZAÇÃO',

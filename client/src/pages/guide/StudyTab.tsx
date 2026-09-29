@@ -17,7 +17,7 @@ export default function StudyTab({ language }: StudyTabProps) {
       title: '📋 Cola Completa — Para Imprimir e Estudar',
       subtitle: 'Resumo dos valores e regras que mais caem na prova. Decore estes dados.',
       officialMemoryTitle: '🎯 Revisão Oficial Prioritária — O que Memorizar',
-      officialMemorySubtitle: 'Questões recorrentes encontradas exclusivamente nas 34 provas oficiais. Memorize o conteúdo correto, não apenas a letra da resposta.',
+      officialMemorySubtitle: 'Questões recorrentes encontradas exclusivamente nas provas oficiais. Memorize o conteúdo correto, não apenas a letra da resposta.',
       officialAnswer: 'Resposta oficial',
       officialOccurrences: 'ocorrências oficiais',
       officialExams: 'provas',

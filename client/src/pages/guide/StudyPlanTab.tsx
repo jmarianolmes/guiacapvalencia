@@ -41,7 +41,7 @@ export default function StudyPlanTab({ language }: Props) {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [selectedCard, setSelectedCard] = useState(1);
   const text = isEs ? {
-    title: 'Plan de estudio', subtitle: 'Itinerario basado en las 34 pruebas oficiales; las 8 convocatorias más recientes aportan el factor de actualidad.',
+    title: 'Plan de estudio', subtitle: 'Itinerario basado en los exámenes oficiales; las 8 convocatorias más recientes aportan el factor de actualidad.',
     readiness: 'Índice de preparación', attempts: 'simulacros válidos analizados', days: 'días hasta el examen', recent: 'Convocatorias recientes usadas',
     weak: 'Áreas para reforzar', noWeak: 'Aún no hay prácticas por capítulo suficientes para identificar áreas concretas.', chance: 'Probabilidad estimada de aprobar', evidence: 'Base estadística', errorFocus: 'Errores que más necesitan refuerzo', noErrors: 'No hay errores oficiales o de capítulo pendientes.',
     daily: 'Tu plan día a día', optional: 'Opcional', noDays: 'Configura la fecha del examen y activa el plan en Perfil para ver el itinerario.',
@@ -51,7 +51,7 @@ export default function StudyPlanTab({ language }: Props) {
     loading: 'Preparando tu plan...', reviewTitle: 'Antes de avanzar', reviewDetail: 'Comprueba mentalmente qué parte del plan anterior conseguiste hacer. Esta primera versión no marca tareas como completadas automáticamente.',
     card: 'Tarjeta', of: 'de', previous: 'Día anterior', next: 'Día siguiente', todayHint: 'El carrusel empieza en hoy. Usa las flechas o las teclas ← y → para consultar otros días.',
   } : {
-    title: 'Plano de Estudos', subtitle: 'Roteiro baseado nas 34 provas oficiais; as 8 convocações mais recentes entram como fator de atualidade.',
+    title: 'Plano de Estudos', subtitle: 'Roteiro baseado nas provas oficiais; as 8 convocações mais recentes entram como fator de atualidade.',
     readiness: 'Índice de prontidão', attempts: 'simulados válidos analisados', days: 'dias até a prova', recent: 'Convocatórias recentes usadas',
     weak: 'Áreas para reforçar', noWeak: 'Ainda não há práticas por capítulo suficientes para identificar áreas concretas.', chance: 'Chance estimada de aprovação', evidence: 'Base estatística', errorFocus: 'Erros que mais precisam de reforço', noErrors: 'Nenhum erro oficial ou de capítulo pendente.',
     daily: 'Seu plano dia a dia', optional: 'Opcional', noDays: 'Configure a data da prova e ative o plano no Perfil para visualizar o roteiro.',

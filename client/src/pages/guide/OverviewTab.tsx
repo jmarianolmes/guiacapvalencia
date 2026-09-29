@@ -15,14 +15,16 @@ export default function OverviewTab({ language }: OverviewTabProps) {
   const [priorityIndex, setPriorityIndex] = useState(0);
   const analysisQuery = trpc.guide.getOfficialExamAnalysis.useQuery(undefined, { staleTime: 5 * 60 * 1000, retry: 1 });
   const resultsQuery = trpc.guide.getUserResults.useQuery(undefined, { staleTime: 60 * 1000, retry: 1 });
+  const officialExamCount = analysisQuery.data?.totalExams ?? 0;
+  const officialQuestionCount = analysisQuery.data?.totalQuestions ?? 0;
   const t = {
     pt: {
       title: 'Visão Geral — Estatísticas Oficiais',
-      subtitle: 'Todos os indicadores desta página usam exclusivamente as 3.400 questões das 34 provas oficiais (2020–2026). O pool estatístico não entra nos cálculos.',
+      subtitle: `Todos os indicadores desta página usam exclusivamente as ${officialQuestionCount.toLocaleString('pt-BR')} questões das ${officialExamCount} provas oficiais. O pool estatístico não entra nos cálculos.`,
       exams: 'Provas oficiais', questions: 'Questões oficiais', unique: 'Enunciados únicos', repeated: 'Grupos repetidos',
       recurringShare: 'questões em grupos recorrentes',
       priority: 'Índice de Prioridade por Capítulo',
-      priorityDescription: 'Ranking dos capítulos a partir de volume, repetição, presença nas 34 provas e presença nas 8 convocatórias mais recentes.',
+      priorityDescription: `Ranking dos capítulos a partir de volume, repetição, presença nas ${officialExamCount} provas e presença nas 8 convocatórias mais recentes.`,
       recurrence: 'Recorrência por Convocatória',
       recurrenceDescription: 'Percentual de questões de cada prova cujo conjunto de enunciado, alternativas e gabarito também aparece em outra prova oficial.',
       recurrenceRate: 'Recorrência de questões',
@@ -40,17 +42,17 @@ export default function OverviewTab({ language }: OverviewTabProps) {
       previousPriority: 'Prioridade anterior', nextPriority: 'Próxima prioridade', position: 'de',
       recurringGroups: 'grupos de questões recorrentes',
       methodology: 'Como interpretar',
-      methodologyText: 'O índice pondera 55% de volume relativo, 25% de recorrência literal, 10% de presença nas 34 provas e 10% de presença nas 8 convocatórias mais recentes. Recorrência usa enunciado, quatro alternativas e gabarito; apenas provas oficiais entram no cálculo.',
+      methodologyText: `O índice pondera 55% de volume relativo, 25% de recorrência literal, 10% de presença nas ${officialExamCount} provas e 10% de presença nas 8 convocatórias mais recentes. Recorrência usa enunciado, quatro alternativas e gabarito; apenas provas oficiais entram no cálculo.`,
       loading: 'Calculando a análise oficial...', error: 'Não foi possível carregar a análise oficial.',
       questionsShort: 'questões', percentage: 'percentual', simulatorSummary: 'Resumo dos seus simulados', simulatorAttempts: 'simulados válidos', simulatorTotal: 'total no histórico', simulatorAverage: 'média das notas válidas', simulatorBest: 'melhor nota válida', simulatorPassed: 'aprovados válidos', simulatorRecent: 'Todos os simulados', simulatorNone: 'Você ainda não finalizou nenhum simulado.', simulatorOfficial: 'Data', simulatorModel: 'Modelo', simulatorChapter: 'Capítulo', simulatorQuestions: 'questões', simulatorScore: 'nota', simulatorLoading: 'Carregando histórico...', simulatorCutoff: 'Faixa de corte: provas de 100 exigem 50 respostas; simulados de 50 exigem 40. Tentativas abaixo disso não entram na média nem na probabilidade.', simulatorIncomplete: 'incompleto para estatísticas',
     },
     es: {
       title: 'Visión General — Estadísticas Oficiales',
-      subtitle: 'Todos los indicadores de esta página usan exclusivamente las 3.400 preguntas de los 34 exámenes oficiales (2020–2026). El pool estadístico no entra en los cálculos.',
+      subtitle: `Todos los indicadores de esta página usan exclusivamente las ${officialQuestionCount.toLocaleString('es-ES')} preguntas de los ${officialExamCount} exámenes oficiales. El pool estadístico no entra en los cálculos.`,
       exams: 'Exámenes oficiales', questions: 'Preguntas oficiales', unique: 'Enunciados únicos', repeated: 'Grupos repetidos',
       recurringShare: 'preguntas en grupos recurrentes',
       priority: 'Índice de Prioridad por Capítulo',
-      priorityDescription: 'Ranking de capítulos según volumen, repetición, presencia en los 34 exámenes y presencia en las 8 convocatorias más recientes.',
+      priorityDescription: `Ranking de capítulos según volumen, repetición, presencia en los ${officialExamCount} exámenes y presencia en las 8 convocatorias más recientes.`,
       recurrence: 'Recurrencia por Convocatoria',
       recurrenceDescription: 'Porcentaje de preguntas de cada examen cuyo conjunto de enunciado, alternativas y respuesta también aparece en otro examen oficial.',
       recurrenceRate: 'Recurrencia de preguntas',
@@ -68,7 +70,7 @@ export default function OverviewTab({ language }: OverviewTabProps) {
       previousPriority: 'Prioridad anterior', nextPriority: 'Siguiente prioridad', position: 'de',
       recurringGroups: 'grupos de preguntas recurrentes',
       methodology: 'Cómo interpretar',
-      methodologyText: 'El índice pondera 55% de volumen relativo, 25% de recurrencia literal, 10% de presencia en los 34 exámenes y 10% de presencia en las 8 convocatorias más recientes. La recurrencia usa enunciado, cuatro alternativas y respuesta; solo entran exámenes oficiales.',
+      methodologyText: `El índice pondera 55% de volumen relativo, 25% de recurrencia literal, 10% de presencia en los ${officialExamCount} exámenes y 10% de presencia en las 8 convocatorias más recientes. La recurrencia usa enunciado, cuatro alternativas y respuesta; solo entran exámenes oficiales.`,
       loading: 'Calculando el análisis oficial...', error: 'No se ha podido cargar el análisis oficial.',
       questionsShort: 'preguntas', percentage: 'porcentaje', simulatorSummary: 'Resumen de tus simulacros', simulatorAttempts: 'simulacros válidos', simulatorTotal: 'total en el historial', simulatorAverage: 'media de notas válidas', simulatorBest: 'mejor nota válida', simulatorPassed: 'aprobados válidos', simulatorRecent: 'Todos los simulacros', simulatorNone: 'Todavía no has finalizado ningún simulacro.', simulatorOfficial: 'Fecha', simulatorModel: 'Modelo', simulatorChapter: 'Capítulo', simulatorQuestions: 'preguntas', simulatorScore: 'nota', simulatorLoading: 'Cargando historial...', simulatorCutoff: 'Rango mínimo: los exámenes de 100 exigen 50 respuestas; los simulacros de 50 exigen 40. Los intentos inferiores no entran en la media ni en la probabilidad.', simulatorIncomplete: 'incompleto para estadísticas',
     },
@@ -203,7 +205,7 @@ export default function OverviewTab({ language }: OverviewTabProps) {
                   </div>
                   <button type="button" onClick={goToNext} aria-label={texts.nextPriority} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-xl font-bold text-slate-700 transition-colors hover:bg-slate-100">→</button>
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-2 rounded-lg bg-white/70 p-3 text-xs sm:grid-cols-4"><span><strong>{texts.volume}:</strong> {selectedPriority.count} {texts.questionsShort} · {selectedPriority.percentage}</span><span><strong>{texts.recurring}:</strong> {selectedPriority.recurringCount} ({selectedPriority.recurrenceRate})</span><span><strong>{texts.coverage}:</strong> {selectedPriority.examCoverage}/34</span><span><strong>{texts.recent}:</strong> {selectedPriority.recentCoverage}/8</span></div>
+                <div className="mt-4 grid grid-cols-2 gap-2 rounded-lg bg-white/70 p-3 text-xs sm:grid-cols-4"><span><strong>{texts.volume}:</strong> {selectedPriority.count} {texts.questionsShort} · {selectedPriority.percentage}</span><span><strong>{texts.recurring}:</strong> {selectedPriority.recurringCount} ({selectedPriority.recurrenceRate})</span><span><strong>{texts.coverage}:</strong> {selectedPriority.examCoverage}/{officialExamCount}</span><span><strong>{texts.recent}:</strong> {selectedPriority.recentCoverage}/8</span></div>
                 <p className="mt-3 text-center text-sm leading-5">{action.description}</p>
                 <div className="mt-4 flex justify-center gap-1.5" aria-label={`${texts.studyPlan}: ${selectedPriorityIndex + 1} ${texts.position} ${priorityData.length}`}>{priorityData.map((chapter, index) => <button key={chapter.id} type="button" onClick={() => setPriorityIndex(index)} aria-label={`${texts.studyStep} ${index + 1}: ${chapter.name}`} className={`h-2.5 rounded-full transition-all ${index === selectedPriorityIndex ? 'w-6 bg-slate-900' : 'w-2.5 bg-slate-300 hover:bg-slate-400'}`} />)}</div>
               </div>;

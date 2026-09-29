@@ -14,12 +14,12 @@ export default function RepeatedQuestionsTab({ language }: RepeatedQuestionsTabP
 
   const t = {
     pt: {
-      desc: 'Análise atualizada das 34 provas oficiais. Os grupos estão ordenados pela frequência de reaparição; estudar os mais recorrentes é prioridade.',
-      answer: 'Resposta', exams: 'Provas', appearances: 'em 34 provas', loading: 'Carregando...',
+      desc: 'Análise atualizada das provas oficiais. Os grupos estão ordenados pela frequência de reaparição; estudar os mais recorrentes é prioridade.',
+      answer: 'Resposta', exams: 'Provas', appearances: 'provas oficiais', loading: 'Carregando...',
     },
     es: {
-      desc: 'Análisis actualizado de los 34 exámenes oficiales. Los grupos están ordenados por la frecuencia de reaparición; estudiar los más recurrentes es prioritario.',
-      answer: 'Respuesta', exams: 'Exámenes', appearances: 'en 34 exámenes', loading: 'Cargando...',
+      desc: 'Análisis actualizado de los exámenes oficiales. Los grupos están ordenados por la frecuencia de reaparición; estudiar los más recurrentes es prioritario.',
+      answer: 'Respuesta', exams: 'Exámenes', appearances: 'exámenes oficiales', loading: 'Cargando...',
     },
   };
   const texts = t[language];

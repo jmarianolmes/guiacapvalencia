@@ -22,11 +22,13 @@ export default function TricksTab({ language }: TricksTabProps) {
     staleTime: 5 * 60 * 1000,
     retry: 1,
   });
+  const officialExamCount = analysisQuery.data?.totalExams ?? 0;
+  const officialQuestionCount = analysisQuery.data?.totalQuestions ?? 0;
 
   const t = {
     pt: {
       title: 'Pegadinhas nas Provas Oficiais',
-      desc: 'Cada padrão abaixo foi levantado exclusivamente nas 3.400 questões das 34 provas oficiais. Clique para abrir as questões relacionadas, conferir as alternativas e estudar o gabarito oficial.',
+      desc: `Cada padrão abaixo foi levantado exclusivamente nas ${officialQuestionCount.toLocaleString('pt-BR')} questões das ${officialExamCount} provas oficiais. Clique para abrir as questões relacionadas, conferir as alternativas e estudar o gabarito oficial.`,
       loading: 'Carregando as pegadinhas oficiais...',
       error: 'Não foi possível carregar a análise das pegadinhas.',
       questions: 'questões oficiais relacionadas',
@@ -36,13 +38,13 @@ export default function TricksTab({ language }: TricksTabProps) {
       trap: 'Alternativa-trampa',
       collapse: 'Ocultar questões',
       expand: 'Abrir questões oficiais',
-      officialOnly: 'Base: 34 provas oficiais · 3.400 questões',
+      officialOnly: `Base: ${officialExamCount} provas oficiais · ${officialQuestionCount.toLocaleString('pt-BR')} questões`,
       loadMore: 'Mostrar mais questões oficiais',
       showing: 'Mostrando',
     },
     es: {
       title: 'Trampas en los Exámenes Oficiales',
-      desc: 'Cada patrón siguiente se ha obtenido exclusivamente de las 3.400 preguntas de los 34 exámenes oficiales. Pulsa para abrir las preguntas relacionadas, comprobar las alternativas y estudiar la respuesta oficial.',
+      desc: `Cada patrón siguiente se ha obtenido exclusivamente de las ${officialQuestionCount.toLocaleString('es-ES')} preguntas de los ${officialExamCount} exámenes oficiales. Pulsa para abrir las preguntas relacionadas, comprobar las alternativas y estudiar la respuesta oficial.`,
       loading: 'Cargando las trampas oficiales...',
       error: 'No se ha podido cargar el análisis de trampas.',
       questions: 'preguntas oficiales relacionadas',
@@ -52,7 +54,7 @@ export default function TricksTab({ language }: TricksTabProps) {
       trap: 'Alternativa-trampa',
       collapse: 'Ocultar preguntas',
       expand: 'Abrir preguntas oficiales',
-      officialOnly: 'Base: 34 exámenes oficiales · 3.400 preguntas',
+      officialOnly: `Base: ${officialExamCount} exámenes oficiales · ${officialQuestionCount.toLocaleString('es-ES')} preguntas`,
       loadMore: 'Mostrar más preguntas oficiales',
       showing: 'Mostrando',
     },
