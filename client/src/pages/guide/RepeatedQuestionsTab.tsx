@@ -31,7 +31,7 @@ export default function RepeatedQuestionsTab({ language }: RepeatedQuestionsTabP
     <Card className="border-blue-200 bg-blue-50"><CardContent className="pt-6"><p className="text-sm text-slate-700">{texts.desc}</p></CardContent></Card>
     <div className="space-y-3">
       {questions.map((q, idx) => {
-        const examDates = q.exams ? JSON.parse(q.exams) as string[] : [];
+        const examDates = Array.isArray(q.exams) ? q.exams : q.exams ? JSON.parse(q.exams) as string[] : [];
         const expanded = expandedId === idx;
         return <Card key={idx} className="transition-shadow hover:shadow-md">
           <CardContent className="pt-6">
