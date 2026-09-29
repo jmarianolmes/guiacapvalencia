@@ -1170,3 +1170,57 @@ export async function getAdminStats() {
     return null;
   }
 }
+
+export async function recordUserActivity(userId: number, action = 'heartbeat') {
+  const db = await getDb();
+  if (!db) return false;
+
+  try {
+    await db.insert(userAccessLogs).values({ userId, action });
+    return true;
+  } catch (error) {
+    console.error('[Database] Failed to record user activity:', error);
+    return false;
+  }
+}
+
+export async function getAdminPresence() {
+  const db = await getDb();
+  if (!db) return null;
+
+  try {
+    const [allUsers, recentLogs] = await Promise.all([
+      db.select({ id: users.id, name: users.name, email: users.email, role: users.role }).from(users),
+      db.select({ userId: userAccessLogs.userId, action: userAccessLogs.action, createdAt: userAccessLogs.createdAt })
+        .from(userAccessLogs)
+        .where(sql`${userAccessLogs.createdAt} >= DATE_SUB(NOW(), INTERVAL 24 HOUR)`)
+        .orderBy(desc(userAccessLogs.createdAt))
+        .limit(1000),
+    ]);
+    const usersById = new Map(allUsers.map((user) => [user.id, user]));
+    const latestByUser = new Map<number, { userId: number; action: string; createdAt: Date }>();
+    for (const log of recentLogs) {
+      if (!latestByUser.has(log.userId)) latestByUser.set(log.userId, log);
+    }
+    const now = Date.now();
+    const activeUsers = Array.from(latestByUser.values()).flatMap((activity) => {
+      const user = usersById.get(activity.userId);
+      if (!user) return [];
+      return [{
+        ...user,
+        action: activity.action,
+        lastActivityAt: activity.createdAt,
+        ageMinutes: Math.max(0, Math.floor((now - new Date(activity.createdAt).getTime()) / 60000)),
+      }];
+    });
+    return {
+      onlineNow: activeUsers.filter((user) => user.ageMinutes <= 5).length,
+      activeLast15Minutes: activeUsers.filter((user) => user.ageMinutes <= 15).length,
+      activeLast24Hours: activeUsers.length,
+      recentUsers: activeUsers.slice(0, 20),
+    };
+  } catch (error) {
+    console.error('[Database] Failed to get admin presence:', error);
+    return null;
+  }
+}

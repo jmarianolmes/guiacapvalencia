@@ -29,7 +29,7 @@ export default function AdminDashboard() {
   const isEs = language === 'es';
   const text = isEs
     ? {
-        title: 'Panel administrativo', back: 'Volver', total: 'Total de usuarios', pending: 'Pendientes de aprobación', approved: 'Usuarios aprobados', blocked: 'Usuarios bloqueados',
+        title: 'Panel administrativo', back: 'Volver', total: 'Total de usuarios', pending: 'Pendientes de aprobación', approved: 'Usuarios aprobados', blocked: 'Usuarios bloqueados', presenceTitle: 'Actividad reciente', onlineNow: 'Activos ahora (5 min)', active15: 'Activos (15 min)', active24: 'Activos hoy', noActivity: 'Todavía no hay actividad reciente.',
         createTitle: 'Crear acceso de estudio', createDescription: 'La cuenta queda aprobada inmediatamente y deberá definir una nueva contraseña en el primer acceso.',
         name: 'Nombre (opcional)', email: 'Correo electrónico', temporaryPassword: 'Contraseña temporal', create: 'Crear cuenta', creating: 'Creando cuenta...',
         manager: 'Gestión de usuarios', noUsers: 'No hay usuarios registrados', status: 'Estado', actions: 'Acciones', account: 'Cuenta',
@@ -38,7 +38,7 @@ export default function AdminDashboard() {
         created: 'Cuenta creada y aprobada. Comparta la contraseña temporal con la persona usuaria por un canal seguro.', reviewTitle: 'Averiguaciones de conformidad', reviewEmpty: 'No hay cuestiones pendientes.', reviewResolve: 'Corregir y resolver', reviewCancel: 'Cancelar averiguación', compareOfficial: 'Comparar na fonte oficial', searchOfficial: 'Buscar resposta oficial', searchingOfficial: 'Buscando...', officialFound: 'Resposta encontrada. Confirme antes de salvar.', officialBlocked: 'Busca automática indisponível; compare manualmente.', acceptOfficial: 'Aceitar sugestão oficial', publicTitle: 'Acceso público', publicDescription: 'Permite acceder al guía sin iniciar sesión. El login administrativo permanece disponible.', publicOn: 'Desactivar login para visitantes', publicOff: 'Mantener login obligatorio',
       }
     : {
-        title: 'Painel administrativo', back: 'Voltar', total: 'Total de Usuários', pending: 'Pendentes de Aprovação', approved: 'Usuários Aprovados', blocked: 'Usuários Bloqueados',
+        title: 'Painel administrativo', back: 'Voltar', total: 'Total de Usuários', pending: 'Pendentes de Aprovação', approved: 'Usuários Aprovados', blocked: 'Usuários Bloqueados', presenceTitle: 'Atividade recente', onlineNow: 'Ativos agora (5 min)', active15: 'Ativos (15 min)', active24: 'Ativos hoje', noActivity: 'Ainda não há atividade recente.',
         createTitle: 'Criar acesso de estudo', createDescription: 'A conta fica aprovada imediatamente e deverá definir uma nova senha no primeiro acesso.',
         name: 'Nome (opcional)', email: 'Email', temporaryPassword: 'Senha temporária', create: 'Criar conta', creating: 'Criando conta...',
         manager: 'Gerenciamento de usuários', noUsers: 'Nenhum usuário cadastrado', status: 'Status', actions: 'Ações', account: 'Conta',
@@ -48,6 +48,7 @@ export default function AdminDashboard() {
       };
 
   const statsQuery = trpc.admin.getStats.useQuery();
+  const presenceQuery = trpc.admin.getPresence.useQuery(undefined, { refetchInterval: 60_000 });
   const usersQuery = trpc.admin.getAllUsers.useQuery();
   const approveMutation = trpc.admin.approveUser.useMutation();
   const blockMutation = trpc.admin.blockUser.useMutation();
@@ -241,6 +242,20 @@ export default function AdminDashboard() {
             ))}
           </div>
         )}
+
+        <Card className="border-blue-200 bg-blue-50/60">
+          <CardHeader><CardTitle>{text.presenceTitle}</CardTitle><CardDescription>{isEs ? 'Estimación basada en actividad de los últimos minutos; no es una conexión permanente.' : 'Estimativa baseada na atividade dos últimos minutos; não é uma conexão permanente.'}</CardDescription></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-3">
+              {[
+                [presenceQuery.data?.onlineNow || 0, text.onlineNow, 'text-emerald-700'],
+                [presenceQuery.data?.activeLast15Minutes || 0, text.active15, 'text-blue-700'],
+                [presenceQuery.data?.activeLast24Hours || 0, text.active24, 'text-violet-700'],
+              ].map(([value, label, color]) => <div key={String(label)} className="rounded-lg bg-white p-4"><div className={`text-3xl font-bold ${color}`}>{value}</div><div className="mt-1 text-sm text-slate-600">{label}</div></div>)}
+            </div>
+            {(presenceQuery.data?.recentUsers || []).length === 0 ? <p className="text-sm text-slate-500">{text.noActivity}</p> : <div className="divide-y divide-blue-100 rounded-lg bg-white"><div className="grid grid-cols-[1fr_auto] gap-3 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><span>{isEs ? 'Usuario' : 'Usuário'}</span><span>{isEs ? 'Última actividad' : 'Última atividade'}</span></div>{presenceQuery.data!.recentUsers.map((activity) => <div key={activity.id} className="grid grid-cols-[1fr_auto] gap-3 px-3 py-2 text-sm"><span><strong>{activity.name || activity.email || `#${activity.id}`}</strong><span className="ml-2 text-xs text-slate-500">{activity.email}</span></span><span className="text-right text-xs text-slate-600">{activity.ageMinutes === 0 ? (isEs ? 'ahora' : 'agora') : `${activity.ageMinutes} min`}</span></div>)}</div>}
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

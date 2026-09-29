@@ -1,5 +1,7 @@
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { useEffect } from 'react';
+import { trpc } from './lib/trpc';
 import NotFound from '@/pages/NotFound';
 import { Route, Switch } from 'wouter';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -14,6 +16,21 @@ import Guide from './pages/Guide';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import AdminDashboard from './pages/AdminDashboard';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { useAuth } from './_core/hooks/useAuth';
+
+function ActivityHeartbeat() {
+  const { user } = useAuth();
+  const heartbeat = trpc.auth.heartbeat.useMutation();
+
+  useEffect(() => {
+    if (!user) return;
+    heartbeat.mutate();
+    const interval = window.setInterval(() => heartbeat.mutate(), 60_000);
+    return () => window.clearInterval(interval);
+  }, [user, heartbeat]);
+
+  return null;
+}
 
 function Router() {
   return (
@@ -39,6 +56,7 @@ function App() {
         <ThemeProvider defaultTheme="light">
           <TooltipProvider>
             <Toaster />
+            <ActivityHeartbeat />
             <Router />
           </TooltipProvider>
         </ThemeProvider>

@@ -30,6 +30,10 @@ export const appRouter = router({
         accessExpired: authService.isAccessExpired(user),
       };
     }),
+    heartbeat: protectedProcedure.mutation(async ({ ctx }) => {
+      await db.recordUserActivity(ctx.user.id);
+      return { success: true } as const;
+    }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -353,6 +357,10 @@ export const appRouter = router({
         throw new TRPCError({ code: 'FORBIDDEN' });
       }
       return await db.getAdminStats();
+    }),
+    getPresence: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user?.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN' });
+      return await db.getAdminPresence();
     }),
     
     getAllUsers: protectedProcedure.query(async ({ ctx }) => {
