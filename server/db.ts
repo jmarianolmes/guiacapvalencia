@@ -738,7 +738,6 @@ export async function getSimulatorStats() {
         officialExams: sql<number>`count(distinct ${verifiedOfficialQuestions.examDate})`,
       }).from(verifiedOfficialQuestions).where(eq(verifiedOfficialQuestions.isReserve, false))
     );
-    const officialAnalysis = await getOfficialExamAnalysis();
     const legacyOfficialQuestions = Number(summary?.officialQuestions ?? 0);
     const verifiedOfficialQuestionsCount = Number(verifiedSummary?.officialQuestions ?? 0);
 
@@ -748,7 +747,9 @@ export async function getSimulatorStats() {
       totalStatisticalQuestions: Number(summary?.statisticalQuestions ?? 0),
       totalOfficialExams: Number(verifiedSummary?.officialExams ?? 0),
       totalModels: Number(summary?.statisticalModels ?? 0),
-      totalRepeatedQuestions: officialAnalysis?.repeatedGroups ?? Number(summary?.repeatedQuestions ?? 0),
+      // Do not force the full 3,500-question analysis while the simulator header loads.
+      // The detailed analysis is calculated only by its dedicated guide tabs.
+      totalRepeatedQuestions: officialAnalysisCache?.value.repeatedGroups ?? Number(summary?.repeatedQuestions ?? 0),
       catalogUniqueEntries: Number(summary?.catalogUniqueEntries ?? 0),
       catalogOfficialUniqueEntries: Number(summary?.catalogOfficialUniqueEntries ?? 0),
       catalogNonOfficialUniqueEntries: Number(summary?.catalogNonOfficialUniqueEntries ?? 0),
