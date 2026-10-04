@@ -242,6 +242,7 @@ let chapterQuestionIndexCache: { createdAt: number; value: ChapterQuestionIndex 
 let chapterQuestionIndexPromise: Promise<ChapterQuestionIndex> | null = null;
 const OFFICIAL_ANALYSIS_CACHE_TTL_MS = 5 * 60 * 1000;
 let officialAnalysisCache: { createdAt: number; value: ReturnType<typeof buildOfficialExamAnalysis> } | null = null;
+let officialAnalysisPromise: Promise<ReturnType<typeof buildOfficialExamAnalysis> | null> | null = null;
 
 function isTiDbCloudUrl(connectionString: string) {
   try {
@@ -608,8 +609,10 @@ export async function getOfficialExamAnalysis() {
   if (officialAnalysisCache && Date.now() - officialAnalysisCache.createdAt < OFFICIAL_ANALYSIS_CACHE_TTL_MS) {
     return officialAnalysisCache.value;
   }
+  if (officialAnalysisPromise) return officialAnalysisPromise;
 
-  try {
+  officialAnalysisPromise = (async () => {
+    try {
     const verifiedQuestions = await withSimulatorDbRetry((db) =>
       db.select().from(verifiedOfficialQuestions).where(eq(verifiedOfficialQuestions.isReserve, false))
     );
@@ -625,10 +628,14 @@ export async function getOfficialExamAnalysis() {
     const analysis = buildOfficialExamAnalysis(officialQuestions);
     officialAnalysisCache = { createdAt: Date.now(), value: analysis };
     return analysis;
-  } catch (error) {
-    console.error('[Database] Failed to build official exam analysis:', error);
-    return null;
-  }
+    } catch (error) {
+      console.error('[Database] Failed to build official exam analysis:', error);
+      return null;
+    } finally {
+      officialAnalysisPromise = null;
+    }
+  })();
+  return officialAnalysisPromise;
 }
 
 export async function getSimulatorChapters() {
