@@ -120,7 +120,8 @@ export async function authenticateUser(email: string, password: string) {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
 
-  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  const normalizedEmail = email.trim().toLowerCase();
+  const result = await db.select().from(users).where(eq(users.email, normalizedEmail)).limit(1);
   if (result.length === 0) {
     throw new Error('Invalid email or password');
   }

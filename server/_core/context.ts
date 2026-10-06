@@ -25,7 +25,9 @@ export async function createContext(
   if (!user && isDemoMode()) {
     user = getDemoUser();
   }
-  if (!user && await getPublicAccessEnabled()) {
+  // A guia historicamente permite leitura sem login em produção. Usuários
+  // autenticados continuam usando sua própria sessão e seus dados pessoais.
+  if (!user && (process.env.NODE_ENV === 'production' || await getPublicAccessEnabled())) {
     user = { ...getDemoUser(), openId: 'public-guest', name: 'Visitante' };
   }
 
