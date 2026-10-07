@@ -20,14 +20,14 @@ import { useAuth } from './_core/hooks/useAuth';
 
 function ActivityHeartbeat() {
   const { user } = useAuth();
-  const heartbeat = trpc.auth.heartbeat.useMutation();
+  const { mutate: sendHeartbeat } = trpc.auth.heartbeat.useMutation();
 
   useEffect(() => {
     if (!user) return;
-    heartbeat.mutate();
-    const interval = window.setInterval(() => heartbeat.mutate(), 60_000);
+    sendHeartbeat();
+    const interval = window.setInterval(() => sendHeartbeat(), 60_000);
     return () => window.clearInterval(interval);
-  }, [user, heartbeat]);
+  }, [user?.id, sendHeartbeat]);
 
   return null;
 }
