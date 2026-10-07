@@ -38,7 +38,7 @@ describe('perfil e proteção do conteúdo de estudo', () => {
   it('aplica cabeçalhos e limite de taxa no tráfego tRPC', () => {
     const server = source('server/_core/index.ts');
 
-    expect(server).toContain("createRateLimit({ windowMs: 10 * 60 * 1000, maxRequests: 300, keyPrefix: 'trpc' })");
+    expect(server).toContain("createRateLimit({ windowMs: 10 * 60 * 1000, maxRequests: 1200, keyPrefix: 'trpc' })");
     expect(server).toContain("res.setHeader('Cache-Control', 'no-store, private')");
     expect(server).toContain("res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive')");
   });

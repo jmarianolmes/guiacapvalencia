@@ -23,7 +23,10 @@ async function startServer() {
   app.get('/robots.txt', (_req, res) => {
     res.type('text/plain').send(['User-agent: *', 'Disallow: /guide', 'Disallow: /admin', 'Disallow: /api/', 'Disallow: /login', 'Disallow: /register', ''].join(String.fromCharCode(10)));
   });
-  app.use('/api/trpc', createRateLimit({ windowMs: 10 * 60 * 1000, maxRequests: 300, keyPrefix: 'trpc' }));
+  // A guia pública dispara várias consultas tRPC ao abrir e ao trocar de aba.
+  // A margem anterior de 300 chamadas por IP bloqueava usuários legítimos e
+  // fazia o cliente receber JSON 429 fora do formato tRPC/SuperJSON.
+  app.use('/api/trpc', createRateLimit({ windowMs: 10 * 60 * 1000, maxRequests: 1200, keyPrefix: 'trpc' }));
   app.use('/api/trpc', (_req, res, next) => {
     res.setHeader('Cache-Control', 'no-store, private');
     res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
