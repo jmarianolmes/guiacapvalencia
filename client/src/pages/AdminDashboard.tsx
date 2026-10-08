@@ -25,6 +25,7 @@ export default function AdminDashboard() {
   const [confirmDeleteUserId, setConfirmDeleteUserId] = useState<number | null>(null);
   const [formError, setFormError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [scanProgress, setScanProgress] = useState(0);
 
   const isEs = language === 'es';
   const text = isEs
@@ -62,7 +63,6 @@ export default function AdminDashboard() {
   const dismissReviewMutation = trpc.admin.dismissQuestionReview.useMutation();
   const publicAccessQuery = trpc.admin.getPublicAccess.useQuery();
   const publicAccessMutation = trpc.admin.setPublicAccess.useMutation();
-  const importObjective32Mutation = trpc.admin.importObjective32.useMutation();
   const [reviewAnswers, setReviewAnswers] = useState<Record<number, 'A' | 'B' | 'C' | 'D'>>({});
   const [officialSuggestions, setOfficialSuggestions] = useState<Record<number, { answer: 'A' | 'B' | 'C' | 'D' | null; ofAnswer: 'A' | 'B' | 'C' | 'D' | null; onlineAnswer: 'A' | 'B' | 'C' | 'D' | null; ofInternalCode: string | null; sourceUrl: string; message: string; diagnostic: string }>>({});
   const officialLookupMutation = trpc.admin.lookupOfficialQuestion.useMutation();
@@ -72,6 +72,14 @@ export default function AdminDashboard() {
       setLocation('/');
     }
   }, [user, setLocation]);
+
+  useEffect(() => {
+    if (!scanStrategicMutation.isPending) return;
+    const timer = window.setInterval(() => {
+      setScanProgress((current) => Math.min(95, current + (current < 60 ? 3 : 1)));
+    }, 350);
+    return () => window.clearInterval(timer);
+  }, [scanStrategicMutation.isPending]);
 
   if (!user || user.role !== 'admin') {
     return null;
@@ -184,23 +192,17 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleImportObjective32 = async () => {
-    setFormError(''); setSuccessMessage('');
-    try {
-      const result = await importObjective32Mutation.mutateAsync();
-      setSuccessMessage(`Importação concluída: ${result.imported} questões em ${result.chapters.join(', ')}.`);
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível importar o objetivo 3.2.');
-    }
-  };
-
   const handleScanStrategicQuestions = async () => {
     setFormError(''); setSuccessMessage('');
+    setScanProgress(5);
     try {
       const result = await scanStrategicMutation.mutateAsync();
       await reviewReportsQuery.refetch();
+      setScanProgress(100);
       setSuccessMessage(`Análise concluída: ${result.scanned} estratégicas verificadas, ${result.answerConflicts} divergências encontradas e ${result.createdReports} novas averiguações criadas. Nenhuma questão oficial foi alterada.`);
+      window.setTimeout(() => setScanProgress(0), 900);
     } catch (error) {
+      setScanProgress(0);
       setFormError(error instanceof Error ? error.message : 'Não foi possível analisar as questões estratégicas.');
     }
   };
@@ -294,12 +296,7 @@ export default function AdminDashboard() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>Objetivo 3.2</CardTitle><CardDescription>Ser capaz de prevenir la delincuencia y el tráfico de inmigrantes clandestinos — 40 questões conferidas.</CardDescription></CardHeader>
-          <CardContent><Button onClick={handleImportObjective32} disabled={importObjective32Mutation.isPending}>{importObjective32Mutation.isPending && <Spinner className="mr-2 h-4 w-4" />}Importar objetivo 3.2 (40 questões)</Button></CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3"><CardTitle>{text.reviewTitle}</CardTitle><Button size="sm" variant="outline" disabled={scanStrategicMutation.isPending} onClick={handleScanStrategicQuestions}>{scanStrategicMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}{scanStrategicMutation.isPending ? text.scanningStrategic : text.scanStrategic}</Button></CardHeader>
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3"><CardTitle>{text.reviewTitle}</CardTitle><Button size="sm" variant="outline" className="relative min-w-44 overflow-hidden" disabled={scanStrategicMutation.isPending} onClick={handleScanStrategicQuestions}>{scanStrategicMutation.isPending && <span className="absolute inset-y-0 left-0 bg-blue-100/80 transition-all duration-300" style={{ width: `${scanProgress}%` }} />}<span className="relative flex items-center justify-center gap-2">{scanStrategicMutation.isPending && <Spinner className="h-4 w-4" />}{scanStrategicMutation.isPending ? `${text.scanningStrategic} ${scanProgress}%` : text.scanStrategic}</span></Button></CardHeader>
           <CardContent className="space-y-4">
             {(reviewReportsQuery.data || []).length === 0 ? <p className="text-sm text-slate-500">{text.reviewEmpty}</p> : (reviewReportsQuery.data || []).map(({ report, question }) => (
               <div key={report.id} className="rounded-lg border border-amber-200 bg-amber-50 p-4">
