@@ -325,6 +325,7 @@ export const appRouter = router({
 
   admin: router({
     getQuestionReviewReports: adminProcedure.query(() => db.getQuestionReviewReports()),
+    scanStrategicQuestionsForReview: adminProcedure.mutation(({ ctx }) => db.scanStrategicQuestionsForReview(ctx.user.id)),
     getOfficialQuestionSource: adminProcedure
       .input(z.object({ questionId: z.number().int().positive() }))
       .query(async ({ input }) => {

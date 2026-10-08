@@ -35,7 +35,7 @@ export default function AdminDashboard() {
         manager: 'Gestión de usuarios', noUsers: 'No hay usuarios registrados', status: 'Estado', actions: 'Acciones', account: 'Cuenta',
         approve: 'Aprobar', block: 'Bloquear', unblock: 'Desbloquear', approvedStatus: 'Aprobado', blockedStatus: 'Bloqueado', pendingStatus: 'Pendiente', temporary: 'Cambio de contraseña pendiente', master: 'Cuenta maestra',
         resetPassword: 'Nueva contraseña temporal', savePassword: 'Guardar contraseña', showPassword: 'Mostrar', hidePassword: 'Ocultar', delete: 'Eliminar', confirmDelete: 'Confirmar eliminación', cancel: 'Cancelar', resetDone: 'Contraseña temporal actualizada. La persona deberá cambiarla en su próximo acceso.', deleted: 'Cuenta eliminada correctamente.',
-        created: 'Cuenta creada y aprobada. Comparta la contraseña temporal con la persona usuaria por un canal seguro.', reviewTitle: 'Averiguaciones de conformidad', reviewEmpty: 'No hay cuestiones pendientes.', reviewResolve: 'Corregir y resolver', reviewCancel: 'Cancelar averiguación', compareOfficial: 'Comparar na fonte oficial', searchOfficial: 'Buscar resposta oficial', searchingOfficial: 'Buscando...', officialFound: 'Resposta encontrada. Confirme antes de salvar.', officialBlocked: 'Busca automática indisponível; compare manualmente.', acceptOfficial: 'Aceitar sugestão oficial', publicTitle: 'Acceso público', publicDescription: 'Permite acceder al guía sin iniciar sesión. El login administrativo permanece disponible.', publicOn: 'Desactivar login para visitantes', publicOff: 'Mantener login obligatorio',
+        created: 'Cuenta creada y aprobada. Comparta la contraseña temporal con la persona usuaria por un canal seguro.', reviewTitle: 'Averiguaciones de conformidad', reviewEmpty: 'No hay cuestiones pendientes.', reviewResolve: 'Corregir y resolver', reviewCancel: 'Cancelar averiguación', compareOfficial: 'Comparar na fonte oficial', searchOfficial: 'Buscar resposta oficial', searchingOfficial: 'Buscando...', officialFound: 'Resposta encontrada. Confirme antes de salvar.', officialBlocked: 'Busca automática indisponível; compare manualmente.', acceptOfficial: 'Aceitar sugestão oficial', scanStrategic: 'Analizar estratégicas', scanningStrategic: 'Analizando...', publicTitle: 'Acceso público', publicDescription: 'Permite acceder al guía sin iniciar sesión. El login administrativo permanece disponible.', publicOn: 'Desactivar login para visitantes', publicOff: 'Mantener login obligatorio',
       }
     : {
         title: 'Painel administrativo', back: 'Voltar', total: 'Total de Usuários', pending: 'Pendentes de Aprovação', approved: 'Usuários Aprovados', blocked: 'Usuários Bloqueados', presenceTitle: 'Atividade recente', onlineNow: 'Ativos agora (5 min)', active15: 'Ativos (15 min)', active24: 'Ativos hoje', noActivity: 'Ainda não há atividade recente.',
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
         manager: 'Gerenciamento de usuários', noUsers: 'Nenhum usuário cadastrado', status: 'Status', actions: 'Ações', account: 'Conta',
         approve: 'Aprovar', block: 'Bloquear', unblock: 'Desbloquear', approvedStatus: 'Aprovado', blockedStatus: 'Bloqueado', pendingStatus: 'Pendente', temporary: 'Troca de senha pendente', master: 'Conta mestre',
         resetPassword: 'Nova senha temporária', savePassword: 'Salvar senha', showPassword: 'Mostrar', hidePassword: 'Ocultar', delete: 'Excluir', confirmDelete: 'Confirmar exclusão', cancel: 'Cancelar', resetDone: 'Senha temporária atualizada. A pessoa deverá alterá-la no próximo acesso.', deleted: 'Conta excluída com sucesso.',
-        created: 'Conta criada e aprovada. Compartilhe a senha temporária com a pessoa usuária por um canal seguro.', reviewTitle: 'Averiguações de conformidade', reviewEmpty: 'Nenhuma questão pendente.', reviewResolve: 'Corrigir e resolver', reviewCancel: 'Cancelar averiguação', compareOfficial: 'Comparar na fonte oficial', searchOfficial: 'Buscar resposta oficial', searchingOfficial: 'Buscando...', officialFound: 'Resposta encontrada. Confirme antes de salvar.', officialBlocked: 'Busca automática indisponível; compare manualmente.', acceptOfficial: 'Aceitar sugestão oficial', publicTitle: 'Acesso público', publicDescription: 'Permite acessar o guia sem login. O login administrativo continua disponível.', publicOn: 'Desligar login para visitantes', publicOff: 'Manter login obrigatório',
+        created: 'Conta criada e aprovada. Compartilhe a senha temporária com a pessoa usuária por um canal seguro.', reviewTitle: 'Averiguações de conformidade', reviewEmpty: 'Nenhuma questão pendente.', reviewResolve: 'Corrigir e resolver', reviewCancel: 'Cancelar averiguação', compareOfficial: 'Comparar na fonte oficial', searchOfficial: 'Buscar resposta oficial', searchingOfficial: 'Buscando...', officialFound: 'Resposta encontrada. Confirme antes de salvar.', officialBlocked: 'Busca automática indisponível; compare manualmente.', acceptOfficial: 'Aceitar sugestão oficial', scanStrategic: 'Analisar estratégicas', scanningStrategic: 'Analisando...', publicTitle: 'Acesso público', publicDescription: 'Permite acessar o guia sem login. O login administrativo continua disponível.', publicOn: 'Desligar login para visitantes', publicOff: 'Manter login obrigatório',
       };
 
   const statsQuery = trpc.admin.getStats.useQuery();
@@ -57,6 +57,7 @@ export default function AdminDashboard() {
   const deleteUserMutation = trpc.admin.deleteUser.useMutation();
   const renewAccessMutation = trpc.admin.renewUserAccess.useMutation();
   const reviewReportsQuery = trpc.admin.getQuestionReviewReports.useQuery();
+  const scanStrategicMutation = trpc.admin.scanStrategicQuestionsForReview.useMutation();
   const resolveReviewMutation = trpc.admin.resolveQuestionReview.useMutation();
   const dismissReviewMutation = trpc.admin.dismissQuestionReview.useMutation();
   const publicAccessQuery = trpc.admin.getPublicAccess.useQuery();
@@ -193,6 +194,17 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleScanStrategicQuestions = async () => {
+    setFormError(''); setSuccessMessage('');
+    try {
+      const result = await scanStrategicMutation.mutateAsync();
+      await reviewReportsQuery.refetch();
+      setSuccessMessage(`Análise concluída: ${result.scanned} estratégicas verificadas, ${result.answerConflicts} divergências encontradas e ${result.createdReports} novas averiguações criadas. Nenhuma questão oficial foi alterada.`);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Não foi possível analisar as questões estratégicas.');
+    }
+  };
+
   const handleOfficialLookup = async (questionId: number) => {
     try {
       const result = await officialLookupMutation.mutateAsync({ questionId });
@@ -287,7 +299,7 @@ export default function AdminDashboard() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>{text.reviewTitle}</CardTitle></CardHeader>
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3"><CardTitle>{text.reviewTitle}</CardTitle><Button size="sm" variant="outline" disabled={scanStrategicMutation.isPending} onClick={handleScanStrategicQuestions}>{scanStrategicMutation.isPending && <Spinner className="mr-2 h-4 w-4" />}{scanStrategicMutation.isPending ? text.scanningStrategic : text.scanStrategic}</Button></CardHeader>
           <CardContent className="space-y-4">
             {(reviewReportsQuery.data || []).length === 0 ? <p className="text-sm text-slate-500">{text.reviewEmpty}</p> : (reviewReportsQuery.data || []).map(({ report, question }) => (
               <div key={report.id} className="rounded-lg border border-amber-200 bg-amber-50 p-4">
@@ -301,6 +313,7 @@ export default function AdminDashboard() {
                   ))}
                 </div>
                 <p className="mt-2 text-xs font-semibold text-slate-600">Resposta atualmente registrada: {question.correctAnswer}</p>
+                {report.note && <p className="mt-2 rounded bg-amber-100 px-2 py-1 text-xs leading-relaxed text-amber-900">Motivo da averiguação: {report.note}</p>}
                 <div className="mt-3 flex flex-wrap items-center gap-2 rounded-md border border-blue-200 bg-blue-50 p-3">
                   <Button size="sm" variant="outline" disabled={officialLookupMutation.isPending} onClick={() => handleOfficialLookup(question.id)}>
                     {officialLookupMutation.isPending ? text.searchingOfficial : text.searchOfficial}

@@ -84,6 +84,104 @@ export async function cancelQuestionReview(userId: number, questionId: number) {
   return { success: true };
 }
 
+function reviewNormalize(value: string | null | undefined) {
+  return (value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLocaleLowerCase('es-ES');
+}
+
+function reviewTokens(value: string) {
+  return new Set(reviewNormalize(value).split(' ').filter((token) => token.length >= 4));
+}
+
+function reviewTokenOverlap(left: string, right: string) {
+  const leftTokens = reviewTokens(left);
+  const rightTokens = reviewTokens(right);
+  if (leftTokens.size < 6 || rightTokens.size < 6) return 0;
+  const intersection = Array.from(leftTokens).filter((token) => rightTokens.has(token)).length;
+  return intersection / Math.max(leftTokens.size, rightTokens.size);
+}
+
+function reviewOptionTexts(question: { optionA: string; optionB: string; optionC: string; optionD: string }) {
+  return [question.optionA, question.optionB, question.optionC, question.optionD].map(reviewNormalize).sort();
+}
+
+function reviewCorrectText(question: { optionA: string; optionB: string; optionC: string; optionD: string; correctAnswer: string }) {
+  return reviewNormalize(question[`option${question.correctAnswer}` as 'optionA' | 'optionB' | 'optionC' | 'optionD']);
+}
+
+export async function scanStrategicQuestionsForReview(adminUserId: number) {
+  const db = await getDb();
+  if (!db) throw new Error('Database connection unavailable');
+  const [strategicQuestions, moduleReferences, verifiedReferences, existingReports] = await Promise.all([
+    db.select().from(simulatorQuestions),
+    db.select().from(simulatorQuestions).where(and(eq(simulatorQuestions.model, 'OF'), eq(simulatorQuestions.origin, 'official'))),
+    db.select().from(verifiedOfficialQuestions).where(eq(verifiedOfficialQuestions.isReserve, false)),
+    db.select({ questionId: questionReviewReports.questionId, status: questionReviewReports.status })
+      .from(questionReviewReports),
+  ]);
+  const candidates = strategicQuestions.filter((question) => question.model !== 'OF' && question.model !== 'ORIGINAL' && question.origin !== 'official');
+  const references = [
+    ...moduleReferences.map((question) => ({
+      label: `banco oficial por módulo · ${question.model} · ${question.provaDate} · questão ${question.questionNumber}`,
+      stem: question.stem || question.question,
+      optionA: question.optionA, optionB: question.optionB, optionC: question.optionC, optionD: question.optionD,
+      correctAnswer: question.correctAnswer,
+    })),
+    ...verifiedReferences.map((question) => ({
+      label: `prova homologada · ${question.examDate} · questão ${question.questionNumber}`,
+      stem: question.stem || question.question,
+      optionA: question.optionA, optionB: question.optionB, optionC: question.optionC, optionD: question.optionD,
+      correctAnswer: question.correctAnswer,
+    })),
+  ];
+  const existingByQuestion = new Map(existingReports.map((report) => [report.questionId, report.status]));
+  const reportsToCreate: Array<{ userId: number; questionId: number; status: 'open'; note: string }> = [];
+  let exactMatches = 0;
+  let probableMatches = 0;
+  let answerConflicts = 0;
+  for (const candidate of candidates) {
+    const candidateStem = candidate.stem || candidate.question;
+    let best: { label: string; score: number; answerConflict: boolean } | null = null;
+    for (const reference of references) {
+      const sameStem = reviewNormalize(candidateStem) === reviewNormalize(reference.stem);
+      const sameOptions = reviewOptionTexts(candidate) .join('|') === reviewOptionTexts(reference).join('|');
+      const overlap = reviewTokenOverlap(candidateStem, reference.stem);
+      const optionOverlap = reviewOptionTexts(candidate).filter((option) => reviewOptionTexts(reference).includes(option)).length;
+      const exact = sameStem && sameOptions;
+      const probable = !exact && overlap >= 0.9 && optionOverlap >= 2;
+      if (!exact && !probable) continue;
+      const score = exact ? 1 : overlap + optionOverlap / 10;
+      if (!best || score > best.score) {
+        best = { label: reference.label, score, answerConflict: reviewCorrectText(candidate) !== reviewCorrectText(reference) };
+      }
+    }
+    if (!best) continue;
+    if (best.score === 1) exactMatches++;
+    else probableMatches++;
+    if (!best.answerConflict) continue;
+    answerConflicts++;
+    const previousStatus = existingByQuestion.get(candidate.id);
+    if (previousStatus) continue;
+    reportsToCreate.push({
+      userId: adminUserId,
+      questionId: candidate.id,
+      status: 'open',
+      note: `Análise automática somente para averiguação manual. Correspondência ${best.score === 1 ? 'exata' : 'muito provável'} com ${best.label}. A resposta textual correta diverge da referência. Nenhum dado oficial foi alterado.`,
+    });
+  }
+  for (const report of reportsToCreate) {
+    await db.insert(questionReviewReports).values(report).onDuplicateKeyUpdate({
+      set: { status: 'open', resolvedAt: null, note: report.note },
+    });
+  }
+  return { scanned: candidates.length, exactMatches, probableMatches, answerConflicts, createdReports: reportsToCreate.length };
+}
+
 export async function getQuestionReviewReports() {
   const db = await getDb();
   if (!db) return [];
@@ -161,9 +259,14 @@ export async function resolveQuestionReview(reportId: number, correctAnswer: 'A'
   const [source] = await db.select().from(simulatorQuestions).where(eq(simulatorQuestions.id, report.questionId)).limit(1);
   if (!source) throw new Error('Pergunta da averiguação não encontrada');
   const correctText = source[`option${correctAnswer}` as 'optionA' | 'optionB' | 'optionC' | 'optionD'];
-  const equivalentFilter = source.equivalenceKey
-    ? eq(simulatorQuestions.equivalenceKey, source.equivalenceKey)
-    : eq(simulatorQuestions.normalized, source.normalized ?? source.question);
+  const equivalentFilter = and(
+    source.equivalenceKey
+      ? eq(simulatorQuestions.equivalenceKey, source.equivalenceKey)
+      : eq(simulatorQuestions.normalized, source.normalized ?? source.question),
+    ne(simulatorQuestions.model, 'OF'),
+    ne(simulatorQuestions.model, 'ORIGINAL'),
+    ne(simulatorQuestions.origin, 'official'),
+  );
   const equivalentQuestions = await db.select().from(simulatorQuestions).where(equivalentFilter);
   let updatedQuestions = 0;
   let recalculatedResults = 0;
