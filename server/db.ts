@@ -110,8 +110,24 @@ function reviewOptionTexts(question: { optionA: string; optionB: string; optionC
   return [question.optionA, question.optionB, question.optionC, question.optionD].map(reviewNormalize).sort();
 }
 
+function reviewOptionKey(question: { optionA: string; optionB: string; optionC: string; optionD: string }) {
+  return reviewOptionTexts(question).join('|');
+}
+
 function reviewCorrectText(question: { optionA: string; optionB: string; optionC: string; optionD: string; correctAnswer: string }) {
   return reviewNormalize(question[`option${question.correctAnswer}` as 'optionA' | 'optionB' | 'optionC' | 'optionD']);
+}
+
+function reviewPrepared(question: { stem: string; optionA: string; optionB: string; optionC: string; optionD: string; correctAnswer: string }) {
+  const stem = reviewNormalize(question.stem);
+  return {
+    stem,
+    tokens: reviewTokens(stem),
+    options: reviewOptionTexts(question),
+    optionKey: reviewOptionKey(question),
+    correctText: reviewCorrectText(question),
+    correctAnswer: question.correctAnswer,
+  };
 }
 
 type StrategicScanStatus = { running: boolean; progress: number; processed: number; total: number };
@@ -149,7 +165,20 @@ export async function scanStrategicQuestionsForReview(adminUserId: number) {
       optionA: question.optionA, optionB: question.optionB, optionC: question.optionC, optionD: question.optionD,
       correctAnswer: question.correctAnswer,
     })),
-  ];
+  ].map((reference) => ({ ...reference, ...reviewPrepared(reference) }));
+  const exactReferenceIndex = new Map<string, typeof references>();
+  const tokenReferenceIndex = new Map<string, number[]>();
+  references.forEach((reference, referenceIndex) => {
+    const exactKey = `${reference.stem}│${reference.optionKey}`;
+    const exactMatches = exactReferenceIndex.get(exactKey) ?? [];
+    exactMatches.push(reference);
+    exactReferenceIndex.set(exactKey, exactMatches);
+    reference.tokens.forEach((token) => {
+      const candidatesForToken = tokenReferenceIndex.get(token) ?? [];
+      candidatesForToken.push(referenceIndex);
+      tokenReferenceIndex.set(token, candidatesForToken);
+    });
+  });
   const existingByQuestion = new Map(existingReports.map((report) => [report.questionId, report.status]));
   const reportsToCreate: Array<{ userId: number; questionId: number; status: 'open'; note: string }> = [];
   let exactMatches = 0;
@@ -164,19 +193,23 @@ export async function scanStrategicQuestionsForReview(adminUserId: number) {
       total: candidates.length,
     });
     if ((candidateIndex + 1) % 25 === 0) await new Promise<void>((resolve) => setImmediate(resolve));
-    const candidateStem = candidate.stem || candidate.question;
+    const preparedCandidate = reviewPrepared({ ...candidate, stem: candidate.stem || candidate.question });
     let best: { label: string; score: number; answerConflict: boolean } | null = null;
-    for (const reference of references) {
-      const sameStem = reviewNormalize(candidateStem) === reviewNormalize(reference.stem);
-      const sameOptions = reviewOptionTexts(candidate) .join('|') === reviewOptionTexts(reference).join('|');
-      const overlap = reviewTokenOverlap(candidateStem, reference.stem);
-      const optionOverlap = reviewOptionTexts(candidate).filter((option) => reviewOptionTexts(reference).includes(option)).length;
-      const exact = sameStem && sameOptions;
+    const candidateReferenceIndexes = new Set<number>();
+    preparedCandidate.tokens.forEach((token) => (tokenReferenceIndex.get(token) ?? []).forEach((referenceIndex) => candidateReferenceIndexes.add(referenceIndex)));
+    const exactReferences = exactReferenceIndex.get(`${preparedCandidate.stem}│${preparedCandidate.optionKey}`) ?? [];
+    const candidateReferences = exactReferences.length > 0
+      ? exactReferences
+      : Array.from(candidateReferenceIndexes).map((referenceIndex) => references[referenceIndex]);
+    for (const reference of candidateReferences) {
+      const exact = preparedCandidate.stem === reference.stem && preparedCandidate.optionKey === reference.optionKey;
+      const overlap = reviewTokenOverlap(preparedCandidate.stem, reference.stem);
+      const optionOverlap = preparedCandidate.options.filter((option) => reference.options.includes(option)).length;
       const probable = !exact && overlap >= 0.9 && optionOverlap >= 2;
       if (!exact && !probable) continue;
       const score = exact ? 1 : overlap + optionOverlap / 10;
       if (!best || score > best.score) {
-        best = { label: reference.label, score, answerConflict: reviewCorrectText(candidate) !== reviewCorrectText(reference) };
+        best = { label: reference.label, score, answerConflict: preparedCandidate.correctText !== reference.correctText };
       }
     }
     if (!best) continue;

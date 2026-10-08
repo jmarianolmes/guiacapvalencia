@@ -225,7 +225,9 @@ export default function AdminDashboard() {
     }
   };
 
-  const displayedScanProgress = scanStatusQuery.data?.progress ?? scanProgress;
+  const displayedScanProgress = scanStrategicMutation.isPending
+    ? Math.max(scanProgress, scanStatusQuery.data?.progress ?? 0)
+    : scanProgress;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
