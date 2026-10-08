@@ -114,17 +114,28 @@ function reviewCorrectText(question: { optionA: string; optionB: string; optionC
   return reviewNormalize(question[`option${question.correctAnswer}` as 'optionA' | 'optionB' | 'optionC' | 'optionD']);
 }
 
+type StrategicScanStatus = { running: boolean; progress: number; processed: number; total: number };
+const strategicScanStatuses = new Map<number, StrategicScanStatus>();
+
+export function getStrategicScanStatus(adminUserId: number) {
+  return strategicScanStatuses.get(adminUserId) ?? { running: false, progress: 0, processed: 0, total: 0 };
+}
+
 export async function scanStrategicQuestionsForReview(adminUserId: number) {
   const db = await getDb();
   if (!db) throw new Error('Database connection unavailable');
   const [strategicQuestions, moduleReferences, verifiedReferences, existingReports] = await Promise.all([
     db.select().from(simulatorQuestions),
-    db.select().from(simulatorQuestions).where(and(eq(simulatorQuestions.model, 'OF'), eq(simulatorQuestions.origin, 'official'))),
+    db.select().from(simulatorQuestions).where(eq(simulatorQuestions.model, 'OF')),
     db.select().from(verifiedOfficialQuestions).where(eq(verifiedOfficialQuestions.isReserve, false)),
     db.select({ questionId: questionReviewReports.questionId, status: questionReviewReports.status })
       .from(questionReviewReports),
   ]);
-  const candidates = strategicQuestions.filter((question) => question.model !== 'OF' && question.model !== 'ORIGINAL' && question.origin !== 'official');
+  // The protected sources are identified by model, not by origin metadata.
+  // Statistical rows can inherit origin=official when they duplicate an official
+  // source, but they still must be audited as strategic questions.
+  const candidates = strategicQuestions.filter((question) => question.model !== 'OF' && question.model !== 'ORIGINAL');
+  strategicScanStatuses.set(adminUserId, { running: true, progress: 5, processed: 0, total: candidates.length });
   const references = [
     ...moduleReferences.map((question) => ({
       label: `banco oficial por módulo · ${question.model} · ${question.provaDate} · questão ${question.questionNumber}`,
@@ -144,7 +155,15 @@ export async function scanStrategicQuestionsForReview(adminUserId: number) {
   let exactMatches = 0;
   let probableMatches = 0;
   let answerConflicts = 0;
-  for (const candidate of candidates) {
+  for (let candidateIndex = 0; candidateIndex < candidates.length; candidateIndex += 1) {
+    const candidate = candidates[candidateIndex];
+    strategicScanStatuses.set(adminUserId, {
+      running: true,
+      progress: Math.min(99, 5 + Math.round(((candidateIndex + 1) / Math.max(candidates.length, 1)) * 94)),
+      processed: candidateIndex + 1,
+      total: candidates.length,
+    });
+    if ((candidateIndex + 1) % 25 === 0) await new Promise<void>((resolve) => setImmediate(resolve));
     const candidateStem = candidate.stem || candidate.question;
     let best: { label: string; score: number; answerConflict: boolean } | null = null;
     for (const reference of references) {
@@ -179,6 +198,7 @@ export async function scanStrategicQuestionsForReview(adminUserId: number) {
       set: { status: 'open', resolvedAt: null, note: report.note },
     });
   }
+  strategicScanStatuses.set(adminUserId, { running: false, progress: 100, processed: candidates.length, total: candidates.length });
   return { scanned: candidates.length, exactMatches, probableMatches, answerConflicts, createdReports: reportsToCreate.length };
 }
 
@@ -265,7 +285,6 @@ export async function resolveQuestionReview(reportId: number, correctAnswer: 'A'
       : eq(simulatorQuestions.normalized, source.normalized ?? source.question),
     ne(simulatorQuestions.model, 'OF'),
     ne(simulatorQuestions.model, 'ORIGINAL'),
-    ne(simulatorQuestions.origin, 'official'),
   );
   const equivalentQuestions = await db.select().from(simulatorQuestions).where(equivalentFilter);
   let updatedQuestions = 0;

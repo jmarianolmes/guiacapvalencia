@@ -59,6 +59,10 @@ export default function AdminDashboard() {
   const renewAccessMutation = trpc.admin.renewUserAccess.useMutation();
   const reviewReportsQuery = trpc.admin.getQuestionReviewReports.useQuery();
   const scanStrategicMutation = trpc.admin.scanStrategicQuestionsForReview.useMutation();
+  const scanStatusQuery = trpc.admin.getStrategicScanStatus.useQuery(undefined, {
+    enabled: scanStrategicMutation.isPending,
+    refetchInterval: scanStrategicMutation.isPending ? 350 : false,
+  });
   const resolveReviewMutation = trpc.admin.resolveQuestionReview.useMutation();
   const dismissReviewMutation = trpc.admin.dismissQuestionReview.useMutation();
   const publicAccessQuery = trpc.admin.getPublicAccess.useQuery();
@@ -72,14 +76,6 @@ export default function AdminDashboard() {
       setLocation('/');
     }
   }, [user, setLocation]);
-
-  useEffect(() => {
-    if (!scanStrategicMutation.isPending) return;
-    const timer = window.setInterval(() => {
-      setScanProgress((current) => Math.min(95, current + (current < 60 ? 3 : 1)));
-    }, 350);
-    return () => window.clearInterval(timer);
-  }, [scanStrategicMutation.isPending]);
 
   if (!user || user.role !== 'admin') {
     return null;
@@ -229,6 +225,8 @@ export default function AdminDashboard() {
     }
   };
 
+  const displayedScanProgress = scanStatusQuery.data?.progress ?? scanProgress;
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <nav className="bg-white shadow-sm">
@@ -296,7 +294,7 @@ export default function AdminDashboard() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3"><CardTitle>{text.reviewTitle}</CardTitle><Button size="sm" variant="outline" className="relative min-w-44 overflow-hidden" disabled={scanStrategicMutation.isPending} onClick={handleScanStrategicQuestions}>{scanStrategicMutation.isPending && <span className="absolute inset-y-0 left-0 bg-blue-100/80 transition-all duration-300" style={{ width: `${scanProgress}%` }} />}<span className="relative flex items-center justify-center gap-2">{scanStrategicMutation.isPending && <Spinner className="h-4 w-4" />}{scanStrategicMutation.isPending ? `${text.scanningStrategic} ${scanProgress}%` : text.scanStrategic}</span></Button></CardHeader>
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3"><CardTitle>{text.reviewTitle}</CardTitle><Button size="sm" variant="outline" className="relative min-w-44 overflow-hidden" disabled={scanStrategicMutation.isPending} onClick={handleScanStrategicQuestions}>{scanStrategicMutation.isPending && <span className="absolute inset-y-0 left-0 bg-blue-100/80 transition-all duration-300" style={{ width: `${displayedScanProgress}%` }} />}<span className="relative flex items-center justify-center gap-2">{scanStrategicMutation.isPending && <Spinner className="h-4 w-4" />}{scanStrategicMutation.isPending ? `${text.scanningStrategic} ${displayedScanProgress}%` : text.scanStrategic}</span></Button></CardHeader>
           <CardContent className="space-y-4">
             {(reviewReportsQuery.data || []).length === 0 ? <p className="text-sm text-slate-500">{text.reviewEmpty}</p> : (reviewReportsQuery.data || []).map(({ report, question }) => (
               <div key={report.id} className="rounded-lg border border-amber-200 bg-amber-50 p-4">
